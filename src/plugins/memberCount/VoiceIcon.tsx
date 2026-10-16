@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
-export function VoiceIcon({ className }: { className?: string; }) {
+export function VoiceIcon({ className }: { className?: string }) {
     return (
         <svg viewBox="0 0 32 32" fill="currentColor" className={className}>
             <path d="M15.6668 3C14.2523 3 12.8958 3.5619 11.8956 4.5621C10.8954 5.56229 10.3335 6.91884 10.3335 8.33333V13.6666C10.3335 15.0811 10.8954 16.4378 11.8956 17.438C12.8958 18.4381 14.2523 19 15.6668 19C17.0813 19 18.4378 18.4381 19.438 17.438C20.4382 16.4378 21.0001 15.0811 21.0001 13.6666V8.33333C21.0001 6.91884 20.4382 5.56229 19.438 4.5621C18.4378 3.5619 17.0813 3 15.6668 3Z" />

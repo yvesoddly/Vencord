@@ -1,0 +1,42 @@
+name: CI
+
+on:
+    pull_request:
+    push:
+        branches:
+            - main
+
+permissions:
+    contents: read
+
+concurrency:
+    group: ci-${{ github.event.pull_request.number || github.sha }}
+    cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+    verify:
+        name: Check, test and build
+        runs-on: ubuntu-latest
+        timeout-minutes: 10
+        steps:
+            - uses: actions/checkout@v7
+
+            - uses: voidzero-dev/setup-vp@v1
+              with:
+                  node-version: 24
+                  cache: true
+                  run-install: true
+
+            # Format, lint, type-aware lint and typecheck in one pass.
+            - run: vp check
+
+            - run: vp test run
+
+            - run: vp run lint-styles
+
+            - run: vp run buildStandalone
+
+            - run: vp run buildWebStandalone
+
+            # Fails on any plugin whose definePlugin call can't be read statically.
+            - run: vp run generatePluginJson dist/plugins.json dist/plugin-readmes.json

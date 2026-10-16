@@ -1,27 +1,20 @@
 /*
- * Vencord, a modification for Discord's desktop app
+ * Vencord, a Discord client mod
  * Copyright (c) 2022 Vendicated and contributors
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <https://www.gnu.org/licenses/>.
-*/
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
 
 import { Logger } from "@utils/Logger";
 import { makeCodeblock } from "@utils/text";
 import { CommandArgument, CommandContext, CommandOption } from "@vencord/discord-types";
 
 import { sendBotMessage } from "./commandHelpers";
-import { ApplicationCommandInputType, ApplicationCommandOptionType, ApplicationCommandType, VencordCommand } from "./types";
+import {
+    ApplicationCommandInputType,
+    ApplicationCommandOptionType,
+    ApplicationCommandType,
+    VencordCommand
+} from "./types";
 
 export * from "./commandHelpers";
 export * from "./types";
@@ -61,8 +54,7 @@ export const _init = function (cmds: VencordCommand[]) {
 } as never;
 
 export const _handleCommand = function (cmd: VencordCommand, args: CommandArgument[], ctx: CommandContext) {
-    if (!cmd.isVencordCommand)
-        return cmd.execute(args, ctx);
+    if (!cmd.isVencordCommand) return cmd.execute(args, ctx);
 
     const handleError = (err: any) => {
         // TODO: cancel send if cmd.inputType === BUILT_IN_TEXT
@@ -86,7 +78,6 @@ export const _handleCommand = function (cmd: VencordCommand, args: CommandArgume
     }
 } as never;
 
-
 /**
  * Prepare a Command Option for Discord by filling missing fields
  * @param opt
@@ -98,7 +89,7 @@ export function prepareOption<O extends CommandOption | VencordCommand>(opt: O):
         // See comment above Placeholders
         if (opt === OptPlaceholder) opts[i] = OptionalMessageOption;
         else if (opt === ReqPlaceholder) opts[i] = RequiredMessageOption;
-        opt.choices?.forEach(x => x.displayName ||= x.name);
+        opt.choices?.forEach(x => (x.displayName ||= x.name));
 
         prepareOption(opts[i]);
     });
@@ -122,11 +113,13 @@ function registerSubCommands(cmd: VencordCommand, plugin: string) {
             id: `${o.name}-${cmd.id}`,
             name: getSubCommandName(cmd, o),
             displayName: getSubCommandName(cmd, o),
-            subCommandPath: [{
-                name: o.name,
-                type: o.type,
-                displayName: o.name
-            }],
+            subCommandPath: [
+                {
+                    name: o.name,
+                    type: o.type,
+                    displayName: o.name
+                }
+            ],
             rootCommand: cmd
         };
         registerCommand(subCmd, plugin);
@@ -134,9 +127,7 @@ function registerSubCommands(cmd: VencordCommand, plugin: string) {
 }
 
 function unregisterSubCommands(cmd: VencordCommand): boolean {
-    const results = BUILT_IN
-        .filter(c => c.rootCommand === cmd)
-        .map(c => unregisterCommand(c.name));
+    const results = BUILT_IN.filter(c => c.rootCommand === cmd).map(c => unregisterCommand(c.name));
 
     return results.length > 0 && results.every(x => x);
 }
@@ -151,8 +142,7 @@ export function registerCommand<C extends VencordCommand>(command: C, plugin: st
         return;
     }
 
-    if (BUILT_IN.some(c => c.name === command.name))
-        throw new Error(`Command '${command.name}' already exists.`);
+    if (BUILT_IN.some(c => c.name === command.name)) throw new Error(`Command '${command.name}' already exists.`);
 
     command.isVencordCommand = true;
     command.untranslatedName ??= command.name;
@@ -182,8 +172,7 @@ export function unregisterCommand(name: string, isSubCommands = false) {
     }
 
     const idx = BUILT_IN.findIndex(c => c.name === name);
-    if (idx === -1)
-        return false;
+    if (idx === -1) return false;
 
     BUILT_IN.splice(idx, 1);
     delete commands[name];

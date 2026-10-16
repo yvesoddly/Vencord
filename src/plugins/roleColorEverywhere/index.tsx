@@ -1,20 +1,8 @@
 /*
- * Vencord, a modification for Discord's desktop app
+ * Vencord, a Discord client mod
  * Copyright (c) 2022 Vendicated and contributors
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <https://www.gnu.org/licenses/>.
-*/
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
 
 import { definePluginSettings } from "@api/Settings";
 import { Devs } from "@utils/constants";
@@ -60,7 +48,7 @@ const settings = definePluginSettings({
         type: OptionType.BOOLEAN,
         default: false,
         description: "Color chat messages based on the author's role color",
-        restartNeeded: true,
+        restartNeeded: true
     },
     messageSaturation: {
         type: OptionType.SLIDER,
@@ -84,7 +72,7 @@ export default definePlugin({
             replacement: [
                 {
                     match: /(?<=user:(\i),guildId:([^,]+?),.{0,100}?children:\i=>\i)\((\i)\)/,
-                    replace: "({...$3,color:$self.getColorInt($1?.id,$2)})",
+                    replace: "({...$3,color:$self.getColorInt($1?.id,$2)})"
                 }
             ],
             predicate: () => settings.store.chatMentions
@@ -108,7 +96,7 @@ export default definePlugin({
                 {
                     match: /(?<=#{intl::CHANNEL_MEMBERS_A11Y_LABEL}.{0,400}?)children:(?=.{0,20}?(?:—|\\u2014) ",\i\])/,
                     replace: "style:{color:$self.getRoleColor(arguments[0])},$&"
-                },
+                }
             ],
             predicate: () => settings.store.memberList
         },
@@ -119,7 +107,7 @@ export default definePlugin({
                 {
                     match: /(?<=#{intl::CHANNEL_MEMBERS_A11Y_LABEL},\{title:\i,count:\i\}\)\}\),\(0,\i\.jsxs\)\("div",\{)/,
                     replace: "style:{color:$self.getRoleColor(arguments[0])},"
-                },
+                }
             ],
             predicate: () => settings.store.memberList
         },
@@ -141,7 +129,7 @@ export default definePlugin({
                 match: /tag:"strong",variant:"text-md\/medium"(?<=onContextMenu:.{0,15}\((\i),(\i),\i\).+?)/,
                 replace: "$&,style:$self.getColorStyle($2?.id,$1?.channel?.id)"
             },
-            predicate: () => settings.store.reactorsList,
+            predicate: () => settings.store.reactorsList
         },
         // Poll Results
         {
@@ -165,7 +153,8 @@ export default definePlugin({
 
     getColorString(userId: string, channelOrGuildId: string) {
         try {
-            const guildId = ChannelStore.getChannel(channelOrGuildId)?.guild_id ?? GuildStore.getGuild(channelOrGuildId)?.id;
+            const guildId =
+                ChannelStore.getChannel(channelOrGuildId)?.guild_id ?? GuildStore.getGuild(channelOrGuildId)?.id;
             if (guildId == null) return null;
 
             return GuildMemberStore.getMember(guildId, userId)?.colorString ?? null;
@@ -184,9 +173,11 @@ export default definePlugin({
     getColorStyle(userId: string, channelOrGuildId: string) {
         const colorString = this.getColorString(userId, channelOrGuildId);
 
-        return colorString && {
-            color: colorString
-        };
+        return (
+            colorString && {
+                color: colorString
+            }
+        );
     },
 
     useMessageColorsStyle(message: any) {
@@ -216,6 +207,6 @@ export default definePlugin({
     getRoleColor(props: any) {
         try {
             return GuildRoleStore.getRole(props?.guildId, props?.id)?.colorString;
-        } catch (e) { }
+        } catch (e) {}
     }
 });

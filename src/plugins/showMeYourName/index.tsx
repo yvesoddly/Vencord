@@ -5,7 +5,6 @@
  */
 
 import "./styles.css";
-
 import { definePluginSettings } from "@api/Settings";
 import ErrorBoundary from "@components/ErrorBoundary";
 import { Devs } from "@utils/constants";
@@ -14,7 +13,7 @@ import { Channel, Message, User } from "@vencord/discord-types";
 import { RelationshipStore, StreamerModeStore } from "@webpack/common";
 
 interface UsernameProps {
-    author: { nick: string; authorId: string; };
+    author: { nick: string; authorId: string };
     channel: Channel;
     message: Message;
     withMentionPrefix?: boolean;
@@ -29,8 +28,8 @@ const settings = definePluginSettings({
         options: [
             { label: "Username then nickname", value: "user-nick", default: true },
             { label: "Nickname then username", value: "nick-user" },
-            { label: "Username only", value: "user" },
-        ],
+            { label: "Username only", value: "user" }
+        ]
     },
     friendNicknames: {
         type: OptionType.SELECT,
@@ -49,8 +48,8 @@ const settings = definePluginSettings({
     inReplies: {
         type: OptionType.BOOLEAN,
         default: false,
-        description: "Also apply functionality to reply previews",
-    },
+        description: "Also apply functionality to reply previews"
+    }
 });
 
 export default definePlugin({
@@ -66,50 +65,69 @@ export default definePlugin({
                 match: /(?<=onContextMenu:\i,children:)\i\?(?=.{0,100}?user[Nn]ame:)/,
                 replace: "$self.renderUsername(arguments[0]),_oldChildren:$&"
             }
-        },
+        }
     ],
     settings,
 
-    renderUsername: ErrorBoundary.wrap(({ author, channel, message, isRepliedMessage, withMentionPrefix, userOverride }: UsernameProps) => {
-        try {
-            const { mode, friendNicknames, displayNames, inReplies } = settings.store;
+    renderUsername: ErrorBoundary.wrap(
+        ({ author, channel, message, isRepliedMessage, withMentionPrefix, userOverride }: UsernameProps) => {
+            try {
+                const { mode, friendNicknames, displayNames, inReplies } = settings.store;
 
-            const user = userOverride ?? message.author;
-            let username = StreamerModeStore.enabled
-                ? user.username[0] + "…"
-                : user.username;
+                const user = userOverride ?? message.author;
+                let username = StreamerModeStore.enabled ? user.username[0] + "…" : user.username;
 
-            if (displayNames)
-                username = user.globalName || username;
+                if (displayNames) username = user.globalName || username;
 
-            let { nick } = author;
+                let { nick } = author;
 
-            const friendNickname = RelationshipStore.getNickname(author.authorId);
+                const friendNickname = RelationshipStore.getNickname(author.authorId);
 
-            if (friendNickname) {
-                const shouldUseFriendNickname =
-                    friendNicknames === "always" ||
-                    (friendNicknames === "dms" && channel.isPrivate()) ||
-                    (friendNicknames === "fallback" && !nick);
+                if (friendNickname) {
+                    const shouldUseFriendNickname =
+                        friendNicknames === "always" ||
+                        (friendNicknames === "dms" && channel.isPrivate()) ||
+                        (friendNicknames === "fallback" && !nick);
 
-                if (shouldUseFriendNickname)
-                    nick = friendNickname;
+                    if (shouldUseFriendNickname) nick = friendNickname;
+                }
+
+                const prefix = withMentionPrefix ? "@" : "";
+
+                if ((isRepliedMessage && !inReplies) || username.toLowerCase() === nick.toLowerCase())
+                    return (
+                        <>
+                            {prefix}
+                            {nick}
+                        </>
+                    );
+
+                if (mode === "user-nick")
+                    return (
+                        <>
+                            {prefix}
+                            {username} <span className="vc-smyn-suffix">{nick}</span>
+                        </>
+                    );
+
+                if (mode === "nick-user")
+                    return (
+                        <>
+                            {prefix}
+                            {nick} <span className="vc-smyn-suffix">{username}</span>
+                        </>
+                    );
+
+                return (
+                    <>
+                        {prefix}
+                        {username}
+                    </>
+                );
+            } catch {
+                return <>{author?.nick}</>;
             }
-
-            const prefix = withMentionPrefix ? "@" : "";
-
-            if (isRepliedMessage && !inReplies || username.toLowerCase() === nick.toLowerCase())
-                return <>{prefix}{nick}</>;
-
-            if (mode === "user-nick")
-                return <>{prefix}{username} <span className="vc-smyn-suffix">{nick}</span></>;
-
-            if (mode === "nick-user")
-                return <>{prefix}{nick} <span className="vc-smyn-suffix">{username}</span></>;
-
-            return <>{prefix}{username}</>;
-        } catch {
-            return <>{author?.nick}</>;
-        }
-    }, { noop: true }),
+        },
+        { noop: true }
+    )
 });

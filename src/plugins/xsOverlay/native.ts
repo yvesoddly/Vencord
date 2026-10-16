@@ -6,9 +6,11 @@
 
 import { createSocket, Socket } from "dgram";
 
+import { IpcMainInvokeEvent } from "electron";
+
 let xsoSocket: Socket | null = null;
 
-export function sendToOverlay(_, data: any) {
+export function sendToOverlay(_: IpcMainInvokeEvent, data: any) {
     data.messageType = data.type;
     const json = JSON.stringify(data);
     xsoSocket ??= createSocket("udp4");

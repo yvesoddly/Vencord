@@ -29,24 +29,22 @@ function getEmojiMarkdown(target: Target, copyUnicode: boolean): string {
     const { id: emojiId, name: emojiName } = target.dataset;
 
     if (!emojiId) {
-        return copyUnicode
-            ? convertNameToSurrogate(emojiName)
-            : `:${emojiName}:`;
+        return copyUnicode ? convertNameToSurrogate(emojiName) : `:${emojiName}:`;
     }
 
     const url = new URL(target.firstChild.src);
     const hasParam = url.searchParams.get("animated") === "true";
     const isGif = url.pathname.endsWith(".gif");
 
-    return `<${(hasParam || isGif) ? "a" : ""}:${emojiName.replace(/~\d+$/, "")}:${emojiId}>`;
+    return `<${hasParam || isGif ? "a" : ""}:${emojiName.replace(/~\d+$/, "")}:${emojiId}>`;
 }
 
 const settings = definePluginSettings({
     copyUnicode: {
         type: OptionType.BOOLEAN,
         description: "Copy the raw unicode character instead of :name: for default emojis (👽)",
-        default: true,
-    },
+        default: true
+    }
 });
 
 export default definePlugin({
@@ -57,7 +55,7 @@ export default definePlugin({
     settings,
 
     contextMenus: {
-        "expression-picker"(children, { target }: { target: Target; }) {
+        "expression-picker"(children, { target }: { target: Target }) {
             if (target.dataset.type !== "emoji") return;
 
             children.push(
@@ -73,6 +71,6 @@ export default definePlugin({
                     leadingAccessory={{ type: "icon", icon: CopyIcon }}
                 />
             );
-        },
-    },
+        }
+    }
 });

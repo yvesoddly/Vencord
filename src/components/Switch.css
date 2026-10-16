@@ -52,6 +52,6 @@
 
     &:disabled {
         pointer-events: none;
-        cursor: not-allowed
+        cursor: not-allowed;
     }
 }

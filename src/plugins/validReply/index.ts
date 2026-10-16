@@ -17,10 +17,10 @@ const enum ReferencedMessageState {
 }
 
 interface Reply {
-    baseAuthor: User,
+    baseAuthor: User;
     baseMessage: Message;
     channel: Channel;
-    referencedMessage: { state: ReferencedMessageState; };
+    referencedMessage: { state: ReferencedMessageState };
     compact: boolean;
     isReplyAuthorBlocked: boolean;
 }
@@ -101,7 +101,7 @@ export default definePlugin({
                     });
                 }
             })
-            .catch(() => { })
+            .catch(() => {})
             .finally(() => {
                 fetching.delete(messageId);
             });

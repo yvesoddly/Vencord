@@ -6,7 +6,7 @@
         {
             "label": "Build",
             "type": "shell",
-            "command": "pnpm build",
+            "command": "vp run build",
             "group": {
                 "kind": "build",
                 "isDefault": true
@@ -15,7 +15,7 @@
         {
             "label": "Watch",
             "type": "shell",
-            "command": "pnpm watch",
+            "command": "vp run watch",
             "problemMatcher": [],
             "group": {
                 "kind": "build"

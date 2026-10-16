@@ -40,18 +40,16 @@ export async function importSettings(data: string) {
         throw new Error("Failed to parse JSON: " + String(err));
     }
 
-    if (!isSafeObject(parsed))
-        throw new Error("Unsafe Settings");
+    if (!isSafeObject(parsed)) throw new Error("Unsafe Settings");
 
     if ("settings" in parsed && "quickCss" in parsed) {
         Object.assign(PlainSettings, parsed.settings);
         await VencordNative.settings.set(parsed.settings);
         await VencordNative.quickCss.set(parsed.quickCss);
-    } else
-        throw new Error("Invalid Settings. Is this even a Vencord Settings file?");
+    } else throw new Error("Invalid Settings. Is this even a Vencord Settings file?");
 }
 
-export async function exportSettings({ minify }: { minify?: boolean; } = {}) {
+export async function exportSettings({ minify }: { minify?: boolean } = {}) {
     const settings = VencordNative.settings.get();
     const quickCss = await VencordNative.quickCss.get();
     return JSON.stringify({ settings, quickCss }, null, minify ? undefined : 4);

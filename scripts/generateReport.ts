@@ -1,359 +1,447 @@
+#!/usr/bin/env node
 /*
- * Vencord, a modification for Discord's desktop app
+ * Vencord, a Discord client mod
  * Copyright (c) 2022 Vendicated and contributors
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <https://www.gnu.org/licenses/>.
-*/
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
 
-/// <reference types="../src/globals" />
-/// <reference types="../src/modules" />
+// Loads Discord's login page in headless Chrome with the reporter build (dist/browser.js from
+// `vp run buildReporter`) injected, and reports every patch, webpack find and plugin start that
+// failed. No Discord account is needed. Prints a Markdown report and exits 1 if anything broke.
+//
+//   node scripts/generateReport.ts [--branch stable|canary|both]
+//
+// CHROMIUM_BIN picks the browser; otherwise Chrome Headless Shell is downloaded into
+// node_modules/.cache. WEBHOOK_URL (and optional WEBHOOK_SECRET) also posts the report to Discord.
 
-import { createHmac } from "crypto";
-import { readFileSync } from "fs";
-import pup, { JSHandle } from "puppeteer-core";
+import { createHmac } from "node:crypto";
 
-const logStderr = (...data: any[]) => console.error(`${CANARY ? "CANARY" : "STABLE"} ---`, ...data);
+import * as NodeRuntime from "@effect/platform-node/NodeRuntime";
+import * as NodeServices from "@effect/platform-node/NodeServices";
+import {
+    Browser,
+    computeExecutablePath,
+    detectBrowserPlatform,
+    getInstalledBrowsers,
+    install,
+    resolveBuildId
+} from "@puppeteer/browsers";
+import { Command, Flag } from "effect/cli";
+import * as Config from "effect/Config";
+import * as Console from "effect/Console";
+import * as Effect from "effect/Effect";
+import * as Fiber from "effect/Fiber";
+import * as FileSystem from "effect/FileSystem";
+import { FetchHttpClient, HttpClient, HttpClientRequest } from "effect/http";
+import * as Layer from "effect/Layer";
+import * as Logger from "effect/Logger";
+import * as Option from "effect/Option";
+import * as Path from "effect/Path";
+import * as Queue from "effect/Queue";
+import * as Schema from "effect/Schema";
+import * as Stream from "effect/Stream";
+import pup, { type ConsoleMessage, type JSHandle } from "puppeteer-core";
 
-for (const variable of ["CHROMIUM_BIN"]) {
-    if (!process.env[variable]) {
-        logStderr(`Missing environment variable ${variable}`);
-        process.exit(1);
+type Branch = "stable" | "canary";
+
+interface PatchInfo {
+    readonly plugin: string;
+    readonly type: string;
+    readonly id: string;
+    readonly match: string;
+    readonly error?: string;
+}
+
+/** What one run against one Discord branch found. */
+interface Report {
+    readonly branch: Branch;
+    meta: { buildNumber: string; buildHash: string };
+    readonly badPatches: PatchInfo[];
+    readonly slowPatches: PatchInfo[];
+    readonly badStarts: { plugin: string; error: string }[];
+    readonly badWebpackFinds: string[];
+    readonly otherErrors: string[];
+    readonly ignoredErrors: string[];
+}
+
+export class ReporterError extends Schema.TaggedError<ReporterError>()("ReporterError", {
+    branch: Schema.String,
+    reason: Schema.String
+}) {
+    override get message() {
+        return `${this.branch}: ${this.reason}`;
     }
 }
 
-const CANARY = process.env.USE_CANARY === "true";
-let metaData = {
-    buildNumber: "Unknown Build Number",
-    buildHash: "Unknown Build Hash"
-};
-
-const browser = await pup.launch({
-    headless: true,
-    executablePath: process.env.CHROMIUM_BIN,
-    args: ["--no-sandbox"]
-});
-
-const page = await browser.newPage();
-await page.setUserAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/537.36");
-await page.setBypassCSP(true);
-
-async function maybeGetError(handle: JSHandle): Promise<string | undefined> {
-    return await (handle as JSHandle<Error>)?.getProperty("message")
-        .then(m => m?.jsonValue())
-        .catch(() => undefined);
-}
-
-interface PatchInfo {
-    plugin: string;
-    type: string;
-    id: string;
-    match: string;
-    error?: string;
-};
-
-const report = {
-    badPatches: [] as PatchInfo[],
-    slowPatches: [] as PatchInfo[],
-    badStarts: [] as {
-        plugin: string;
-        error: string;
-    }[],
-    otherErrors: [] as string[],
-    ignoredErrors: [] as string[],
-    badWebpackFinds: [] as string[]
-};
-
-const IGNORED_DISCORD_ERRORS = [
+const IGNORED_DISCORD_ERRORS: Array<string | RegExp> = [
     "KeybindStore: Looking for callback action",
     "Unable to process domain list delta: Client revision number is null",
     "Downloading the full bad domains file",
     /\[GatewaySocket\].{0,110}Cannot access '/,
     "search for 'name' in undefined",
     "Attempting to set fast connect zstd when unsupported"
-] as Array<string | RegExp>;
+];
 
-function toCodeBlock(s: string, indentation = 0, isDiscord = false) {
-    s = s.replace(/```/g, "`\u200B`\u200B`");
+const isBroken = (report: Report) =>
+    report.badPatches.length + report.slowPatches.length + report.badStarts.length + report.badWebpackFinds.length > 0;
 
-    const indentationStr = Array(!isDiscord ? indentation : 0).fill(" ").join("");
-    return `\`\`\`\n${s.split("\n").map(s => indentationStr + s).join("\n")}\n${indentationStr}\`\`\``;
-}
+/** Uses CHROMIUM_BIN, or downloads Chrome Headless Shell into node_modules/.cache once. */
+const resolveChrome = Effect.fn("resolveChrome")(function* (rootDir: string) {
+    const fromEnv = (yield* Config.option(Config.String("CHROMIUM_BIN"))).pipe(Option.filter(bin => bin.length > 0));
+    if (Option.isSome(fromEnv)) return fromEnv.value;
 
-async function printReport() {
-    console.log();
+    const cacheDir = `${rootDir}/node_modules/.cache/chrome`;
+    const browser = Browser.CHROMEHEADLESSSHELL;
+    const installed = yield* Effect.promise(() => getInstalledBrowsers({ cacheDir }));
+    const existing = installed.find(b => b.browser === browser);
+    if (existing) return existing.executablePath;
 
-    console.log("# Vencord Report" + (CANARY ? " (Canary)" : ""));
-
-    console.log();
-
-    console.log("## Bad Patches");
-    report.badPatches.forEach(p => {
-        console.log(`- ${p.plugin} (${p.type})`);
-        console.log(`  - ID: \`${p.id}\``);
-        console.log(`  - Match: ${toCodeBlock(p.match, "  - Match: ".length)}`);
-        if (p.error) console.log(`  - Error: ${toCodeBlock(p.error, "  - Error: ".length)}`);
-    });
-
-    console.log();
-
-    console.log("## Bad Webpack Finds");
-    report.badWebpackFinds.forEach(p => console.log("- " + toCodeBlock(p, "- ".length)));
-
-    console.log();
-
-    console.log("## Bad Starts");
-    report.badStarts.forEach(p => {
-        console.log(`- ${p.plugin}`);
-        console.log(`  - Error: ${toCodeBlock(p.error, "  - Error: ".length)}`);
-    });
-
-    console.log();
-
-    console.log("## Discord Errors");
-    report.otherErrors.forEach(e => {
-        console.log(`- ${toCodeBlock(e, "- ".length)}`);
-    });
-
-    console.log();
-
-    console.log("## Ignored Discord Errors");
-    report.ignoredErrors.forEach(e => {
-        console.log(`- ${toCodeBlock(e, "- ".length)}`);
-    });
-
-    console.log();
-
-    if (process.env.WEBHOOK_URL) {
-        const patchesToEmbed = (title: string, patches: PatchInfo[], color: number) => ({
-            title,
-            color,
-            description: patches.map(p => {
-                const lines = [
-                    `**__${p.plugin} (${p.type}):__**`,
-                    `ID: \`${p.id}\``,
-                    `Match: ${toCodeBlock(p.match, "Match: ".length, true)}`
-                ];
-                if (p.error) lines.push(`Error: ${toCodeBlock(p.error, "Error: ".length, true)}`);
-
-                return lines.join("\n");
-            }).join("\n\n"),
+    const platform = detectBrowserPlatform();
+    if (!platform)
+        return yield* new ReporterError({
+            branch: "both",
+            reason: "Unsupported platform for Chrome downloads, set CHROMIUM_BIN"
         });
 
-        const embeds = [
-            {
-                author: {
-                    name: `Discord ${CANARY ? "Canary" : "Stable"} (${metaData.buildNumber})`,
-                    url: `https://nelly.tools/builds/app/${metaData.buildHash}`,
-                    icon_url: CANARY ? "https://cdn.discordapp.com/emojis/1252721945699549327.png?size=128" : "https://cdn.discordapp.com/emojis/1252721943463985272.png?size=128"
-                },
-                color: CANARY ? 0xfbb642 : 0x5865f2
-            },
-            report.badPatches.length > 0 && patchesToEmbed("Bad Patches", report.badPatches, 0xff0000),
-            report.slowPatches.length > 0 && patchesToEmbed("Slow Patches", report.slowPatches, 0xf0b232),
-            report.badWebpackFinds.length > 0 && {
-                title: "Bad Webpack Finds",
-                description: report.badWebpackFinds.map(f => toCodeBlock(f, 0, true)).join("\n") || "None",
-                color: 0xff0000
-            },
-            report.badStarts.length > 0 && {
-                title: "Bad Starts",
-                description: report.badStarts.map(p => {
-                    const lines = [
-                        `**__${p.plugin}:__**`,
-                        toCodeBlock(p.error, 0, true)
-                    ];
-                    return lines.join("\n");
-                }
-                ).join("\n\n") || "None",
-                color: 0xff0000
-            },
-            report.otherErrors.length > 0 && {
-                title: "Discord Errors",
-                description: report.otherErrors.length ? toCodeBlock(report.otherErrors.join("\n"), 0, true) : "None",
-                color: 0xff0000
-            }
-        ].filter(Boolean);
+    yield* Effect.logInfo("Downloading Chrome Headless Shell for the reporter...");
+    const buildId = yield* Effect.promise(() => resolveBuildId(browser, platform, "stable"));
+    yield* Effect.promise(() => install({ browser, buildId, cacheDir }));
+    return computeExecutablePath({ browser, buildId, cacheDir });
+});
 
-        if (embeds.length === 1) {
-            embeds.push({
-                title: "No issues found",
-                description: "Seems like everything is working fine (for now) <:shipit:1330992641466433556>",
-                color: 0x00ff00
-            });
+const errorMessage = (handle: JSHandle | undefined) =>
+    (handle as JSHandle<Error> | undefined)
+        ?.getProperty("message")
+        .then(m => m.jsonValue() as Promise<string | undefined>)
+        .catch(() => undefined) ?? Promise.resolve(undefined);
+
+const messageText = (message: ConsoleMessage, skipFirst = true) =>
+    Effect.promise(() =>
+        Promise.all(
+            message
+                .args()
+                .slice(skipFirst ? 1 : 0)
+                .map(async a => (await errorMessage(a)) || (await a.jsonValue()))
+        )
+            .then(a => a.join(" ").trim())
+            .catch(() => message.text())
+    );
+
+type PageEvent =
+    | { readonly kind: "console"; readonly message: ConsoleMessage }
+    | { readonly kind: "pageerror"; readonly error: Error };
+
+/** Handles one browser event. Returns "done" once the reporter says it finished. */
+const handleEvent = Effect.fnUntraced(function* (report: Report, event: PageEvent) {
+    const log = (...data: unknown[]) => Effect.logInfo(`${report.branch.toUpperCase()} ---`, ...data);
+
+    if (event.kind === "pageerror") {
+        const { message } = event.error;
+        if (message.includes("Sentry successfully disabled")) return "continue";
+        if (!message.startsWith("Object") && !message.includes("Cannot find module") && !/^.{1,2}$/.test(message)) {
+            yield* log("[Page Error]", message);
+            report.otherErrors.push(message);
+        } else {
+            report.ignoredErrors.push(message);
         }
-
-        const body = JSON.stringify({
-            username: "Vencord Reporter" + (CANARY ? " (Canary)" : ""),
-            embeds
-        });
-
-        const headers = {
-            "Content-Type": "application/json"
-        };
-
-        // functions similar to https://docs.github.com/en/webhooks/using-webhooks/validating-webhook-deliveries
-        // used by venbot to ensure webhook invocations are genuine (since we will pass the webhook url as a workflow input which is publicly visible)
-        // generate a secret with something like `openssl rand -hex 128`
-        if (process.env.WEBHOOK_SECRET) {
-            headers["X-Signature"] = "sha256=" + createHmac("sha256", process.env.WEBHOOK_SECRET).update(body).digest("hex");
-        }
-
-        await fetch(process.env.WEBHOOK_URL, {
-            method: "POST",
-            headers,
-            body
-        }).then(res => {
-            if (!res.ok) logStderr(`Webhook failed with status ${res.status}`);
-            else logStderr("Posted to Webhook successfully");
-        });
-    }
-}
-
-page.on("console", async e => {
-    const level = e.type();
-    const rawArgs = e.args();
-
-    async function getText(skipFirst = true) {
-        let args = e.args();
-        if (skipFirst) args = args.slice(1);
-
-        try {
-            return await Promise.all(
-                args.map(async a => {
-                    return await maybeGetError(a) || await a.jsonValue();
-                })
-            ).then(a => a.join(" ").trim());
-        } catch {
-            return e.text();
-        }
+        return "continue";
     }
 
-    const firstArg = await rawArgs[0]?.jsonValue();
+    const { message } = event;
+    const args = message.args();
+    const first = yield* Effect.promise(
+        () => args[0]?.jsonValue().catch(() => undefined) ?? Promise.resolve(undefined)
+    );
 
-    const isVencord = firstArg === "[Vencord]";
-    const isDebug = firstArg === "[PUP_DEBUG]";
-    const isReporterMeta = firstArg === "[REPORTER_META]";
-
-    if (isReporterMeta) {
-        metaData = await rawArgs[1].jsonValue() as any;
-        return;
+    if (first === "[REPORTER_META]") {
+        report.meta = yield* Effect.promise(() => args[1].jsonValue() as Promise<Report["meta"]>);
+        return "continue";
+    }
+    if (first === "[PUP_DEBUG]") {
+        yield* log(yield* messageText(message));
+        return "continue";
     }
 
-    outer:
-    if (isVencord) {
-        try {
-            var args = await Promise.all(e.args().map(a => a.jsonValue()));
-        } catch {
-            break outer;
-        }
-
-        const [, tag, message, otherMessage] = args as Array<string>;
+    if (first === "[Vencord]") {
+        const values = yield* Effect.promise(() => Promise.all(args.map(a => a.jsonValue())).catch(() => null));
+        const [, tag, text, other] = (values ?? []) as string[];
 
         switch (tag) {
-            case "WebpackPatcher:":
-                const patchFailMatch = message.match(/Patch by (.+?) (had no effect|errored|found no module) \(Module id is (.+?)\): (.+)/);
-                const patchSlowMatch = message.match(/Patch by (.+?) (took [\d.]+?ms) \(Module id is (.+?)\): (.+)/);
-                const match = patchFailMatch ?? patchSlowMatch;
+            case "WebpackPatcher:": {
+                const failed = text.match(
+                    /Patch by (.+?) (had no effect|errored|found no module) \(Module id is (.+?)\): (.+)/
+                );
+                const slow = text.match(/Patch by (.+?) (took [\d.]+?ms) \(Module id is (.+?)\): (.+)/);
+                const match = failed ?? slow;
                 if (!match) break;
 
-                logStderr(await getText());
-                process.exitCode = 1;
-
+                yield* log(yield* messageText(message));
                 const [, plugin, type, id, regex] = match;
-                const list = patchFailMatch ? report.badPatches : report.slowPatches;
-                list.push({
-                    plugin,
-                    type,
-                    id,
-                    match: regex,
-                    error: await maybeGetError(e.args()[3])
-                });
-
+                const error = yield* Effect.promise(() => errorMessage(args[3]));
+                (failed ? report.badPatches : report.slowPatches).push({ plugin, type, id, match: regex, error });
                 break;
-            case "PluginManager:":
-                const failedToStartMatch = message.match(/Failed to start (.+)/);
-                if (!failedToStartMatch) break;
+            }
+            case "PluginManager:": {
+                const failedToStart = text.match(/Failed to start (.+)/);
+                if (!failedToStart) break;
 
-                logStderr(await getText());
-                process.exitCode = 1;
-
-                const [, name] = failedToStartMatch;
-                report.badStarts.push({
-                    plugin: name,
-                    error: await maybeGetError(e.args()[3]) ?? "Unknown error"
-                });
-
+                yield* log(yield* messageText(message));
+                const error = yield* Effect.promise(() => errorMessage(args[3]));
+                report.badStarts.push({ plugin: failedToStart[1], error: error ?? "Unknown error" });
                 break;
+            }
             case "LazyChunkLoader:":
-                logStderr(await getText());
-
-                switch (message) {
-                    case "A fatal error occurred:":
-                        process.exit(1);
-                }
-
+                yield* log(yield* messageText(message));
+                if (text === "A fatal error occurred:")
+                    return yield* new ReporterError({ branch: report.branch, reason: "the lazy chunk loader crashed" });
                 break;
             case "Reporter:":
-                logStderr(await getText());
-
-                switch (message) {
-                    case "A fatal error occurred:":
-                        process.exit(1);
-                    case "Webpack Find Fail:":
-                        process.exitCode = 1;
-                        report.badWebpackFinds.push(otherMessage);
-                        break;
-                    case "Finished test":
-                        await browser.close();
-                        await printReport();
-                        process.exit();
-                }
+                yield* log(yield* messageText(message));
+                if (text === "A fatal error occurred:")
+                    return yield* new ReporterError({ branch: report.branch, reason: "the reporter crashed" });
+                if (text === "Webpack Find Fail:") report.badWebpackFinds.push(other);
+                if (text === "Finished test") return "done";
+                break;
         }
+        return "continue";
     }
 
-    if (isDebug) {
-        logStderr(await getText());
-    } else if (level === "error") {
-        const text = await getText(false);
-
-        if (text.length && !text.startsWith("Failed to load resource: the server responded with a status of") && !text.includes("Webpack")) {
-            if (IGNORED_DISCORD_ERRORS.some(regex => text.match(regex))) {
+    if (message.type() === "error") {
+        const text = yield* messageText(message, false);
+        if (
+            text.length &&
+            !text.startsWith("Failed to load resource: the server responded with a status of") &&
+            !text.includes("Webpack")
+        ) {
+            if (IGNORED_DISCORD_ERRORS.some(e => text.match(e))) {
                 report.ignoredErrors.push(text);
             } else {
-                logStderr("[Unexpected Error]", text);
+                yield* log("[Unexpected Error]", text);
                 report.otherErrors.push(text);
             }
         }
     }
+    return "continue";
 });
 
-page.on("error", e => logStderr("[Error]", e.message));
-page.on("pageerror", (e: any) => {
-    if (e.message.includes("Sentry successfully disabled")) return;
+/** Runs the reporter build against one Discord branch and collects what it reports. */
+const runBranch = Effect.fn("runBranch")(function* (branch: Branch, chrome: string, script: string) {
+    const report: Report = {
+        branch,
+        meta: { buildNumber: "Unknown Build Number", buildHash: "Unknown Build Hash" },
+        badPatches: [],
+        slowPatches: [],
+        badStarts: [],
+        badWebpackFinds: [],
+        otherErrors: [],
+        ignoredErrors: []
+    };
 
-    if (!e.message.startsWith("Object") && !e.message.includes("Cannot find module") && !/^.{1,2}$/.test(e.message)) {
-        logStderr("[Page Error]", e.message);
-        report.otherErrors.push(e.message);
-    } else {
-        report.ignoredErrors.push(e.message);
-    }
+    const browser = yield* Effect.acquireRelease(
+        Effect.promise(() => pup.launch({ headless: true, executablePath: chrome, args: ["--no-sandbox"] })),
+        browser => Effect.promise(() => browser.close())
+    );
+    const page = yield* Effect.promise(() => browser.newPage());
+    yield* Effect.promise(() =>
+        page.setUserAgent({
+            userAgent:
+                "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/537.36"
+        })
+    );
+    yield* Effect.promise(() => page.setBypassCSP(true));
+
+    const events = Stream.callback<PageEvent>(queue =>
+        Effect.sync(() => {
+            page.on("console", message => Queue.offerUnsafe(queue, { kind: "console", message }));
+            page.on("pageerror", error => Queue.offerUnsafe(queue, { kind: "pageerror", error: error as Error }));
+        })
+    );
+
+    const finished = yield* events.pipe(
+        Stream.mapEffect(event => handleEvent(report, event)),
+        Stream.takeUntil(result => result === "done"),
+        Stream.runDrain,
+        Effect.forkScoped
+    );
+
+    yield* Effect.promise(() =>
+        page.evaluateOnNewDocument(`if (location.host.endsWith("discord.com")) {\n${script};\n}`)
+    );
+    yield* Effect.promise(() =>
+        page.goto(branch === "canary" ? "https://canary.discord.com/login" : "https://discord.com/login")
+    );
+
+    yield* Fiber.join(finished).pipe(
+        Effect.timeoutOrElse({
+            duration: "10 minutes",
+            orElse: () =>
+                Effect.fail(new ReporterError({ branch, reason: "timed out waiting for the reporter to finish" }))
+        })
+    );
+    return report;
+}, Effect.scoped);
+
+const codeBlock = (s: string, indentation = 0, isDiscord = false) => {
+    s = s.replace(/```/g, "`​`​`");
+    const indent = " ".repeat(isDiscord ? 0 : indentation);
+    return `\`\`\`\n${s
+        .split("\n")
+        .map(line => indent + line)
+        .join("\n")}\n${indent}\`\`\``;
+};
+
+function toMarkdown(report: Report) {
+    const lines = [`# Vencord Report${report.branch === "canary" ? " (Canary)" : ""}`, ""];
+    const section = (title: string, items: string[]) => lines.push(`## ${title}`, ...items, "");
+
+    section(
+        "Bad Patches",
+        report.badPatches.flatMap(p => [
+            `- ${p.plugin} (${p.type})`,
+            `  - ID: \`${p.id}\``,
+            `  - Match: ${codeBlock(p.match, "  - Match: ".length)}`,
+            ...(p.error ? [`  - Error: ${codeBlock(p.error, "  - Error: ".length)}`] : [])
+        ])
+    );
+    section(
+        "Slow Patches",
+        report.slowPatches.map(p => `- ${p.plugin} (${p.type}): \`${p.id}\``)
+    );
+    section(
+        "Bad Webpack Finds",
+        report.badWebpackFinds.map(f => `- ${codeBlock(f, "- ".length)}`)
+    );
+    section(
+        "Bad Starts",
+        report.badStarts.flatMap(p => [`- ${p.plugin}`, `  - Error: ${codeBlock(p.error, "  - Error: ".length)}`])
+    );
+    section(
+        "Discord Errors",
+        report.otherErrors.map(e => `- ${codeBlock(e, "- ".length)}`)
+    );
+    section(
+        "Ignored Discord Errors",
+        report.ignoredErrors.map(e => `- ${codeBlock(e, "- ".length)}`)
+    );
+    return lines.join("\n");
+}
+
+function toWebhookBody(report: Report) {
+    const canary = report.branch === "canary";
+    const patchesEmbed = (title: string, patches: PatchInfo[], color: number) => ({
+        title,
+        color,
+        description: patches
+            .map(p =>
+                [
+                    `**__${p.plugin} (${p.type}):__**`,
+                    `ID: \`${p.id}\``,
+                    `Match: ${codeBlock(p.match, "Match: ".length, true)}`,
+                    ...(p.error ? [`Error: ${codeBlock(p.error, "Error: ".length, true)}`] : [])
+                ].join("\n")
+            )
+            .join("\n\n")
+    });
+
+    const embeds = [
+        {
+            author: {
+                name: `Discord ${canary ? "Canary" : "Stable"} (${report.meta.buildNumber})`,
+                url: `https://nelly.tools/builds/app/${report.meta.buildHash}`,
+                icon_url: canary
+                    ? "https://cdn.discordapp.com/emojis/1252721945699549327.png?size=128"
+                    : "https://cdn.discordapp.com/emojis/1252721943463985272.png?size=128"
+            },
+            color: canary ? 0xfbb642 : 0x5865f2
+        },
+        report.badPatches.length > 0 && patchesEmbed("Bad Patches", report.badPatches, 0xff0000),
+        report.slowPatches.length > 0 && patchesEmbed("Slow Patches", report.slowPatches, 0xf0b232),
+        report.badWebpackFinds.length > 0 && {
+            title: "Bad Webpack Finds",
+            description: report.badWebpackFinds.map(f => codeBlock(f, 0, true)).join("\n"),
+            color: 0xff0000
+        },
+        report.badStarts.length > 0 && {
+            title: "Bad Starts",
+            description: report.badStarts.map(p => `**__${p.plugin}:__**\n${codeBlock(p.error, 0, true)}`).join("\n\n"),
+            color: 0xff0000
+        },
+        report.otherErrors.length > 0 && {
+            title: "Discord Errors",
+            description: codeBlock(report.otherErrors.join("\n"), 0, true),
+            color: 0xff0000
+        }
+    ].filter(Boolean);
+
+    if (embeds.length === 1)
+        embeds.push({
+            title: "No issues found",
+            description: "Seems like everything is working fine (for now) <:shipit:1330992641466433556>",
+            color: 0x00ff00
+        });
+
+    return JSON.stringify({ username: `Vencord Reporter${canary ? " (Canary)" : ""}`, embeds });
+}
+
+/** Posts to WEBHOOK_URL. WEBHOOK_SECRET signs the body the way GitHub signs webhook deliveries. */
+const postWebhook = Effect.fn("postWebhook")(function* (url: string, report: Report) {
+    const client = yield* HttpClient.HttpClient;
+    const secret = yield* Config.option(Config.String("WEBHOOK_SECRET"));
+    const body = toWebhookBody(report);
+
+    const response = yield* HttpClientRequest.post(url).pipe(
+        HttpClientRequest.bodyText(body, "application/json"),
+        HttpClientRequest.setHeaders(
+            Option.isSome(secret)
+                ? { "X-Signature": "sha256=" + createHmac("sha256", secret.value).update(body).digest("hex") }
+                : {}
+        ),
+        client.execute
+    );
+    if (response.status >= 300) yield* Effect.logError(`Webhook failed with status ${response.status}`);
 });
 
-await page.evaluateOnNewDocument(`
-    if (location.host.endsWith("discord.com")) {
-        ${readFileSync("./dist/browser.js", "utf-8")};
-    }
-`);
+const report = Command.make(
+    "report",
+    {
+        branch: Flag.Literals("branch", ["stable", "canary", "both"]).pipe(
+            Flag.withDescription("Discord branch to test against"),
+            Flag.withDefault("both")
+        )
+    },
+    Effect.fn(function* ({ branch }) {
+        const fs = yield* FileSystem.FileSystem;
+        const path = yield* Path.Path;
+        const rootDir = path.resolve(import.meta.dirname, "..");
 
-await page.goto(CANARY ? "https://canary.discord.com/login" : "https://discord.com/login");
+        const scriptPath = path.join(rootDir, "dist/browser.js");
+        if (!(yield* fs.exists(scriptPath)))
+            return yield* new ReporterError({
+                branch,
+                reason: "dist/browser.js is missing, run `vp run buildReporter` first"
+            });
+        const script = yield* fs.readFileString(scriptPath);
+        const chrome = yield* resolveChrome(rootDir);
+
+        const branches: Branch[] = branch === "both" ? ["stable", "canary"] : [branch];
+        const reports = yield* Effect.forEach(branches, b => runBranch(b, chrome, script), {
+            concurrency: "unbounded"
+        });
+
+        const webhook = (yield* Config.option(Config.String("WEBHOOK_URL"))).pipe(Option.filter(url => url.length > 0));
+        for (const r of reports) {
+            yield* Console.log(toMarkdown(r));
+            if (Option.isSome(webhook)) yield* postWebhook(webhook.value, r);
+        }
+
+        if (reports.some(isBroken))
+            return yield* new ReporterError({ branch, reason: "found broken patches, finds or plugins" });
+    })
+);
+
+report.pipe(
+    Command.run({ version: "1.0.0" }),
+    Effect.provide(Layer.mergeAll(NodeServices.layer, FetchHttpClient.layer)),
+    Effect.provideService(Logger.LogToStderr, true),
+    NodeRuntime.runMain
+);

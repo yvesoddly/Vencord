@@ -11,7 +11,11 @@ export function createAndAppendStyle(id: string, target: HTMLElement) {
     return style;
 }
 
-export const classNameToSelector = (name: string, prefix = "") => name.split(" ").map(n => `.${prefix}${n}`).join("");
+export const classNameToSelector = (name: string, prefix = "") =>
+    name
+        .split(" ")
+        .map(n => `.${prefix}${n}`)
+        .join("");
 
 export type ClassNameFactoryArg = string | string[] | Record<string, unknown> | false | null | undefined | 0 | "";
 
@@ -24,12 +28,15 @@ export type ClassNameFactoryArg = string | string[] | Record<string, unknown> | 
  * cl("base", ["item", "editable"], { selected: null, disabled: true })
  * // => "plugin-base plugin-item plugin-editable plugin-disabled"
  */
-export const classNameFactory = (prefix: string = "") => (...args: ClassNameFactoryArg[]) => {
-    const classNames = new Set<string>();
-    for (const arg of args) {
-        if (arg && typeof arg === "string") classNames.add(arg);
-        else if (Array.isArray(arg)) arg.forEach(name => classNames.add(name));
-        else if (arg && typeof arg === "object") Object.entries(arg).forEach(([name, value]) => value && classNames.add(name));
-    }
-    return Array.from(classNames, name => prefix + name).join(" ");
-};
+export const classNameFactory =
+    (prefix: string = "") =>
+    (...args: ClassNameFactoryArg[]) => {
+        const classNames = new Set<string>();
+        for (const arg of args) {
+            if (arg && typeof arg === "string") classNames.add(arg);
+            else if (Array.isArray(arg)) arg.forEach(name => classNames.add(name));
+            else if (arg && typeof arg === "object")
+                Object.entries(arg).forEach(([name, value]) => value && classNames.add(name));
+        }
+        return Array.from(classNames, name => prefix + name).join(" ");
+    };

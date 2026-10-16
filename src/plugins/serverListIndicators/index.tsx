@@ -1,20 +1,8 @@
 /*
- * Vencord, a modification for Discord's desktop app
+ * Vencord, a Discord client mod
  * Copyright (c) 2022 Sofia Lima
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <https://www.gnu.org/licenses/>.
-*/
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
 
 import { addServerListElement, removeServerListElement, ServerListRenderPosition } from "@api/ServerList";
 import { definePluginSettings } from "@api/Settings";
@@ -27,7 +15,7 @@ import { GuildStore, PresenceStore, RelationshipStore, useStateFromStores } from
 const enum IndicatorType {
     SERVER = 1 << 0,
     FRIEND = 1 << 1,
-    BOTH = SERVER | FRIEND,
+    BOTH = SERVER | FRIEND
 }
 
 const UserGuildJoinRequestStore = findStoreLazy("UserGuildJoinRequestStore");
@@ -39,7 +27,7 @@ const settings = definePluginSettings({
         options: [
             { label: "Only online friend count", value: IndicatorType.FRIEND, default: true },
             { label: "Only server count", value: IndicatorType.SERVER },
-            { label: "Both server and online friend counts", value: IndicatorType.BOTH },
+            { label: "Both server and online friend counts", value: IndicatorType.BOTH }
         ]
     }
 });
@@ -62,15 +50,18 @@ function FriendsIndicator() {
     });
 
     return (
-        <span id="vc-friendcount" style={{
-            display: "inline-block",
-            width: "100%",
-            fontSize: "12px",
-            fontWeight: "600",
-            color: "var(--text-default)",
-            textTransform: "uppercase",
-            textAlign: "center",
-        }}>
+        <span
+            id="vc-friendcount"
+            style={{
+                display: "inline-block",
+                width: "100%",
+                fontSize: "12px",
+                fontWeight: "600",
+                color: "var(--text-default)",
+                textTransform: "uppercase",
+                textAlign: "center"
+            }}
+        >
             {onlineFriendsCount} online
         </span>
     );
@@ -86,15 +77,18 @@ function ServersIndicator() {
     });
 
     return (
-        <span id="vc-guildcount" style={{
-            display: "inline-block",
-            width: "100%",
-            fontSize: "12px",
-            fontWeight: "600",
-            color: "var(--text-default)",
-            textTransform: "uppercase",
-            textAlign: "center",
-        }}>
+        <span
+            id="vc-guildcount"
+            style={{
+                display: "inline-block",
+                width: "100%",
+                fontSize: "12px",
+                fontWeight: "600",
+                color: "var(--text-default)",
+                textTransform: "uppercase",
+                textAlign: "center"
+            }}
+        >
             {guildCount} servers
         </span>
     );
@@ -110,12 +104,14 @@ export default definePlugin({
 
     renderIndicator: () => {
         const { mode } = settings.store;
-        return <ErrorBoundary noop>
-            <div style={{ marginBottom: "4px" }}>
-                {!!(mode & IndicatorType.FRIEND) && <FriendsIndicator />}
-                {!!(mode & IndicatorType.SERVER) && <ServersIndicator />}
-            </div>
-        </ErrorBoundary>;
+        return (
+            <ErrorBoundary noop>
+                <div style={{ marginBottom: "4px" }}>
+                    {!!(mode & IndicatorType.FRIEND) && <FriendsIndicator />}
+                    {!!(mode & IndicatorType.SERVER) && <ServersIndicator />}
+                </div>
+            </ErrorBoundary>
+        );
     },
 
     start() {

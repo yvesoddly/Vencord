@@ -1,25 +1,10 @@
 /*
- * Vencord, a modification for Discord's desktop app
+ * Vencord, a Discord client mod
  * Copyright (c) 2022 Vendicated and contributors
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <https://www.gnu.org/licenses/>.
-*/
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
 
-import {
-    findGroupChildrenByChildId,
-    NavContextMenuPatchCallback
-} from "@api/ContextMenu";
+import { findGroupChildrenByChildId, NavContextMenuPatchCallback } from "@api/ContextMenu";
 import { definePluginSettings } from "@api/Settings";
 import { CogWheel } from "@components/Icons";
 import { Devs } from "@utils/constants";
@@ -51,7 +36,7 @@ const settings = definePluginSettings({
             { label: "Only @mentions", value: 1 },
             { label: "Nothing", value: 2 },
             { label: "Server default", value: 3, default: true }
-        ],
+        ]
     },
     everyone: {
         description: "Suppress @everyone and @here",
@@ -80,36 +65,36 @@ const settings = definePluginSettings({
     }
 });
 
-const makeContextMenuPatch: (shouldAddIcon: boolean) => NavContextMenuPatchCallback = (shouldAddIcon: boolean) => (children, { guild }: { guild: Guild, onClose(): void; }) => {
-    if (!guild) return;
+const makeContextMenuPatch: (shouldAddIcon: boolean) => NavContextMenuPatchCallback =
+    (shouldAddIcon: boolean) =>
+    (children, { guild }: { guild: Guild; onClose(): void }) => {
+        if (!guild) return;
 
-    const group = findGroupChildrenByChildId("privacy", children);
-    group?.push(
-        <Menu.MenuItem
-            label="Apply NewGuildSettings"
-            id="vc-newguildsettings-apply"
-            icon={shouldAddIcon ? CogWheel : void 0}
-            leadingAccessory={shouldAddIcon ? { type: "icon", icon: CogWheel } : void 0}
-            action={() => applyDefaultSettings(guild.id)}
-        />
-    );
-};
+        const group = findGroupChildrenByChildId("privacy", children);
+        group?.push(
+            <Menu.MenuItem
+                label="Apply NewGuildSettings"
+                id="vc-newguildsettings-apply"
+                icon={shouldAddIcon ? CogWheel : void 0}
+                leadingAccessory={shouldAddIcon ? { type: "icon", icon: CogWheel } : void 0}
+                action={() => applyDefaultSettings(guild.id)}
+            />
+        );
+    };
 
 function applyDefaultSettings(guildId: string | null) {
     if (guildId === "@me" || guildId === "null" || guildId == null) return;
-    updateGuildNotificationSettings(guildId,
-        {
-            muted: settings.store.guild,
-            suppress_everyone: settings.store.everyone,
-            suppress_roles: settings.store.role,
-            mute_scheduled_events: settings.store.events,
-            notify_highlights: settings.store.highlights ? 1 : 0
-        });
+    updateGuildNotificationSettings(guildId, {
+        muted: settings.store.guild,
+        suppress_everyone: settings.store.everyone,
+        suppress_roles: settings.store.role,
+        mute_scheduled_events: settings.store.events,
+        notify_highlights: settings.store.highlights ? 1 : 0
+    });
     if (settings.store.messages !== 3) {
-        updateGuildNotificationSettings(guildId,
-            {
-                message_notifications: settings.store.messages,
-            });
+        updateGuildNotificationSettings(guildId, {
+            message_notifications: settings.store.messages
+        });
     }
     if (settings.store.showAllChannels && isOptInEnabledForGuild(guildId)) {
         toggleShowAllChannels(guildId);

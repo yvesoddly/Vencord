@@ -1,13 +1,14 @@
-/* eslint-disable simple-header/header */
+/* oxlint-disable vencord/license-header -- sample code shown in the plugin settings */
 import React from "react";
 
-const handleClick = async () =>
-    console.log((await import("@utils/clipboard")).copyToClipboard("\u200b"));
+const handleClick = async () => console.log((await import("@utils/clipboard")).copyToClipboard("\u200b"));
 
 export const Example: React.FC<{
-    real: boolean,
-    shigged?: number,
-}> = ({ real, shigged }) => <>
-    <p>{`Shigg${real ? `ies${shigged === 0x1B ? "t" : ""}` : "y"}`}</p>
-    <button onClick={handleClick}>Click Me</button>
-</>;
+    real: boolean;
+    shigged?: number;
+}> = ({ real, shigged }) => (
+    <>
+        <p>{`Shigg${real ? `ies${shigged === 0x1b ? "t" : ""}` : "y"}`}</p>
+        <button onClick={handleClick}>Click Me</button>
+    </>
+);

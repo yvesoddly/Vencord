@@ -40,8 +40,7 @@ export const LastFMScrobbler: ScrobblerBackend = {
 
             const trackData = json.recenttracks?.track[0];
 
-            if (!trackData?.["@attr"]?.nowplaying)
-                return null;
+            if (!trackData?.["@attr"]?.nowplaying) return null;
 
             // why does the json api have xml structure
             return {
@@ -49,8 +48,12 @@ export const LastFMScrobbler: ScrobblerBackend = {
                 album: trackData.album["#text"],
                 artist: trackData.artist["#text"] || "Unknown",
                 trackURL: trackData.url,
-                artistURL: trackData.artist["#text"] ? url(`/music/${encodeURIComponent(trackData.artist["#text"])}`) : undefined,
-                albumURL: url(`/music/${encodeURIComponent(trackData.artist["#text"])}/${encodeURIComponent(trackData.album["#text"])}`),
+                artistURL: trackData.artist["#text"]
+                    ? url(`/music/${encodeURIComponent(trackData.artist["#text"])}`)
+                    : undefined,
+                albumURL: url(
+                    `/music/${encodeURIComponent(trackData.artist["#text"])}/${encodeURIComponent(trackData.album["#text"])}`
+                ),
                 imageURL: trackData.image?.find((x: any) => x.size === "large")?.["#text"]
             } as TrackData;
         } catch (e) {

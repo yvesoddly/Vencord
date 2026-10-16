@@ -1,20 +1,8 @@
 /*
- * Vencord, a modification for Discord's desktop app
+ * Vencord, a Discord client mod
  * Copyright (c) 2022 Vendicated and contributors
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <https://www.gnu.org/licenses/>.
-*/
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
 
 import { openNotificationLogModal } from "@api/Notifications/notificationLog";
 import { useSettings } from "@api/Settings";
@@ -51,7 +39,15 @@ type KeysOfType<Object, Type> = {
 }[keyof Object];
 
 function Switches() {
-    const settings = useSettings(["useQuickCss", "enableReactDevtools", "frameless", "nativeTitleBar", "transparent", "winCtrlQ", "disableMinSize"]);
+    const settings = useSettings([
+        "useQuickCss",
+        "enableReactDevtools",
+        "frameless",
+        "nativeTitleBar",
+        "transparent",
+        "winCtrlQ",
+        "disableMinSize"
+    ]);
 
     const Switches = [
         {
@@ -67,7 +63,8 @@ function Switches() {
         !IS_WEB && {
             key: "transparent",
             title: "Enable window transparency",
-            description: "A theme that supports transparency is required or this will do nothing. Stops the window from being resizable as a side effect",
+            description:
+                "A theme that supports transparency is required or this will do nothing. Stops the window from being resizable as a side effect",
             restartRequired: true
         },
         IS_DISCORD_DESKTOP && {
@@ -76,23 +73,27 @@ function Switches() {
             description: "Allows you to resize the window to any size, even smaller than Discord's minimum size",
             restartRequired: true
         },
-        !IS_WEB && IS_WINDOWS && {
-            key: "winCtrlQ",
-            title: "Register Ctrl+Q as shortcut to close Discord (Alternative to Alt+F4)",
-            restartRequired: true
-        },
+        !IS_WEB &&
+            IS_WINDOWS && {
+                key: "winCtrlQ",
+                title: "Register Ctrl+Q as shortcut to close Discord (Alternative to Alt+F4)",
+                restartRequired: true
+            },
         !IS_WEB && {
             key: "enableReactDevtools",
             title: "Enable React Developer Tools",
             description: "Mainly useful for plugin developers. Ignore this if you don't know what it is",
             restartRequired: true
-        },
-    ] satisfies Array<false | {
-        key: KeysOfType<typeof settings, boolean>;
-        title: string;
-        description?: string;
-        restartRequired?: boolean;
-    }>;
+        }
+    ] satisfies Array<
+        | false
+        | {
+              key: KeysOfType<typeof settings, boolean>;
+              title: string;
+              description?: string;
+              restartRequired?: boolean;
+          }
+    >;
 
     return Switches.map(setting => {
         if (!setting) {
@@ -131,40 +132,34 @@ function Switches() {
 }
 
 function VencordSettings() {
-    const donateImage = useMemo(() =>
-        Math.random() > 0.5 ? DEFAULT_DONATE_IMAGE : SHIGGY_DONATE_IMAGE,
-        []
-    );
+    const donateImage = useMemo(() => (Math.random() > 0.5 ? DEFAULT_DONATE_IMAGE : SHIGGY_DONATE_IMAGE), []);
 
     const user = UserStore?.getCurrentUser();
 
     return (
         <SettingsTab>
-            {isDonor(user?.id)
-                ? (
-                    <SpecialCard
-                        title="Donations"
-                        subtitle="Thank you for donating!"
-                        description="You can manage your perks at any time by messaging @vending.machine."
-                        cardImage={VENNIE_DONATOR_IMAGE}
-                        backgroundImage={DONOR_BACKGROUND_IMAGE}
-                        backgroundColor="#ED87A9"
-                    >
-                        <DonateButtonComponent />
-                    </SpecialCard>
-                )
-                : (
-                    <SpecialCard
-                        title="Support the Project"
-                        description="Please consider supporting the development of Vencord by donating!"
-                        cardImage={donateImage}
-                        backgroundImage={DONOR_BACKGROUND_IMAGE}
-                        backgroundColor="#c3a3ce"
-                    >
-                        <DonateButtonComponent />
-                    </SpecialCard>
-                )
-            }
+            {isDonor(user?.id) ? (
+                <SpecialCard
+                    title="Donations"
+                    subtitle="Thank you for donating!"
+                    description="You can manage your perks at any time by messaging @vending.machine."
+                    cardImage={VENNIE_DONATOR_IMAGE}
+                    backgroundImage={DONOR_BACKGROUND_IMAGE}
+                    backgroundColor="#ED87A9"
+                >
+                    <DonateButtonComponent />
+                </SpecialCard>
+            ) : (
+                <SpecialCard
+                    title="Support the Project"
+                    description="Please consider supporting the development of Vencord by donating!"
+                    cardImage={donateImage}
+                    backgroundImage={DONOR_BACKGROUND_IMAGE}
+                    backgroundColor="#c3a3ce"
+                >
+                    <DonateButtonComponent />
+                </SpecialCard>
+            )}
 
             {isPluginDev(user?.id) && (
                 <SpecialCard
@@ -183,11 +178,7 @@ function VencordSettings() {
                 <Forms.FormTitle tag="h5">Quick Actions</Forms.FormTitle>
 
                 <QuickActionCard>
-                    <QuickAction
-                        Icon={LogIcon}
-                        text="Notification Log"
-                        action={openNotificationLogModal}
-                    />
+                    <QuickAction Icon={LogIcon} text="Notification Log" action={openNotificationLogModal} />
                     <QuickAction
                         Icon={PaintbrushIcon}
                         text="Edit QuickCSS"
@@ -195,11 +186,7 @@ function VencordSettings() {
                     />
                     {!IS_WEB && (
                         <>
-                            <QuickAction
-                                Icon={RestartIcon}
-                                text="Relaunch Discord"
-                                action={relaunch}
-                            />
+                            <QuickAction Icon={RestartIcon} text="Relaunch Discord" action={relaunch} />
                             <QuickAction
                                 Icon={FolderIcon}
                                 text="Open Settings Folder"
@@ -221,16 +208,13 @@ function VencordSettings() {
                 <Forms.FormTitle tag="h5">Settings</Forms.FormTitle>
                 <Forms.FormText className={Margins.bottom20} style={{ color: "var(--text-muted)" }}>
                     Hint: You can change the position of this settings section in the{" "}
-                    <a onClick={() => openPluginModal(SettingsPlugin)}>
-                        settings of the Settings plugin
-                    </a>!
+                    <a onClick={() => openPluginModal(SettingsPlugin)}>settings of the Settings plugin</a>!
                 </Forms.FormText>
 
                 <div className="vc-settings-switches">
                     <Switches />
                 </div>
             </section>
-
 
             <MacOSVibrancySettings />
             <WindowsMaterialSettings />

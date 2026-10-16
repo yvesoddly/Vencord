@@ -1,20 +1,8 @@
 /*
- * Vencord, a modification for Discord's desktop app
+ * Vencord, a Discord client mod
  * Copyright (c) 2022 Vendicated and contributors
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <https://www.gnu.org/licenses/>.
-*/
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
 
 import { dispatchTheme } from "@plugins/shikiCodeblocks.desktop/hooks/useTheme";
 import type { ShikiSpec } from "@plugins/shikiCodeblocks.desktop/types";
@@ -38,18 +26,15 @@ export const shiki = {
     themes,
     loadedThemes: new Set<string>(),
     loadedLangs: new Set<string>(),
-    clientPromise: new Promise<WorkerClient<ShikiSpec>>(resolve => resolveClient = resolve),
+    clientPromise: new Promise<WorkerClient<ShikiSpec>>(resolve => (resolveClient = resolve)),
 
     init: async (initThemeUrl: string | undefined) => {
         /** https://stackoverflow.com/q/58098143 */
         const workerBlob = await fetch(shikiWorkerSrc).then(res => res.blob());
 
-        const client = shiki.client = new WorkerClient<ShikiSpec>(
-            "shiki-client",
-            "shiki-host",
-            workerBlob,
-            { name: "ShikiWorker" },
-        );
+        const client = (shiki.client = new WorkerClient<ShikiSpec>("shiki-client", "shiki-host", workerBlob, {
+            name: "ShikiWorker"
+        }));
         await client.init();
 
         const themeUrl = initThemeUrl || themeUrls[0];
@@ -91,7 +76,7 @@ export const shiki = {
         await client.run("loadLanguage", {
             lang: {
                 ...lang,
-                grammar: lang.grammar ?? await getGrammar(lang),
+                grammar: lang.grammar ?? (await getGrammar(lang))
             }
         });
         shiki.loadedLangs.add(lang.id);
@@ -106,7 +91,7 @@ export const shiki = {
         return await client.run("codeToThemedTokens", {
             code,
             lang: langId,
-            theme: shiki.currentThemeUrl ?? themeUrls[0],
+            theme: shiki.currentThemeUrl ?? themeUrls[0]
         });
     },
     destroy() {

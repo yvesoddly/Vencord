@@ -13,10 +13,11 @@ const GifHostRegex = /^(.+?\.)?(tenor|giphy|imgur)\.com$/i;
 
 const settings = definePluginSettings({
     showFullUrl: {
-        description: "Show the full URL of the image instead of just the file name. Always enabled for GIFs because they usually have no meaningful file name",
+        description:
+            "Show the full URL of the image instead of just the file name. Always enabled for GIFs because they usually have no meaningful file name",
         type: OptionType.BOOLEAN,
-        default: false,
-    },
+        default: false
+    }
 });
 
 export default definePlugin({
@@ -33,7 +34,7 @@ export default definePlugin({
                 match: /(?="data-role":"img","data-safe-src":)(?<=href:(\i).+?)/,
                 replace: "title:$self.getTitle($1),"
             }
-        },
+        }
     ],
 
     getTitle(src: string) {
@@ -42,9 +43,7 @@ export default definePlugin({
             const isGif = GifHostRegex.test(url.hostname);
             if (!isGif && !ImageExtensionRe.test(url.pathname)) return undefined;
 
-            return isGif || settings.store.showFullUrl
-                ? src
-                : url.pathname.split("/").pop();
+            return isGif || settings.store.showFullUrl ? src : url.pathname.split("/").pop();
         } catch {
             return undefined;
         }

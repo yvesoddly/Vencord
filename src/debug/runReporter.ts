@@ -20,13 +20,16 @@ async function runReporter() {
         const { promise: loadLazyChunksDone, resolve: loadLazyChunksDoneResolve } = Promise.withResolvers<void>();
 
         // The main patch for starting the reporter chunk loading
-        addPatch({
-            find: '"Could not find app-mount"',
-            replacement: {
-                match: /"Could not find app-mount"/,
-                replace: "(Vencord.Webpack._initReporter(),$&)"
-            }
-        }, "Vencord Reporter");
+        addPatch(
+            {
+                find: '"Could not find app-mount"',
+                replacement: {
+                    match: /"Could not find app-mount"/,
+                    replace: "(Vencord.Webpack._initReporter(),$&)"
+                }
+            },
+            "Vencord Reporter"
+        );
 
         // initReporter is called in the patched entry point of Discord
         // @ts-expect-error
@@ -40,7 +43,7 @@ async function runReporter() {
         for (const moduleId of Object.keys(Webpack.wreq.m)) {
             try {
                 Webpack.wreq(moduleId);
-            } catch { }
+            } catch {}
         }
 
         if (IS_REPORTER && IS_WEB && !IS_VESKTOP) {
@@ -52,26 +55,33 @@ async function runReporter() {
 
         for (const patch of patches) {
             if (!patch.all) {
-                new Logger("WebpackPatcher").warn(`Patch by ${patch.plugin} found no module (Module id is -): ${patch.find}`);
+                new Logger("WebpackPatcher").warn(
+                    `Patch by ${patch.plugin} found no module (Module id is -): ${patch.find}`
+                );
             }
         }
 
         for (const [plugin, moduleId, match, totalTime] of patchTimings) {
             if (totalTime > 10) {
-                new Logger("WebpackPatcher").warn(`Patch by ${plugin} took ${Math.round(totalTime * 100) / 100}ms (Module id is ${String(moduleId)}): ${match}`);
+                new Logger("WebpackPatcher").warn(
+                    `Patch by ${plugin} took ${Math.round(totalTime * 100) / 100}ms (Module id is ${String(moduleId)}): ${match}`
+                );
             }
         }
 
         for (const [searchType, args] of Webpack.lazyWebpackSearchHistory) {
-            let method = searchType;
-
-            if (searchType === "findComponent") method = "find";
-            if (searchType === "findExportedComponent") method = "findByProps";
-            if (searchType === "waitFor" || searchType === "waitForComponent") {
-                if (typeof args[0] === "string") method = "findByProps";
-                else method = "find";
-            }
-            if (searchType === "waitForStore") method = "findStore";
+            const method =
+                searchType === "findComponent"
+                    ? "find"
+                    : searchType === "findExportedComponent"
+                      ? "findByProps"
+                      : searchType === "waitFor" || searchType === "waitForComponent"
+                        ? typeof args[0] === "string"
+                            ? "findByProps"
+                            : "find"
+                        : searchType === "waitForStore"
+                          ? "findStore"
+                          : searchType;
 
             let result: any;
             try {
@@ -89,20 +99,24 @@ async function runReporter() {
                     result = Webpack.mapMangledModule(code, mapper, includeBlacklistedExports);
                     if (Object.keys(result).length !== Object.keys(mapper).length) throw new Error("Webpack Find Fail");
                 } else {
-                    result = Webpack[method](...args);
+                    result = Reflect.apply(Webpack[method], Webpack, args);
                 }
 
-                if (result == null || (result.$$vencordGetWrappedComponent != null && result.$$vencordGetWrappedComponent() == null)) throw new Error("Webpack Find Fail");
+                if (
+                    result == null ||
+                    (result.$$vencordGetWrappedComponent != null && result.$$vencordGetWrappedComponent() == null)
+                )
+                    throw new Error("Webpack Find Fail");
             } catch (e) {
                 let logMessage = searchType;
                 if (method === "find" || method === "proxyLazyWebpack" || method === "LazyComponentWebpack") {
                     if (args[0].$$vencordProps != null) {
-                        logMessage += `(${args[0].$$vencordProps.map(arg => `"${arg}"`).join(", ")})`;
+                        logMessage += `(${args[0].$$vencordProps.map((arg: string | RegExp) => `"${arg}"`).join(", ")})`;
                     } else {
                         logMessage += `(${args[0].toString().slice(0, 147)}...)`;
                     }
                 } else if (method === "extractAndLoadChunks") {
-                    logMessage += `([${args[0].map(arg => `"${arg}"`).join(", ")}], ${args[1].toString()})`;
+                    logMessage += `([${args[0].map((arg: string | RegExp) => `"${arg}"`).join(", ")}], ${args[1].toString()})`;
                 } else if (method === "mapMangledModule") {
                     const failedMappings = Object.keys(args[1]).filter(key => result?.[key] == null);
 

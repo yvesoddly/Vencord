@@ -1,20 +1,8 @@
 /*
- * Vencord, a modification for Discord's desktop app
+ * Vencord, a Discord client mod
  * Copyright (c) 2022 Vendicated and contributors
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <https://www.gnu.org/licenses/>.
-*/
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
 
 import { findGroupChildrenByChildId, NavContextMenuPatchCallback } from "@api/ContextMenu";
 import { ImageInvisible, ImageVisible } from "@components/Icons";
@@ -23,26 +11,32 @@ import definePlugin from "@utils/types";
 import { Channel, Message } from "@vencord/discord-types";
 import { Constants, Menu, PermissionsBits, PermissionStore, RestAPI, UserStore } from "@webpack/common";
 
-
 const EMBED_SUPPRESSED = 1 << 2;
 
 const messageContextMenuPatch: NavContextMenuPatchCallback = (
     children,
-    { channel, message: { author, messageSnapshots, embeds, flags, id: messageId } }: { channel: Channel; message: Message; }
+    {
+        channel,
+        message: { author, messageSnapshots, embeds, flags, id: messageId }
+    }: { channel: Channel; message: Message }
 ) => {
     const isEmbedSuppressed = (flags & EMBED_SUPPRESSED) !== 0;
     const hasEmbedsInSnapshots = messageSnapshots.some(s => s.message.embeds.length);
 
     if (!isEmbedSuppressed && !embeds.length && !hasEmbedsInSnapshots) return;
 
-    const hasEmbedPerms = channel.isPrivate() || !!(PermissionStore.getChannelPermissions({ id: channel.id }) & PermissionsBits.EMBED_LINKS);
+    const hasEmbedPerms =
+        channel.isPrivate() ||
+        !!(PermissionStore.getChannelPermissions({ id: channel.id }) & PermissionsBits.EMBED_LINKS);
     if (author.id === UserStore.getCurrentUser().id && !hasEmbedPerms) return;
 
     const menuGroup = findGroupChildrenByChildId("delete", children);
     const deleteIndex = menuGroup?.findIndex(i => i?.props?.id === "delete");
     if (deleteIndex == null || !menuGroup) return;
 
-    menuGroup.splice(deleteIndex - 1, 0, (
+    menuGroup.splice(
+        deleteIndex - 1,
+        0,
         <Menu.MenuItem
             id="unsuppress-embeds"
             key="unsuppress-embeds"
@@ -57,7 +51,7 @@ const messageContextMenuPatch: NavContextMenuPatchCallback = (
                 })
             }
         />
-    ));
+    );
 };
 
 export default definePlugin({
@@ -66,6 +60,6 @@ export default definePlugin({
     description: "Allows you to unsuppress embeds in messages",
     tags: ["Chat", "Utility"],
     contextMenus: {
-        "message": messageContextMenuPatch
+        message: messageContextMenuPatch
     }
 });

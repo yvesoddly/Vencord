@@ -26,7 +26,7 @@ function cleanSheet(sheet: CSSStyleSheet) {
                 break;
             }
         }
-    } catch (e) { }
+    } catch (e) {}
 }
 
 function handleNode(node: Node) {

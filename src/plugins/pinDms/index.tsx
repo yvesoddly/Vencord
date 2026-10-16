@@ -5,7 +5,6 @@
  */
 
 import "./styles.css";
-
 import { definePluginSettings } from "@api/Settings";
 import ErrorBoundary from "@components/ErrorBoundary";
 import { Devs } from "@utils/constants";
@@ -18,19 +17,44 @@ import { Clickable, ContextMenuApi, FluxDispatcher, Menu, React } from "@webpack
 import { contextMenus } from "./components/contextMenu";
 import { openCategoryModal, requireSettingsModal } from "./components/CreateCategoryModal";
 import { DEFAULT_CHUNK_SIZE } from "./constants";
-import { canMoveCategory, canMoveCategoryInDirection, Category, categoryLen, collapseCategory, getAllUncollapsedChannels, getCategoryByIndex, getSections, init, isPinned, moveCategory, removeCategory, usePinnedDms } from "./data";
+import {
+    canMoveCategory,
+    canMoveCategoryInDirection,
+    Category,
+    categoryLen,
+    collapseCategory,
+    getAllUncollapsedChannels,
+    getCategoryByIndex,
+    getSections,
+    init,
+    isPinned,
+    moveCategory,
+    removeCategory,
+    usePinnedDms
+} from "./data";
 
 interface ChannelComponentProps {
-    children: React.ReactNode,
-    channel: Channel,
+    children: React.ReactNode;
+    channel: Channel;
     selected: boolean;
 }
 
 const headerClasses = findCssClassesLazy("privateChannelsHeaderContainer", "headerText");
 
-export const PrivateChannelSortStore = findStoreLazy("PrivateChannelSortStore") as { getPrivateChannelIds: () => string[]; };
+export const PrivateChannelSortStore = findStoreLazy("PrivateChannelSortStore") as {
+    getPrivateChannelIds: () => string[];
+};
 
-export let instance: any;
+/** Discord's private channels list component, captured through makeProps */
+interface PrivateChannelsListInstance {
+    props: {
+        channels: Record<string, Channel>;
+        privateChannelIds: string[];
+        selectedChannelId?: string;
+    };
+}
+
+export let instance: PrivateChannelsListInstance | undefined;
 
 export const enum PinOrder {
     LastMessage,
@@ -67,7 +91,8 @@ export const settings = definePluginSettings({
 
 export default definePlugin({
     name: "PinDMs",
-    description: "Allows you to pin private channels to the top of your DM list. To pin/unpin or re-order pins, right click DMs",
+    description:
+        "Allows you to pin private channels to the top of your DM list. To pin/unpin or re-order pins, right click DMs",
     tags: ["Friends", "Organisation"],
     authors: [Devs.Ven, Devs.Aria],
     settings,
@@ -91,7 +116,8 @@ export default definePlugin({
                 // Rendering
                 {
                     match: /renderRow(?:",|=)(\i)=>{(?<=renderDM(?:",|=).+?(\i\.\i),\{channel:.+?)/,
-                    replace: "$&if($self.isChannelIndex($1.section, $1.row))return $self.renderChannel($1.section,$1.row,$2)();"
+                    replace:
+                        "$&if($self.isChannelIndex($1.section, $1.row))return $self.renderChannel($1.section,$1.row,$2)();"
                 },
                 {
                     match: /renderSection(?:",|=)(\i)=>{/,
@@ -116,21 +142,20 @@ export default definePlugin({
                 {
                     // Override scrollToChannel to properly account for pinned channels
                     match: /(?<=scrollTo\(\{to:\i\}\):\(\i\+=)(\d+)\*\(.+?(?=,)/,
-                    replace: "$self.getScrollOffset(arguments[0],$1,this?.props?.padding,this?.state?.preRenderedChildren,$&)"
+                    replace:
+                        "$self.getScrollOffset(arguments[0],$1,this?.props?.padding,this?.state?.preRenderedChildren,$&)"
                 },
                 {
                     match: /(scrollToChannel\(\i\){.{1,300})(this\.props\.privateChannelIds)/,
                     replace: "$1[...$2,...$self.getAllUncollapsedChannels()]"
-                },
-
+                }
             ]
         },
-
 
         // forceUpdate moment
         // https://regex101.com/r/kDN9fO/1
         {
-            find: ".FRIENDS},\"friends\"",
+            find: '.FRIENDS},"friends"',
             replacement: {
                 match: /let{showLibrary:\i,/,
                 replace: "$self.usePinnedDms();$&"
@@ -155,12 +180,12 @@ export default definePlugin({
                 match: /(?<=\i===\i\.ME\?)\i\.\i\.getPrivateChannelIds\(\)/,
                 replace: "$self.getAllUncollapsedChannels().concat($&.filter(c=>!$self.isPinned(c)))"
             }
-        },
+        }
     ],
 
     sections: null as number[] | null,
 
-    set _instance(i: any) {
+    set _instance(i: PrivateChannelsListInstance) {
         this.instance = i;
         instance = i;
     },
@@ -168,7 +193,7 @@ export default definePlugin({
     startAt: StartAt.WebpackReady,
     start: init,
     flux: {
-        CONNECTION_OPEN: init,
+        CONNECTION_OPEN: init
     },
 
     usePinnedDms,
@@ -178,7 +203,7 @@ export default definePlugin({
     getAllUncollapsedChannels,
     requireSettingsMenu: requireSettingsModal,
 
-    makeProps(instance, { sections }: { sections: number[]; }) {
+    makeProps(instance: PrivateChannelsListInstance, { sections }: { sections: number[] }) {
         this._instance = instance;
         this.sections = sections;
 
@@ -191,16 +216,18 @@ export default definePlugin({
 
         return {
             sections: this.sections,
-            chunkSize: this.getChunkSize(),
+            chunkSize: this.getChunkSize()
         };
     },
 
     makeSpanProps() {
-        return settings.store.canCollapseDmSection ? {
-            onClick: () => this.collapseDMList(),
-            role: "button",
-            style: { cursor: "pointer" }
-        } : undefined;
+        return settings.store.canCollapseDmSection
+            ? {
+                  onClick: () => this.collapseDMList(),
+                  role: "button",
+                  style: { cursor: "pointer" }
+              }
+            : undefined;
     },
 
     getChunkSize() {
@@ -212,7 +239,7 @@ export default definePlugin({
         const sectionHeaderSizePx = sections.length * 40;
         // (header heights + DM heights + DEFAULT_CHUNK_SIZE) * 1.5
         // we multiply everything by 1.5 so it only gets unmounted after the entire list is off screen
-        return (sectionHeaderSizePx + sections.reduce((acc, v) => acc += v * 44, 0) + DEFAULT_CHUNK_SIZE) * 1.5;
+        return (sectionHeaderSizePx + sections.reduce((acc, v) => (acc += v * 44), 0) + DEFAULT_CHUNK_SIZE) * 1.5;
     },
 
     isCategoryIndex(sectionIndex: number) {
@@ -225,7 +252,9 @@ export default definePlugin({
         }
 
         const category = getCategoryByIndex(sectionIndex - 1);
-        return this.isCategoryIndex(sectionIndex) && (category?.channels?.length === 0 || category?.channels[channelIndex]);
+        return (
+            this.isCategoryIndex(sectionIndex) && (category?.channels?.length === 0 || category?.channels[channelIndex])
+        );
     },
 
     collapseDMList() {
@@ -235,7 +264,11 @@ export default definePlugin({
     isChannelHidden(categoryIndex: number, channelIndex: number) {
         if (categoryIndex === 0) return false;
 
-        if (settings.store.canCollapseDmSection && settings.store.dmSectionCollapsed && this.getSections().length + 1 === categoryIndex)
+        if (
+            settings.store.canCollapseDmSection &&
+            settings.store.dmSectionCollapsed &&
+            this.getSections().length + 1 === categoryIndex
+        )
             return true;
 
         if (!this.instance || !this.isChannelIndex(categoryIndex, channelIndex)) return false;
@@ -243,107 +276,128 @@ export default definePlugin({
         const category = getCategoryByIndex(categoryIndex - 1);
         if (!category) return false;
 
-        return category.collapsed && this.instance.props.selectedChannelId !== this.getCategoryChannels(category)[channelIndex];
+        return (
+            category.collapsed &&
+            this.instance.props.selectedChannelId !== this.getCategoryChannels(category)[channelIndex]
+        );
     },
 
-    getScrollOffset(channelId: string, rowHeight: number, padding: number, preRenderedChildren: number, originalOffset: number) {
+    getScrollOffset(
+        channelId: string,
+        rowHeight: number,
+        padding: number,
+        preRenderedChildren: number,
+        originalOffset: number
+    ) {
         if (!isPinned(channelId))
             return (
-                (rowHeight + padding) * 2 // header
-                + rowHeight * this.getAllUncollapsedChannels().length // pins
-                + originalOffset // original pin offset minus pins
+                (rowHeight + padding) * 2 + // header
+                rowHeight * this.getAllUncollapsedChannels().length + // pins
+                originalOffset // original pin offset minus pins
             );
 
         return rowHeight * (this.getAllUncollapsedChannels().indexOf(channelId) + preRenderedChildren) + padding;
     },
 
-    renderCategory: ErrorBoundary.wrap(({ section }: { section: number; }) => {
-        const category = getCategoryByIndex(section - 1);
-        if (!category) return null;
+    renderCategory: ErrorBoundary.wrap(
+        ({ section }: { section: number }) => {
+            const category = getCategoryByIndex(section - 1);
+            if (!category) return null;
 
-        return (
-            <Clickable
-                onClick={() => collapseCategory(category.id, !category.collapsed)}
-                onContextMenu={e => {
-                    ContextMenuApi.openContextMenu(e, () => (
-                        <Menu.Menu
-                            navId="vc-pindms-header-menu"
-                            onClose={() => FluxDispatcher.dispatch({ type: "CONTEXT_MENU_CLOSE" })}
-                            color="danger"
-                            aria-label="Pin DMs Category Menu"
-                        >
-                            <Menu.MenuItem
-                                id="vc-pindms-edit-category"
-                                label="Edit Category"
-                                action={() => openCategoryModal(category.id, null)}
-                            />
+            return (
+                <Clickable
+                    onClick={() => collapseCategory(category.id, !category.collapsed)}
+                    onContextMenu={e => {
+                        ContextMenuApi.openContextMenu(e, () => (
+                            <Menu.Menu
+                                navId="vc-pindms-header-menu"
+                                onClose={() => FluxDispatcher.dispatch({ type: "CONTEXT_MENU_CLOSE" })}
+                                color="danger"
+                                aria-label="Pin DMs Category Menu"
+                            >
+                                <Menu.MenuItem
+                                    id="vc-pindms-edit-category"
+                                    label="Edit Category"
+                                    action={() => openCategoryModal(category.id, null)}
+                                />
 
-                            {
-                                canMoveCategory(category.id) && (
+                                {canMoveCategory(category.id) && (
                                     <>
-                                        {
-                                            canMoveCategoryInDirection(category.id, -1) && <Menu.MenuItem
+                                        {canMoveCategoryInDirection(category.id, -1) && (
+                                            <Menu.MenuItem
                                                 id="vc-pindms-move-category-up"
                                                 label="Move Up"
                                                 action={() => moveCategory(category.id, -1)}
                                             />
-                                        }
-                                        {
-                                            canMoveCategoryInDirection(category.id, 1) && <Menu.MenuItem
+                                        )}
+                                        {canMoveCategoryInDirection(category.id, 1) && (
+                                            <Menu.MenuItem
                                                 id="vc-pindms-move-category-down"
                                                 label="Move Down"
                                                 action={() => moveCategory(category.id, 1)}
                                             />
-                                        }
+                                        )}
                                     </>
+                                )}
 
-                                )
-                            }
-
-                            <Menu.MenuSeparator />
-                            <Menu.MenuItem
-                                id="vc-pindms-delete-category"
-                                color="danger"
-                                label="Delete Category"
-                                action={() => removeCategory(category.id)}
-                            />
-
-
-                        </Menu.Menu>
-                    ));
-                }}
-            >
-                <h2
-                    className={classes(headerClasses.privateChannelsHeaderContainer, "vc-pindms-section-container", category.collapsed ? "vc-pindms-collapsed" : "")}
-                    style={{ color: `#${category.color.toString(16).padStart(6, "0")}` }}
+                                <Menu.MenuSeparator />
+                                <Menu.MenuItem
+                                    id="vc-pindms-delete-category"
+                                    color="danger"
+                                    label="Delete Category"
+                                    action={() => removeCategory(category.id)}
+                                />
+                            </Menu.Menu>
+                        ));
+                    }}
                 >
-                    <span className={headerClasses.headerText}>
-                        {category?.name ?? "uh oh"}
-                    </span>
-                    <svg className="vc-pindms-collapse-icon" aria-hidden="true" role="img" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
-                        <path fill="currentColor" d="M9.3 5.3a1 1 0 0 0 0 1.4l5.29 5.3-5.3 5.3a1 1 0 1 0 1.42 1.4l6-6a1 1 0 0 0 0-1.4l-6-6a1 1 0 0 0-1.42 0Z"></path>
-                    </svg>
-                </h2>
-            </Clickable>
-        );
-    }, { noop: true }),
+                    <h2
+                        className={classes(
+                            headerClasses.privateChannelsHeaderContainer,
+                            "vc-pindms-section-container",
+                            category.collapsed ? "vc-pindms-collapsed" : ""
+                        )}
+                        style={{ color: `#${category.color.toString(16).padStart(6, "0")}` }}
+                    >
+                        <span className={headerClasses.headerText}>{category?.name ?? "uh oh"}</span>
+                        <svg
+                            className="vc-pindms-collapse-icon"
+                            aria-hidden="true"
+                            role="img"
+                            xmlns="http://www.w3.org/2000/svg"
+                            width="24"
+                            height="24"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                        >
+                            <path
+                                fill="currentColor"
+                                d="M9.3 5.3a1 1 0 0 0 0 1.4l5.29 5.3-5.3 5.3a1 1 0 1 0 1.42 1.4l6-6a1 1 0 0 0 0-1.4l-6-6a1 1 0 0 0-1.42 0Z"
+                            ></path>
+                        </svg>
+                    </h2>
+                </Clickable>
+            );
+        },
+        { noop: true }
+    ),
 
     renderChannel(sectionIndex: number, index: number, ChannelComponent: React.ComponentType<ChannelComponentProps>) {
-        return ErrorBoundary.wrap(() => {
-            const { channel, category } = this.getChannel(sectionIndex, index, this.instance.props.channels);
+        return ErrorBoundary.wrap(
+            () => {
+                const { channel, category } = this.getChannel(sectionIndex, index, this.instance.props.channels);
 
-            if (!channel || !category) return null;
-            if (this.isChannelHidden(sectionIndex, index)) return null;
+                if (!channel || !category) return null;
+                if (this.isChannelHidden(sectionIndex, index)) return null;
 
-            return (
-                <ChannelComponent
-                    channel={channel}
-                    selected={this.instance.props.selectedChannelId === channel.id}
-                >
-                    {channel.id}
-                </ChannelComponent>
-            );
-        }, { noop: true });
+                return (
+                    <ChannelComponent channel={channel} selected={this.instance.props.selectedChannelId === channel.id}>
+                        {channel.id}
+                    </ChannelComponent>
+                );
+            },
+            { noop: true }
+        );
     },
 
     getChannel(sectionIndex: number, index: number, channels: Record<string, Channel>) {

@@ -5,7 +5,6 @@
  */
 
 import "./style.css";
-
 import ErrorBoundary from "@components/ErrorBoundary";
 import { CopyIcon, NoEntrySignIcon } from "@components/Icons";
 import { Devs } from "@utils/constants";
@@ -14,9 +13,14 @@ import definePlugin from "@utils/types";
 import { Tooltip, useState } from "@webpack/common";
 
 const CheckMarkIcon = () => {
-    return <svg width="18" height="18" viewBox="0 0 24 24">
-        <path fill="currentColor" d="M21.7 5.3a1 1 0 0 1 0 1.4l-12 12a1 1 0 0 1-1.4 0l-6-6a1 1 0 1 1 1.4-1.4L9 16.58l11.3-11.3a1 1 0 0 1 1.4 0Z"></path>
-    </svg>;
+    return (
+        <svg width="18" height="18" viewBox="0 0 24 24">
+            <path
+                fill="currentColor"
+                d="M21.7 5.3a1 1 0 0 1 0 1.4l-12 12a1 1 0 0 1-1.4 0l-6-6a1 1 0 1 1 1.4-1.4L9 16.58l11.3-11.3a1 1 0 0 1 1.4 0Z"
+            ></path>
+        </svg>
+    );
 };
 
 export default definePlugin({
@@ -42,33 +46,39 @@ export default definePlugin({
         }
     ],
 
-    addCopyButton: ErrorBoundary.wrap(({ fileContents, bytesLeft }: { fileContents: string, bytesLeft: number; }) => {
-        const [recentlyCopied, setRecentlyCopied] = useState(false);
+    addCopyButton: ErrorBoundary.wrap(
+        ({ fileContents, bytesLeft }: { fileContents: string; bytesLeft: number }) => {
+            const [recentlyCopied, setRecentlyCopied] = useState(false);
 
-        return (
-            <Tooltip text={recentlyCopied ? "Copied!" : bytesLeft > 0 ? "File too large to copy" : "Copy File Contents"}>
-                {tooltipProps => (
-                    <div
-                        {...tooltipProps}
-                        className="vc-cfc-button"
-                        role="button"
-                        onClick={() => {
-                            if (!recentlyCopied && bytesLeft <= 0) {
-                                copyWithToast(fileContents);
-                                setRecentlyCopied(true);
-                                setTimeout(() => setRecentlyCopied(false), 2000);
-                            }
-                        }}
-                    >
-                        {recentlyCopied
-                            ? <CheckMarkIcon />
-                            : bytesLeft > 0
-                                ? <NoEntrySignIcon width={18} height={18} color="var(--channel-icon)" />
-                                : <CopyIcon width={18} height={18} />
-                        }
-                    </div>
-                )}
-            </Tooltip>
-        );
-    }, { noop: true }),
+            return (
+                <Tooltip
+                    text={recentlyCopied ? "Copied!" : bytesLeft > 0 ? "File too large to copy" : "Copy File Contents"}
+                >
+                    {tooltipProps => (
+                        <div
+                            {...tooltipProps}
+                            className="vc-cfc-button"
+                            role="button"
+                            onClick={() => {
+                                if (!recentlyCopied && bytesLeft <= 0) {
+                                    copyWithToast(fileContents);
+                                    setRecentlyCopied(true);
+                                    setTimeout(() => setRecentlyCopied(false), 2000);
+                                }
+                            }}
+                        >
+                            {recentlyCopied ? (
+                                <CheckMarkIcon />
+                            ) : bytesLeft > 0 ? (
+                                <NoEntrySignIcon width={18} height={18} color="var(--channel-icon)" />
+                            ) : (
+                                <CopyIcon width={18} height={18} />
+                            )}
+                        </div>
+                    )}
+                </Tooltip>
+            );
+        },
+        { noop: true }
+    )
 });

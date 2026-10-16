@@ -10,31 +10,26 @@ export const SYM_IS_PROXY = Symbol("SettingsStore.isProxy");
 export const SYM_GET_RAW_TARGET = Symbol("SettingsStore.getRawTarget");
 
 // Resolves a possibly nested prop in the form of "some.nested.prop" to type of T.some.nested.prop
-type ResolvePropDeep<T, P> =
-    P extends `${infer Pre}.*` ?
-    Pre extends keyof T
-    ? T[Pre][keyof T[Pre]]
-    : any
-    : P extends `${infer Pre}.${infer Suf}`
+type ResolvePropDeep<T, P> = P extends `${infer Pre}.*`
     ? Pre extends keyof T
-    ? ResolvePropDeep<T[Pre], Suf>
-    : any
-    : P extends keyof T
-    ? T[P]
-    : any;
+        ? T[Pre][keyof T[Pre]]
+        : any
+    : P extends `${infer Pre}.${infer Suf}`
+      ? Pre extends keyof T
+          ? ResolvePropDeep<T[Pre], Suf>
+          : any
+      : P extends keyof T
+        ? T[P]
+        : any;
 
 interface SettingsStoreOptions {
     readOnly?: boolean;
-    getDefaultValue?: (data: {
-        target: any;
-        key: string;
-        root: any;
-        path: string;
-    }) => any;
+    getDefaultValue?: (data: { target: any; key: string; root: any; path: string }) => any;
 }
 
-// merges the SettingsStoreOptions type into the class
-export interface SettingsStore<T extends object> extends SettingsStoreOptions { }
+// merges the SettingsStoreOptions type into the class. T has to match the class's type parameters.
+// oxlint-disable-next-line no-unused-vars
+export interface SettingsStore<T extends object> extends SettingsStoreOptions {}
 
 interface ProxyContext<T extends object = any> {
     root: T;
@@ -137,11 +132,11 @@ export class SettingsStore<T extends object> {
     /**
      * The store object. Making changes to this object will trigger the applicable change listeners
      */
-    public declare store: T;
+    declare public store: T;
     /**
      * The plain data. Changes to this object will not trigger any change listeners
      */
-    public declare plain: T;
+    declare public plain: T;
 
     public constructor(plain: T, options: SettingsStoreOptions = {}) {
         this.plain = plain;
@@ -176,7 +171,10 @@ export class SettingsStore<T extends object> {
         if (paths.length > 3 && paths[0] === "plugins") {
             const settingPath = paths.slice(0, 3);
             const settingPathStr = settingPath.join(".");
-            const settingValue = settingPath.reduce((acc, curr) => acc[curr], root);
+            const settingValue = settingPath.reduce<unknown>(
+                (acc, curr) => (acc as Record<string, unknown>)[curr],
+                root
+            );
 
             this.globalListeners.forEach(cb => cb(root, settingPathStr));
             this.pathListeners.get(settingPathStr)?.forEach(cb => cb(settingValue));
@@ -203,7 +201,7 @@ export class SettingsStore<T extends object> {
         this.store = this.makeProxy(value);
 
         if (pathToNotify) {
-            let v = value;
+            let v: unknown = value;
 
             const path = pathToNotify.split(".");
             for (const p of path) {
@@ -213,7 +211,7 @@ export class SettingsStore<T extends object> {
                     );
                     return;
                 }
-                v = v[p];
+                v = (v as Record<string, unknown>)[p];
             }
 
             this.pathListeners.get(pathToNotify)?.forEach(cb => cb(v));
@@ -262,7 +260,10 @@ export class SettingsStore<T extends object> {
      * Setting.store.foo.baz = "hi"
      * ```
      */
-    public addPrefixChangeListener<P extends string>(prefix: P, cb: (data: ResolvePropDeep<T, P>, path: string) => void) {
+    public addPrefixChangeListener<P extends string>(
+        prefix: P,
+        cb: (data: ResolvePropDeep<T, P>, path: string) => void
+    ) {
         const listeners = this.prefixListeners.get(prefix) ?? new Set();
         listeners.add(cb);
         this.prefixListeners.set(prefix, listeners);

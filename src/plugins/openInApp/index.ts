@@ -1,20 +1,8 @@
 /*
- * Vencord, a modification for Discord's desktop app
+ * Vencord, a Discord client mod
  * Copyright (c) 2023 Vendicated and contributors
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <https://www.gnu.org/licenses/>.
-*/
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
 
 import { definePluginSettings } from "@api/Settings";
 import { Devs } from "@utils/constants";
@@ -38,31 +26,32 @@ const UrlReplacementRules: Record<string, URLReplacementRule> = {
         replace: (_, type, id) => `spotify://${type}/${id}`,
         description: "Open Spotify links in the Spotify app",
         shortlinkMatch: /^https:\/\/spotify\.link\/.+$/,
-        accountViewReplace: userId => `spotify:user:${userId}`,
+        accountViewReplace: userId => `spotify:user:${userId}`
     },
     steam: {
         match: /^https:\/\/(steamcommunity\.com|(?:help|store)\.steampowered\.com)\/.+$/,
         replace: match => `steam://openurl/${match}`,
         description: "Open Steam links in the Steam app",
         shortlinkMatch: /^https:\/\/s.team\/.+$/,
-        accountViewReplace: userId => `steam://openurl/https://steamcommunity.com/profiles/${userId}`,
+        accountViewReplace: userId => `steam://openurl/https://steamcommunity.com/profiles/${userId}`
     },
     epic: {
         match: /^https:\/\/store\.epicgames\.com\/(.+)$/,
         replace: (_, id) => `com.epicgames.launcher://store/${id}`,
-        description: "Open Epic Games links in the Epic Games Launcher",
+        description: "Open Epic Games links in the Epic Games Launcher"
     },
     tidal: {
         match: /^https:\/\/(?:listen\.)?tidal\.com\/(?:browse\/)?(track|album|artist|playlist|user|video|mix)\/([a-f0-9-]+).*/,
         replace: (_, type, id) => `tidal://${type}/${id}`,
-        description: "Open Tidal links in the Tidal app",
+        description: "Open Tidal links in the Tidal app"
     },
     itunes: {
         match: /^https:\/\/(?:geo\.)?music\.apple\.com\/([a-z]{2}\/)?(album|artist|playlist|song|curator)\/([^/?#]+)\/?([^/?#]+)?(?:\?.*)?(?:#.*)?$/,
-        replace: (_, lang, type, name, id) => id ? `itunes://music.apple.com/us/${type}/${name}/${id}` : `itunes://music.apple.com/us/${type}/${name}`,
+        replace: (_, lang, type, name, id) =>
+            id ? `itunes://music.apple.com/us/${type}/${name}/${id}` : `itunes://music.apple.com/us/${type}/${name}`,
         displayName: "iTunes",
         description: "Open Apple Music links in the iTunes app"
-    },
+    }
 };
 
 const pluginSettings = definePluginSettings(
@@ -71,12 +60,11 @@ const pluginSettings = definePluginSettings(
             type: OptionType.BOOLEAN,
             displayName: rule.displayName,
             description: rule.description,
-            default: true,
+            default: true
         };
         return acc;
     }, {} as SettingsDefinition)
 );
-
 
 const Native = VencordNative.pluginHelpers.OpenInApp as PluginNative<typeof import("./native")>;
 
@@ -120,7 +108,7 @@ export default definePlugin({
         }))
     ],
 
-    async handleLink(data: { href: string; }, event?: MouseEvent) {
+    async handleLink(data: { href: string }, event?: MouseEvent) {
         if (!data) return false;
 
         let url = data.href;

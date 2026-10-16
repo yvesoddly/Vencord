@@ -1,20 +1,9 @@
 packages:
-  - packages/*
-patchedDependencies:
-  eslint-plugin-path-alias@2.1.0: patches/eslint-plugin-path-alias@2.1.0.patch
-peerDependencyRules:
-  ignoreMissing:
-    - eslint-plugin-import
-    - eslint
-allowedDeprecatedVersions:
-  source-map-resolve: '*'
-  resolve-url: '*'
-  source-map-url: '*'
-  urix: '*'
-  q: '*'
+    - packages/*
 strictPeerDependencies: false
-allowBuilds:
-  esbuild: true
 pmOnFail: warn
 minimumReleaseAgeExclude:
-  - '@vencord/*'
+    - "@vencord/*"
+allowBuilds:
+    # Optional peer of Vite+'s test runner. Nothing here uses it.
+    esbuild: false

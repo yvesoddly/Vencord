@@ -11,7 +11,7 @@ import { Devs } from "@utils/constants";
 import definePlugin, { defineDefault, OptionType, StartAt } from "@utils/types";
 import { Checkbox, Text } from "@webpack/common";
 
-const Noop = () => { };
+const Noop = () => {};
 const NoopLogger = {
     logDangerously: Noop,
     log: Noop,
@@ -47,7 +47,7 @@ function AllowLevelSetting({ settingKey }: AllowLevelSettingProps) {
     return (
         <Checkbox
             value={value}
-            onChange={(_, newValue) => settings.store.allowLevel[settingKey] = newValue}
+            onChange={(_, newValue) => (settings.store.allowLevel[settingKey] = newValue)}
             size={20}
         >
             <Text variant="text-sm/normal">{settingKey[0].toUpperCase() + settingKey.slice(1)}</Text>
@@ -87,7 +87,10 @@ const settings = definePluginSettings({
         multiline: true,
         onChange(newVal: string) {
             logAllow.clear();
-            newVal.split(";").map(x => x.trim()).forEach(logAllow.add.bind(logAllow));
+            newVal
+                .split(";")
+                .map(x => x.trim())
+                .forEach(logAllow.add.bind(logAllow));
         }
     },
     allowLevel: {
@@ -114,7 +117,10 @@ export default definePlugin({
     startAt: StartAt.Init,
     start() {
         logAllow.clear();
-        this.settings.store.whitelistedLoggers?.split(";").map(x => x.trim()).forEach(logAllow.add.bind(logAllow));
+        this.settings.store.whitelistedLoggers
+            ?.split(";")
+            .map(x => x.trim())
+            .forEach(logAllow.add.bind(logAllow));
     },
 
     Noop,
@@ -198,7 +204,7 @@ export default definePlugin({
                 {
                     match: /\i\.totalTime>\d+?&&\i\.verbose\([`"]Slow dispatch on.{0,55}\);/,
                     replace: ""
-                },
+                }
             ]
         },
         // Patches Discord generic logger function

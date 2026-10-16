@@ -1,20 +1,8 @@
 /*
- * Vencord, a modification for Discord's desktop app
+ * Vencord, a Discord client mod
  * Copyright (c) 2022 Vendicated and contributors
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <https://www.gnu.org/licenses/>.
-*/
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
 
 export const REACT_GLOBAL = "Vencord.Webpack.Common.React";
 export const VENBOT_USER_ID = "1017176847865352332";
@@ -78,7 +66,7 @@ export const Devs = /* #__PURE__*/ Object.freeze({
     },
     fawn: {
         name: "fawn",
-        id: 336678828233588736n,
+        id: 336678828233588736n
     },
     rushii: {
         name: "rushii",
@@ -90,7 +78,7 @@ export const Devs = /* #__PURE__*/ Object.freeze({
     },
     Samu: {
         name: "Samu",
-        id: 702973430449832038n,
+        id: 702973430449832038n
     },
     Nyako: {
         name: "nyako",
@@ -110,7 +98,7 @@ export const Devs = /* #__PURE__*/ Object.freeze({
     },
     nea: {
         name: "nea",
-        id: 310702108997320705n,
+        id: 310702108997320705n
     },
     Nuckyz: {
         name: "Nuckyz",
@@ -194,7 +182,7 @@ export const Devs = /* #__PURE__*/ Object.freeze({
     },
     Commandtechno: {
         name: "Commandtechno",
-        id: 296776625432035328n,
+        id: 296776625432035328n
     },
     TheSun: {
         name: "sunnie",
@@ -247,7 +235,7 @@ export const Devs = /* #__PURE__*/ Object.freeze({
     },
     Aria: {
         name: "Syncxv",
-        id: 549244932213309442n,
+        id: 549244932213309442n
     },
     TheKodeToad: {
         name: "TheKodeToad",
@@ -295,7 +283,7 @@ export const Devs = /* #__PURE__*/ Object.freeze({
     },
     RyanCaoDev: {
         name: "RyanCaoDev",
-        id: 952235800110694471n,
+        id: 952235800110694471n
     },
     FieryFlames: {
         name: "Fiery",
@@ -323,7 +311,7 @@ export const Devs = /* #__PURE__*/ Object.freeze({
     },
     UwUDev: {
         name: "UwU",
-        id: 691413039156690994n,
+        id: 691413039156690994n
     },
     amia: {
         name: "amia",
@@ -363,19 +351,19 @@ export const Devs = /* #__PURE__*/ Object.freeze({
     },
     bb010g: {
         name: "bb010g",
-        id: 72791153467990016n,
+        id: 72791153467990016n
     },
     Dolfies: {
         name: "Dolfies",
-        id: 852892297661906993n,
+        id: 852892297661906993n
     },
     RuukuLada: {
         name: "RuukuLada",
-        id: 119705748346241027n,
+        id: 119705748346241027n
     },
     blahajZip: {
         name: "blahaj.zip",
-        id: 683954422241427471n,
+        id: 683954422241427471n
     },
     archeruwu: {
         name: "archer_uwu",
@@ -395,7 +383,7 @@ export const Devs = /* #__PURE__*/ Object.freeze({
     },
     Board: {
         name: "BoardTM",
-        id: 285475344817848320n,
+        id: 285475344817848320n
     },
     philipbry: {
         name: "philipbry",
@@ -407,7 +395,7 @@ export const Devs = /* #__PURE__*/ Object.freeze({
     },
     maisymoe: {
         name: "maisy",
-        id: 257109471589957632n,
+        id: 257109471589957632n
     },
     Lexi: {
         name: "Lexi",
@@ -419,27 +407,27 @@ export const Devs = /* #__PURE__*/ Object.freeze({
     },
     Grzesiek11: {
         name: "Grzesiek11",
-        id: 368475654662127616n,
+        id: 368475654662127616n
     },
     Samwich: {
         name: "Samwich",
-        id: 976176454511509554n,
+        id: 976176454511509554n
     },
     coolelectronics: {
         name: "coolelectronics",
-        id: 696392247205298207n,
+        id: 696392247205298207n
     },
     Av32000: {
         name: "Av32000",
-        id: 593436735380127770n,
+        id: 593436735380127770n
     },
     Noxillio: {
         name: "Noxillio",
-        id: 138616536502894592n,
+        id: 138616536502894592n
     },
     Kyuuhachi: {
         name: "Kyuuhachi",
-        id: 236588665420251137n,
+        id: 236588665420251137n
     },
     nin0dev: {
         name: "nin0dev",
@@ -447,7 +435,7 @@ export const Devs = /* #__PURE__*/ Object.freeze({
     },
     Elvyra: {
         name: "Elvyra",
-        id: 708275751816003615n,
+        id: 708275751816003615n
     },
     HappyEnderman: {
         name: "Happy enderman",
@@ -527,11 +515,11 @@ export const Devs = /* #__PURE__*/ Object.freeze({
     },
     Moxxie: {
         name: "Moxxie",
-        id: 712653921692155965n,
+        id: 712653921692155965n
     },
     Ethan: {
         name: "Ethan",
-        id: 721717126523781240n,
+        id: 721717126523781240n
     },
     nyx: {
         name: "verticalsync.",
@@ -551,7 +539,7 @@ export const Devs = /* #__PURE__*/ Object.freeze({
     },
     sadan: {
         name: "sadan",
-        id: 521819891141967883n,
+        id: 521819891141967883n
     },
     Kylie: {
         name: "Cookie",
@@ -567,27 +555,27 @@ export const Devs = /* #__PURE__*/ Object.freeze({
     },
     Lumap: {
         name: "Lumap",
-        id: 585278686291427338n,
+        id: 585278686291427338n
     },
     Obsidian: {
         name: "Obsidian",
-        id: 683171006717755446n,
+        id: 683171006717755446n
     },
     SerStars: {
         name: "SerStars",
-        id: 861631850681729045n,
+        id: 861631850681729045n
     },
     niko: {
         name: "niko",
-        id: 341377368075796483n,
+        id: 341377368075796483n
     },
     relitrix: {
         name: "Relitrix",
-        id: 423165393901715456n,
+        id: 423165393901715456n
     },
     RamziAH: {
         name: "RamziAH",
-        id: 1279957227612147747n,
+        id: 1279957227612147747n
     },
     ThaUnknown: {
         name: "ThaUnknown_",
@@ -595,11 +583,11 @@ export const Devs = /* #__PURE__*/ Object.freeze({
     },
     SomeAspy: {
         name: "SomeAspy",
-        id: 516750892372852754n,
+        id: 516750892372852754n
     },
     jamesbt365: {
         name: "jamesbt365",
-        id: 158567567487795200n,
+        id: 158567567487795200n
     },
     Darxoon: {
         name: "Darxoon",
@@ -607,7 +595,7 @@ export const Devs = /* #__PURE__*/ Object.freeze({
     },
     samsam: {
         name: "samsam",
-        id: 400482410279469056n,
+        id: 400482410279469056n
     },
     Cootshk: {
         name: "Cootshk",
@@ -616,7 +604,7 @@ export const Devs = /* #__PURE__*/ Object.freeze({
     koish1: {
         name: "koish1",
         id: 291089948709486593n,
-        badge: false,
+        badge: false
     },
     thororen: {
         name: "thororen",
@@ -632,11 +620,11 @@ export const Devs = /* #__PURE__*/ Object.freeze({
     },
     u32: {
         name: "u32",
-        id: 1063237286818488351n,
+        id: 1063237286818488351n
     },
     prism: {
         name: "prism",
-        id: 390884143749136386n,
+        id: 390884143749136386n
     },
     creations: {
         name: "creations",
@@ -680,7 +668,7 @@ export const Devs = /* #__PURE__*/ Object.freeze({
     },
     c0nnorgg: {
         name: "c0nnorgg",
-        id: 1088882977985003620n,
+        id: 1088882977985003620n
     },
     f3tch: {
         name: "f3tch",
@@ -690,9 +678,10 @@ export const Devs = /* #__PURE__*/ Object.freeze({
 
 // iife so #__PURE__ works correctly
 export const DevsById = /* #__PURE__*/ (() =>
-    Object.freeze(Object.fromEntries(
-        Object.entries(Devs)
-            .filter(d => d[1].id !== 0n)
-            .map(([_, v]) => [v.id, v] as const)
-    ))
-)() as Record<string, Dev>;
+    Object.freeze(
+        Object.fromEntries(
+            Object.entries(Devs)
+                .filter(d => d[1].id !== 0n)
+                .map(([_, v]) => [v.id, v] as const)
+        )
+    ))() as Record<string, Dev>;

@@ -21,7 +21,7 @@ export interface CommonProps {
     repoPending: boolean;
 }
 
-export function HashLink({ repo, hash, disabled = false }: { repo: string, hash: string, disabled?: boolean; }) {
+export function HashLink({ repo, hash, disabled = false }: { repo: string; hash: string; disabled?: boolean }) {
     return (
         <Link href={`${repo}/commit/${hash}`} disabled={disabled}>
             {hash}
@@ -29,7 +29,7 @@ export function HashLink({ repo, hash, disabled = false }: { repo: string, hash:
     );
 }
 
-export function Changes({ updates, repo, repoPending }: CommonProps & { updates: typeof changes; }) {
+export function Changes({ updates, repo, repoPending }: CommonProps & { updates: typeof changes }) {
     return (
         <Card style={{ padding: "0 0.5em" }} defaultPadding={false}>
             {updates.map(({ hash, author, message }) => (
@@ -44,10 +44,12 @@ export function Changes({ updates, repo, repoPending }: CommonProps & { updates:
                         <HashLink {...{ repo, hash }} disabled={repoPending} />
                     </code>
 
-                    <span style={{
-                        marginLeft: "0.5em",
-                        color: "var(--text-default)"
-                    }}>
+                    <span
+                        style={{
+                            marginLeft: "0.5em",
+                            color: "var(--text-default)"
+                        }}
+                    >
                         {message} - {author}
                     </span>
                 </div>
@@ -80,12 +82,21 @@ export function Updatable(props: CommonProps) {
                 <>
                     <Forms.FormText>Failed to check updates. Check the console for more info</Forms.FormText>
                     <ErrorCard style={{ padding: "1em" }}>
-                        <p>{updateError.stderr || updateError.stdout || "An unknown error occurred"}</p>
+                        <p>
+                            {updateError.stderr ||
+                                updateError.stdout ||
+                                updateError.message ||
+                                "An unknown error occurred"}
+                        </p>
                     </ErrorCard>
                 </>
             ) : (
                 <Forms.FormText className={Margins.bottom8}>
-                    {isOutdated ? (updates.length === 1 ? "There is 1 Update" : `There are ${updates.length} Updates`) : "Up to Date!"}
+                    {isOutdated
+                        ? updates.length === 1
+                            ? "There is 1 Update"
+                            : `There are ${updates.length} Updates`
+                        : "Up to Date!"}
                 </Forms.FormText>
             )}
 

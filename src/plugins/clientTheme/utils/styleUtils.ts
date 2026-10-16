@@ -17,11 +17,14 @@ const styleCache = {} as Record<StyleId, HTMLStyleElement | null>;
 export function createOrUpdateThemeColorVars(color: string) {
     const { hue, saturation, lightness } = hexToHSL(color);
 
-    createOrUpdateStyle(VARS_STYLE_ID, `:root {
+    createOrUpdateStyle(
+        VARS_STYLE_ID,
+        `:root {
         --theme-h: ${hue};
         --theme-s: ${saturation}%;
         --theme-l: ${lightness}%;
-    }`);
+    }`
+    );
 }
 
 export async function startClientTheme(color: string) {
@@ -54,12 +57,13 @@ function createOrUpdateStyle(styleId: StyleId, css: string) {
 async function getDiscordStyles(): Promise<string> {
     const styleLinkNodes = document.querySelectorAll<HTMLLinkElement>('link[rel="stylesheet"]');
 
-    const cssTexts = await Promise.all(Array.from(styleLinkNodes, async node => {
-        if (!node.href)
-            return null;
+    const cssTexts = await Promise.all(
+        Array.from(styleLinkNodes, async node => {
+            if (!node.href) return null;
 
-        return fetch(node.href).then(res => res.text());
-    }));
+            return fetch(node.href).then(res => res.text());
+        })
+    );
 
     return cssTexts.filter(Boolean).join("\n");
 }
@@ -76,17 +80,22 @@ function createColorsOverrides(styles: string) {
     const lightThemeBaseLightness = visualRefreshColorsLightness["--neutral-2-hsl"];
     const darkThemeBaseLightness = visualRefreshColorsLightness["--neutral-69-hsl"];
 
-    createOrUpdateStyle(OVERRIDES_STYLE_ID, [
-        `.theme-light {\n ${generateNewColorVars(visualRefreshColorsLightness, lightThemeBaseLightness)} \n}`,
-        `.theme-dark {\n ${generateNewColorVars(visualRefreshColorsLightness, darkThemeBaseLightness)} \n}`,
-    ].join("\n\n"));
+    createOrUpdateStyle(
+        OVERRIDES_STYLE_ID,
+        [
+            `.theme-light {\n ${generateNewColorVars(visualRefreshColorsLightness, lightThemeBaseLightness)} \n}`,
+            `.theme-dark {\n ${generateNewColorVars(visualRefreshColorsLightness, darkThemeBaseLightness)} \n}`
+        ].join("\n\n")
+    );
 }
 
 function generateNewColorVars(colorsLightess: Record<string, number>, baseLightness: number) {
-    return Object.entries(colorsLightess).map(([colorVariableName, lightness]) => {
-        const lightnessOffset = lightness - baseLightness;
-        const plusOrMinus = lightnessOffset >= 0 ? "+" : "-";
+    return Object.entries(colorsLightess)
+        .map(([colorVariableName, lightness]) => {
+            const lightnessOffset = lightness - baseLightness;
+            const plusOrMinus = lightnessOffset >= 0 ? "+" : "-";
 
-        return `${colorVariableName}: var(--theme-h) var(--theme-s) calc(var(--theme-l) ${plusOrMinus} ${Math.abs(lightnessOffset).toFixed(2)}%);`;
-    }).join("\n");
+            return `${colorVariableName}: var(--theme-h) var(--theme-s) calc(var(--theme-l) ${plusOrMinus} ${Math.abs(lightnessOffset).toFixed(2)}%);`;
+        })
+        .join("\n");
 }

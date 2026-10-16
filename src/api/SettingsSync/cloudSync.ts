@@ -19,7 +19,8 @@ const logger = new Logger("SettingsSync:Cloud", "#39b7e0");
 const SYNC_DIRECTION_KEY = "Vencord_cloudSyncDirection";
 const SETTINGS_DIRTY_KEY = "Vencord_settingsDirty";
 export const getCloudSyncDirection = () => localStorage.getItem(SYNC_DIRECTION_KEY) || "both";
-export const setCloudSyncDirection = (direction: "push" | "pull" | "both" | "manual") => localStorage.setItem(SYNC_DIRECTION_KEY, direction);
+export const setCloudSyncDirection = (direction: "push" | "pull" | "both" | "manual") =>
+    localStorage.setItem(SYNC_DIRECTION_KEY, direction);
 export const areLocalSettingsDirty = () => localStorage.getItem(SETTINGS_DIRTY_KEY) === "true";
 export const markLocalSettingsDirty = () => localStorage.setItem(SETTINGS_DIRTY_KEY, "true");
 export const markLocalSettingsClean = () => localStorage.removeItem(SETTINGS_DIRTY_KEY);
@@ -33,7 +34,7 @@ export function shouldCloudSync(direction: "push" | "pull") {
 export async function putCloudSettings(manual?: boolean) {
     const settings = await exportSettings({ minify: true });
 
-    if (!await checkCloudUrlCsp()) return;
+    if (!(await checkCloudUrlCsp())) return;
 
     try {
         const res = await fetch(new URL("/v1/settings", getCloudUrl()), {
@@ -65,7 +66,7 @@ export async function putCloudSettings(manual?: boolean) {
             showNotification({
                 title: "Cloud Settings",
                 body: "Synchronized settings to the cloud!",
-                noPersist: true,
+                noPersist: true
             });
         }
 
@@ -81,7 +82,7 @@ export async function putCloudSettings(manual?: boolean) {
 }
 
 export async function getCloudSettings(shouldNotify = true, force = false) {
-    if (!await checkCloudUrlCsp()) return;
+    if (!(await checkCloudUrlCsp())) return;
 
     try {
         const res = await fetch(new URL("/v1/settings", getCloudUrl()), {
@@ -90,7 +91,7 @@ export async function getCloudSettings(shouldNotify = true, force = false) {
                 Authorization: await getCloudAuth(),
                 Accept: "application/octet-stream",
                 "If-None-Match": Settings.cloud.settingsSyncVersion.toString()
-            },
+            }
         });
 
         if (res.status === 404) {
@@ -134,7 +135,7 @@ export async function getCloudSettings(shouldNotify = true, force = false) {
                 showNotification({
                     title: "Cloud Settings",
                     body: "Your local settings are newer than the cloud ones.",
-                    noPersist: true,
+                    noPersist: true
                 });
             return;
         }
@@ -174,12 +175,12 @@ export async function getCloudSettings(shouldNotify = true, force = false) {
 }
 
 export async function deleteCloudSettings() {
-    if (!await checkCloudUrlCsp()) return;
+    if (!(await checkCloudUrlCsp())) return;
 
     try {
         const res = await fetch(new URL("/v1/settings", getCloudUrl()), {
             method: "DELETE",
-            headers: { Authorization: await getCloudAuth() },
+            headers: { Authorization: await getCloudAuth() }
         });
 
         if (!res.ok) {
@@ -209,7 +210,7 @@ export async function deleteCloudSettings() {
 }
 
 export async function eraseAllCloudData() {
-    if (!await checkCloudUrlCsp()) return;
+    if (!(await checkCloudUrlCsp())) return;
 
     const res = await fetch(new URL("/v1/", getCloudUrl()), {
         method: "DELETE",

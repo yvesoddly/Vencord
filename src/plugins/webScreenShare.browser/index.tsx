@@ -6,15 +6,12 @@
 
 import { definePluginSettings } from "@api/Settings";
 import { getUserSettingLazy } from "@api/UserSettings";
-import {
-    Divider,
-    Span,
-} from "@components/index";
+import { Divider, Span } from "@components/index";
 import { Devs } from "@utils/constants";
 import { classNameFactory } from "@utils/css";
 import { Logger } from "@utils/Logger";
 import definePlugin, { OptionType } from "@utils/types";
-import { Checkbox, closeModal, Modal, openModal, Text, } from "@webpack/common";
+import { Checkbox, closeModal, Modal, openModal, Text } from "@webpack/common";
 
 import managedStyle from "./styles.css?managed";
 
@@ -55,7 +52,11 @@ function openScreenSharePicker(options: DisplayMediaStreamOptions) {
     });
 }
 
-function OptionRadio<Settings extends object, Key extends keyof Settings, Options extends ReadonlyArray<string>>(props: {
+function OptionRadio<
+    Settings extends object,
+    Key extends keyof Settings,
+    Options extends ReadonlyArray<string>
+>(props: {
     options: Options;
     labels?: Array<string>;
     settings: Settings;
@@ -84,7 +85,12 @@ function OptionRadio<Settings extends object, Key extends keyof Settings, Option
     );
 }
 
-function ModalComponent({ modalProps, submit, close, options }: {
+function ModalComponent({
+    modalProps,
+    submit,
+    close,
+    options
+}: {
     modalProps: any;
     submit: (data: Promise<MediaStream>) => void;
     close: () => void;
@@ -112,11 +118,11 @@ function ModalComponent({ modalProps, submit, close, options }: {
                     video: {
                         ...videoOptions,
                         frameRate,
-                        height,
+                        height
                     },
                     audio: {
                         ...audioOptions,
-                        restrictOwnAudio: true,
+                        restrictOwnAudio: true
                     },
                     surfaceSwitching: "include",
                     systemAudio: liveSettings.systemAudio ? "exclude" : "include"
@@ -125,7 +131,7 @@ function ModalComponent({ modalProps, submit, close, options }: {
                     try {
                         const video = t.getVideoTracks()?.[0];
                         if (video) video.contentHint = liveSettings.contentHint;
-                    } catch { }
+                    } catch {}
                     return t;
                 })
             );
@@ -144,9 +150,21 @@ function ModalComponent({ modalProps, submit, close, options }: {
                 size="lg"
                 actionBarInput={
                     <div className={cl("summary")}>
-                        <Text variant="text-md/semibold" color="text-strong" className={cl("source-or-preset-name")}>{liveSettings.contentHint === "motion" ? "Gaming" : liveSettings.contentHint === "detail" ? "Screenshare" : "Custom"}</Text>
+                        <Text variant="text-md/semibold" color="text-strong" className={cl("source-or-preset-name")}>
+                            {liveSettings.contentHint === "motion"
+                                ? "Gaming"
+                                : liveSettings.contentHint === "detail"
+                                  ? "Screenshare"
+                                  : "Custom"}
+                        </Text>
                         <Text variant="text-xs/medium" color="text-muted" className={cl("summary-detail")}>
-                            <span>{liveSettings.contentHint === "motion" ? "Smoother video" : liveSettings.contentHint === "detail" ? "Cleaner text" : "User preset"}</span>
+                            <span>
+                                {liveSettings.contentHint === "motion"
+                                    ? "Smoother video"
+                                    : liveSettings.contentHint === "detail"
+                                      ? "Cleaner text"
+                                      : "User preset"}
+                            </span>
                             <span className={cl("ellipsis")}>•</span>
                             <span>{liveSettings.resolution}p</span>
                             <span className={cl("ellipsis")}>•</span>
@@ -164,11 +182,12 @@ function ModalComponent({ modalProps, submit, close, options }: {
                     }
                 ]}
             >
-
                 <div>
                     <div className={cl("flex", "padding")}>
                         <section className={cl("quality-section")}>
-                            <Text tag="h2" variant="heading-md/semibold" color="text-strong">Resolution</Text>
+                            <Text tag="h2" variant="heading-md/semibold" color="text-strong">
+                                Resolution
+                            </Text>
                             <OptionRadio
                                 options={StreamResolution}
                                 settings={liveSettings}
@@ -178,7 +197,9 @@ function ModalComponent({ modalProps, submit, close, options }: {
                         </section>
 
                         <section className={cl("quality-section")}>
-                            <Text tag="h2" variant="heading-md/semibold" color="text-strong">Frame Rate</Text>
+                            <Text tag="h2" variant="heading-md/semibold" color="text-strong">
+                                Frame Rate
+                            </Text>
                             <OptionRadio
                                 options={StreamFps}
                                 settings={liveSettings}
@@ -188,7 +209,9 @@ function ModalComponent({ modalProps, submit, close, options }: {
                         </section>
                     </div>
                     <div>
-                        <Text tag="h2" variant="heading-md/semibold" color="text-strong">Stream Mode</Text>
+                        <Text tag="h2" variant="heading-md/semibold" color="text-strong">
+                            Stream Mode
+                        </Text>
                         <div>
                             <OptionRadio
                                 options={StreamContentHint}
@@ -205,10 +228,15 @@ function ModalComponent({ modalProps, submit, close, options }: {
                             value={!!liveSettings.systemAudio}
                             onChange={(_e, value) => (liveSettings.systemAudio = value)}
                             shape="box"
-                            reverse={true}>
+                            reverse={true}
+                        >
                             <div className={cl("control-content")}>
-                                <Text tag="h2" variant="heading-md/semibold" color="text-strong">Mute Stream Audio</Text>
-                                <Text variant="text-sm/normal" color="text-subtle">Prevents system audio from being included in your stream.</Text>
+                                <Text tag="h2" variant="heading-md/semibold" color="text-strong">
+                                    Mute Stream Audio
+                                </Text>
+                                <Text variant="text-sm/normal" color="text-subtle">
+                                    Prevents system audio from being included in your stream.
+                                </Text>
                             </div>
                         </Checkbox>
                     </div>
@@ -217,10 +245,15 @@ function ModalComponent({ modalProps, submit, close, options }: {
                             value={!disableStreamPreviewsValue}
                             onChange={(_e, value) => disableStreamPreviews.updateSetting(() => !value)}
                             shape="box"
-                            reverse={true}>
+                            reverse={true}
+                        >
                             <div className={cl("control-content")}>
-                                <Text tag="h2" variant="heading-md/semibold" color="text-strong">Show Stream Previews</Text>
-                                <Text variant="text-sm/normal" color="text-subtle">Allows others to see a preview of your stream before they join.</Text>
+                                <Text tag="h2" variant="heading-md/semibold" color="text-strong">
+                                    Show Stream Previews
+                                </Text>
+                                <Text variant="text-sm/normal" color="text-subtle">
+                                    Allows others to see a preview of your stream before they join.
+                                </Text>
                             </div>
                         </Checkbox>
                     </div>
@@ -267,7 +300,8 @@ const disableStreamPreviews = getUserSettingLazy<boolean>("voiceAndVideo", "disa
 export default definePlugin({
     name: "WebScreenShare",
     authors: [Devs.ThaUnknown],
-    description: "Adds a screenshare options menu. Allows for changing resolution, framerate, encoding hints, and system audio settings.",
+    description:
+        "Adds a screenshare options menu. Allows for changing resolution, framerate, encoding hints, and system audio settings.",
     tags: ["Voice", "Utility"],
     enabledByDefault: true,
     settings,

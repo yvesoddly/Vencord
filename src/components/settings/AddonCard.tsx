@@ -1,23 +1,10 @@
 /*
- * Vencord, a modification for Discord's desktop app
+ * Vencord, a Discord client mod
  * Copyright (c) 2023 Vendicated and contributors
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <https://www.gnu.org/licenses/>.
-*/
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
 
 import "./AddonCard.css";
-
 import { AddonBadge } from "@components/settings/PluginBadge";
 import { Switch } from "@components/Switch";
 import { classNameFactory } from "@utils/css";
@@ -41,7 +28,19 @@ interface Props {
     author?: ReactNode;
 }
 
-export function AddonCard({ disabled, isNew, name, infoButton, footer, author, enabled, setEnabled, description, onMouseEnter, onMouseLeave }: Props) {
+export function AddonCard({
+    disabled,
+    isNew,
+    name,
+    infoButton,
+    footer,
+    author,
+    enabled,
+    setEnabled,
+    description,
+    onMouseEnter,
+    onMouseLeave
+}: Props) {
     const titleRef = useRef<HTMLDivElement>(null);
     const titleContainerRef = useRef<HTMLDivElement>(null);
 
@@ -62,8 +61,14 @@ export function AddonCard({ disabled, isNew, name, infoButton, footer, author, e
                                     const title = titleRef.current!;
                                     const titleContainer = titleContainerRef.current!;
 
-                                    title.style.setProperty("--offset", `${titleContainer.clientWidth - title.scrollWidth}px`);
-                                    title.style.setProperty("--duration", `${Math.max(0.5, (title.scrollWidth - titleContainer.clientWidth) / 7)}s`);
+                                    title.style.setProperty(
+                                        "--offset",
+                                        `${titleContainer.clientWidth - title.scrollWidth}px`
+                                    );
+                                    title.style.setProperty(
+                                        "--duration",
+                                        `${Math.max(0.5, (title.scrollWidth - titleContainer.clientWidth) / 7)}s`
+                                    );
                                 }}
                             >
                                 {name}
@@ -81,14 +86,12 @@ export function AddonCard({ disabled, isNew, name, infoButton, footer, author, e
 
                 {infoButton}
 
-                <Switch
-                    checked={enabled}
-                    onChange={setEnabled}
-                    disabled={disabled}
-                />
+                <Switch checked={enabled} onChange={setEnabled} disabled={disabled} />
             </div>
 
-            <Text className={cl("note")} variant="text-sm/normal">{description}</Text>
+            <Text className={cl("note")} variant="text-sm/normal">
+                {description}
+            </Text>
 
             {footer}
         </div>

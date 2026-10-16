@@ -5,7 +5,6 @@
  */
 
 import "./styles.css";
-
 import { definePluginSettings, migratePluginSettings } from "@api/Settings";
 import ErrorBoundary from "@components/ErrorBoundary";
 import { Devs } from "@utils/constants";
@@ -25,7 +24,7 @@ const settings = definePluginSettings({
         options: [
             { label: "Tenor", value: "tenor", default: true },
             { label: "Giphy", value: "giphy" },
-            { label: "Klipy", value: "klipy" },
+            { label: "Klipy", value: "klipy" }
         ] as const,
         onChange: () => {
             cachedCategories = null;
@@ -52,7 +51,7 @@ export interface DiscordGif {
 
 export interface TrendingCategoriesData {
     trendingCategories: Record<"name" | "src", string>[];
-    trendingGIFPreview: { src: string; };
+    trendingGIFPreview: { src: string };
 }
 
 async function fetchCategories() {
@@ -63,7 +62,7 @@ async function fetchCategories() {
                 query: {
                     locale: LocaleStore.locale,
                     media_format: GIFPickerViewStore.getSelectedFormat()
-                },
+                }
             });
             cachedCategories = {
                 trendingCategories: res.body.categories,
@@ -148,7 +147,7 @@ export default definePlugin({
     ],
 
     async start() {
-        cachedCategories = await this.provider.getCategories() ?? cachedCategories;
+        cachedCategories = (await this.provider.getCategories()) ?? cachedCategories;
     },
 
     get shouldReplace() {
@@ -156,42 +155,45 @@ export default definePlugin({
     },
 
     get provider() {
-        if (settings.store.provider === "klipy")
-            throw new Error("Provider should never be klipy here");
+        if (settings.store.provider === "klipy") throw new Error("Provider should never be klipy here");
 
         return providers[settings.store.provider!];
     },
 
-    SearchWrapper: ErrorBoundary.wrap(({ Component, placeholder, "aria-label": ariaLabel, ref, ...restProps }) => {
-        const { provider } = settings.use(["provider"]);
+    SearchWrapper: ErrorBoundary.wrap(
+        ({ Component, placeholder, "aria-label": ariaLabel, ref, ...restProps }) => {
+            const { provider } = settings.use(["provider"]);
 
-        // restProps contains `autoFocus: true`, which should in theory focus the input automatically.
-        // However, for whatever reason it focuses our Select instead, despite that not having autoFocus.
-        // Discord is probably focusing it somewhere else for whatever reason, solved via this effect
-        useEffect(() => ref?.current?.focus(), [ref]);
+            // restProps contains `autoFocus: true`, which should in theory focus the input automatically.
+            // However, for whatever reason it focuses our Select instead, despite that not having autoFocus.
+            // Discord is probably focusing it somewhere else for whatever reason, solved via this effect
+            useEffect(() => ref?.current?.focus(), [ref]);
 
-        if (provider !== "klipy") {
-            const name = provider![0].toUpperCase() + provider!.slice(1);
-            placeholder &&= placeholder.replace("Klipy", name);
-            ariaLabel &&= ariaLabel.replace("Klipy", name);
-        }
+            if (provider !== "klipy") {
+                const name = provider![0].toUpperCase() + provider!.slice(1);
+                placeholder &&= placeholder.replace("Klipy", name);
+                ariaLabel &&= ariaLabel.replace("Klipy", name);
+            }
 
-        return (
-            <div className="vc-tenorGifSearch-wrapper">
-                <Component placeholder={placeholder} aria-label={ariaLabel} ref={ref} {...restProps} />
-                <Select
-                    placeholder="Provider"
-                    options={settings.def.provider.options}
-                    isSelected={v => v === provider}
-                    select={v => settings.store.provider = v}
-                    serialize={identity}
-                />
-            </div>
-        );
-    }, { noop: true }),
+            return (
+                <div className="vc-tenorGifSearch-wrapper">
+                    <Component placeholder={placeholder} aria-label={ariaLabel} ref={ref} {...restProps} />
+                    <Select
+                        placeholder="Provider"
+                        options={settings.def.provider.options}
+                        isSelected={v => v === provider}
+                        select={v => (settings.store.provider = v)}
+                        serialize={identity}
+                    />
+                </div>
+            );
+        },
+        { noop: true }
+    ),
 
     handleSearchFetch(query: string) {
-        this.provider.search(query, 100)
+        this.provider
+            .search(query, 100)
             .then(items => {
                 FluxDispatcher.dispatch(
                     items.length
@@ -231,12 +233,11 @@ export default definePlugin({
     },
 
     handleTrendingGifsFetch() {
-        this.provider.getTrending(50)
+        this.provider
+            .getTrending(50)
             .then(items => {
                 FluxDispatcher.dispatch(
-                    items.length
-                        ? { type: "GIF_PICKER_QUERY_SUCCESS", items }
-                        : { type: "GIF_PICKER_QUERY_FAILURE" }
+                    items.length ? { type: "GIF_PICKER_QUERY_SUCCESS", items } : { type: "GIF_PICKER_QUERY_FAILURE" }
                 );
             })
             .catch(() => {
@@ -247,7 +248,8 @@ export default definePlugin({
     tenorIntegrationSearch(integration: string, query: string) {
         FluxDispatcher.dispatch({ type: "INTEGRATION_QUERY", integration, query });
 
-        this.provider.search(query, 20)
+        this.provider
+            .search(query, 20)
             .then(results => {
                 FluxDispatcher.dispatch(
                     results.length

@@ -27,11 +27,10 @@ function GuidelinesModal(props: RenderModalProps) {
         >
             <div className={DecorationModalClasses.modal}>
                 <Forms.FormText>
-                    By submitting a decoration, you agree to <Link
-                        href="https://github.com/decor-discord/.github/blob/main/GUIDELINES.md"
-                    >
-                        the guidelines
-                    </Link>. Not reading these guidelines may get your account suspended from creating more decorations in the future.
+                    By submitting a decoration, you agree to{" "}
+                    <Link href="https://github.com/decor-discord/.github/blob/main/GUIDELINES.md">the guidelines</Link>.
+                    Not reading these guidelines may get your account suspended from creating more decorations in the
+                    future.
                 </Forms.FormText>
             </div>
         </ConfirmModal>

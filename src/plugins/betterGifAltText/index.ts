@@ -1,20 +1,8 @@
 /*
- * Vencord, a modification for Discord's desktop app
+ * Vencord, a Discord client mod
  * Copyright (c) 2022 Vendicated and contributors
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <https://www.gnu.org/licenses/>.
-*/
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
 
 import { Devs } from "@utils/constants";
 import definePlugin from "@utils/types";
@@ -29,9 +17,8 @@ export default definePlugin({
             find: ".modalContext})};",
             replacement: {
                 match: /(return.{0,10}\.jsx.{0,50}isWindowFocused)/,
-                replace:
-                    "$self.altify(e);$1",
-            },
+                replace: "$self.altify(e);$1"
+            }
         },
         {
             find: "#{intl::GIF}",
@@ -39,9 +26,9 @@ export default definePlugin({
                 match: /alt:(\i)=(\i\.\i\.string\(\i\.\i#{intl::GIF}\))(?=,[^}]*\}=(\i))/,
                 replace:
                     // rename prop so we can always use default value
-                    "alt_$$:$1=$self.altify($3)||$2",
-            },
-        },
+                    "alt_$$:$1=$self.altify($3)||$2"
+            }
+        }
     ],
 
     altify(props: any) {
@@ -53,7 +40,7 @@ export default definePlugin({
         let url: string = props.original || props.src;
         try {
             url = decodeURI(url);
-        } catch { }
+        } catch {}
 
         let name = url
             .slice(url.lastIndexOf("/") + 1)
@@ -69,5 +56,5 @@ export default definePlugin({
         if (name) props.alt += ` - ${name}`;
 
         return props.alt;
-    },
+    }
 });

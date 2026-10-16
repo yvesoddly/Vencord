@@ -5,7 +5,6 @@
  */
 
 import "./QuickAction.css";
-
 import { Card } from "@components/Card";
 import { classNameFactory } from "@utils/css";
 import type { ComponentType, PropsWithChildren, ReactNode } from "react";
@@ -13,7 +12,7 @@ import type { ComponentType, PropsWithChildren, ReactNode } from "react";
 const cl = classNameFactory("vc-settings-quickActions-");
 
 export interface QuickActionProps {
-    Icon: ComponentType<{ className?: string; }>;
+    Icon: ComponentType<{ className?: string }>;
     text: ReactNode;
     action?: () => void;
     disabled?: boolean;
@@ -32,9 +31,5 @@ export function QuickAction(props: QuickActionProps) {
 }
 
 export function QuickActionCard(props: PropsWithChildren) {
-    return (
-        <Card className={cl("card")}>
-            {props.children}
-        </Card>
-    );
+    return <Card className={cl("card")}>{props.children}</Card>;
 }

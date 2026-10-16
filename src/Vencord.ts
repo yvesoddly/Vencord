@@ -1,25 +1,12 @@
 /*!
- * Vencord, a modification for Discord's desktop app
+ * Vencord, a Discord client mod
  * Copyright (c) 2022 Vendicated and contributors
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <https://www.gnu.org/licenses/>.
-*/
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
 
 // DO NOT REMOVE UNLESS YOU WISH TO FACE THE WRATH OF THE CIRCULAR DEPENDENCY DEMON!!!!!!!
 import "~plugins";
 import "./fixWeirdAppRegionBug.css";
-
 import nativeTitleBarStyles from "./nativeTitleBar.css?managed";
 
 export * as Api from "./api";
@@ -41,7 +28,14 @@ import { get as dsGet } from "./api/DataStore";
 import { NotificationData, showNotification } from "./api/Notifications";
 import { initPluginManager, PMLogger, startAllPlugins } from "./api/PluginManager";
 import { PlainSettings, Settings, SettingsStore } from "./api/Settings";
-import { areLocalSettingsDirty, getCloudSettings, getCloudSyncDirection, markLocalSettingsDirty, putCloudSettings, shouldCloudSync } from "./api/SettingsSync/cloudSync";
+import {
+    areLocalSettingsDirty,
+    getCloudSettings,
+    getCloudSyncDirection,
+    markLocalSettingsDirty,
+    putCloudSettings,
+    shouldCloudSync
+} from "./api/SettingsSync/cloudSync";
 import { relaunch } from "./utils/native";
 import { checkForUpdates, update, UpdateLogger } from "./utils/updater";
 import { onceReady } from "./webpack";
@@ -55,12 +49,13 @@ async function syncSettings() {
     // pre-check for local shared settings
     if (
         Settings.cloud.authenticated &&
-        !await dsGet("Vencord_cloudSecret") // this has been enabled due to local settings share or some other bug
+        !(await dsGet("Vencord_cloudSecret")) // this has been enabled due to local settings share or some other bug
     ) {
         // show a notification letting them know and tell them how to fix it
         showNotification({
             title: "Cloud Integrations",
-            body: "We've noticed you have cloud integrations enabled in another client! Due to limitations, you will " +
+            body:
+                "We've noticed you have cloud integrations enabled in another client! Due to limitations, you will " +
                 "need to re-authenticate to continue using them. Click here to go to the settings page to do so!",
             color: "var(--yellow-360)",
             onClick: () => SettingsRouter.openUserSettings("vencord_cloud_panel"),
@@ -76,7 +71,8 @@ async function syncSettings() {
     ) {
         if (areLocalSettingsDirty() && shouldCloudSync("push")) {
             await putCloudSettings();
-        } else if (shouldCloudSync("pull") && await getCloudSettings(false)) { // if we synchronized something (false means no sync)
+        } else if (shouldCloudSync("pull") && (await getCloudSettings(false))) {
+            // if we synchronized something (false means no sync)
             // we show a notification here instead of allowing getCloudSettings() to show one to declutter the amount of
             // potential notifications that might occur. getCloudSettings() will always send a notification regardless if
             // there was an error to notify the user, but besides that we only want to show one notification instead of all
@@ -111,11 +107,15 @@ async function runUpdateCheck() {
         if (notifiedForUpdatesThisSession) return;
         notifiedForUpdatesThisSession = true;
 
-        setTimeout(() => showNotification({
-            permanent: true,
-            noPersist: true,
-            ...data
-        }), 10_000);
+        setTimeout(
+            () =>
+                showNotification({
+                    permanent: true,
+                    noPersist: true,
+                    ...data
+                }),
+            10_000
+        );
     };
 
     try {
@@ -178,10 +178,14 @@ initStyles();
 startAllPlugins(StartAt.Init);
 init();
 
-document.addEventListener("DOMContentLoaded", () => {
-    startAllPlugins(StartAt.DOMContentLoaded);
+document.addEventListener(
+    "DOMContentLoaded",
+    () => {
+        startAllPlugins(StartAt.DOMContentLoaded);
 
-    if (IS_DISCORD_DESKTOP && Settings.nativeTitleBar) {
-        enableStyle(nativeTitleBarStyles);
-    }
-}, { once: true });
+        if (IS_DISCORD_DESKTOP && Settings.nativeTitleBar) {
+            enableStyle(nativeTitleBarStyles);
+        }
+    },
+    { once: true }
+);

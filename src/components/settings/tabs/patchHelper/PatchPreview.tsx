@@ -17,7 +17,7 @@ if (!IS_STANDALONE) {
 }
 
 interface PatchPreviewProps {
-    module: [id: number, factory: Function];
+    module: [id: string, factory: Function];
     match: string;
     replacement: string | ReplaceFn;
     setReplacementError(error: any): void;
@@ -40,16 +40,20 @@ function makeDiff(original: string, patched: string, match: RegExpMatchArray | n
     return differ.diffWordsWithSpace(context, patchedContext);
 }
 
-function Match({ matchResult }: { matchResult: RegExpMatchArray | null; }) {
-    if (!matchResult)
-        return null;
+function Match({ matchResult }: { matchResult: RegExpMatchArray | null }) {
+    if (!matchResult) return null;
 
-    const fullMatch = matchResult[0]
-        ? makeCodeblock(matchResult[0], "js")
-        : "";
-    const groups = matchResult.length > 1
-        ? makeCodeblock(matchResult.slice(1).map((g, i) => `Group ${i + 1}: ${g}`).join("\n"), "yml")
-        : "";
+    const fullMatch = matchResult[0] ? makeCodeblock(matchResult[0], "js") : "";
+    const groups =
+        matchResult.length > 1
+            ? makeCodeblock(
+                  matchResult
+                      .slice(1)
+                      .map((g, i) => `Group ${i + 1}: ${g}`)
+                      .join("\n"),
+                  "yml"
+              )
+            : "";
 
     return (
         <>
@@ -60,22 +64,14 @@ function Match({ matchResult }: { matchResult: RegExpMatchArray | null; }) {
     );
 }
 
-function Diff({ diff }: { diff: Change[] | null; }) {
-    if (!diff?.length)
-        return null;
+function Diff({ diff }: { diff: Change[] | null }) {
+    if (!diff?.length) return null;
 
     const diffLines = diff.map((p, idx) => {
-        const color = p.added
-            ? "lime"
-            : p.removed
-                ? "red"
-                : "grey";
+        const color = p.added ? "lime" : p.removed ? "red" : "grey";
 
         return (
-            <div
-                key={idx}
-                style={{ color, userSelect: "text", wordBreak: "break-all", lineBreak: "anywhere" }}
-            >
+            <div key={idx} style={{ color, userSelect: "text", wordBreak: "break-all", lineBreak: "anywhere" }}>
                 {p.value}
             </div>
         );
@@ -129,7 +125,10 @@ export function PatchPreview({ module, match, replacement, setReplacementError }
                     onClick={() => {
                         try {
                             const isArrowFunction = patchedCode.startsWith("(");
-                            const wrappedCode = "0," + (!isArrowFunction ? "function" : "") + patchedCode.slice(patchedCode.indexOf("("));
+                            const wrappedCode =
+                                "0," +
+                                (!isArrowFunction ? "function" : "") +
+                                patchedCode.slice(patchedCode.indexOf("("));
                             Function(wrappedCode);
 
                             setCompileResult([true, "Compiled successfully"]);
@@ -143,7 +142,9 @@ export function PatchPreview({ module, match, replacement, setReplacementError }
             )}
 
             {compileResult && (
-                <Forms.FormText style={{ color: compileResult[0] ? "var(--status-positive)" : "var(--text-feedback-critical)" }}>
+                <Forms.FormText
+                    style={{ color: compileResult[0] ? "var(--status-positive)" : "var(--text-feedback-critical)" }}
+                >
                     {compileResult[1]}
                 </Forms.FormText>
             )}

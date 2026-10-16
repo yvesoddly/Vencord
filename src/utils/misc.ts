@@ -1,20 +1,8 @@
 /*
- * Vencord, a modification for Discord's desktop app
+ * Vencord, a Discord client mod
  * Copyright (c) 2022 Vendicated and contributors
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <https://www.gnu.org/licenses/>.
-*/
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
 
 import { DevsById } from "./constants";
 
@@ -44,8 +32,7 @@ export function isObject(obj: unknown): obj is object {
  * Check if an object is empty or in other words has no own properties
  */
 export function isObjectEmpty(obj: object) {
-    for (const k in obj)
-        if (Object.hasOwn(obj, k)) return false;
+    for (const k in obj) if (Object.hasOwn(obj, k)) return false;
 
     return true;
 }
@@ -90,9 +77,7 @@ export function interpolateIfDefined(strings: TemplateStringsArray, ...args: any
 export function tryOrElse<T>(func: () => T, fallback: T): T {
     try {
         const res = func();
-        return res instanceof Promise
-            ? res.catch(() => fallback) as T
-            : res;
+        return res instanceof Promise ? (res.catch(() => fallback) as T) : res;
     } catch {
         return fallback;
     }

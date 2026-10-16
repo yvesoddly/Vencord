@@ -1,20 +1,8 @@
 /*
- * Vencord, a modification for Discord's desktop app
+ * Vencord, a Discord client mod
  * Copyright (c) 2022 Vendicated and contributors
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <https://www.gnu.org/licenses/>.
-*/
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
 
 import { definePluginSettings } from "@api/Settings";
 import { Devs } from "@utils/constants";
@@ -46,8 +34,8 @@ export default definePlugin({
             predicate: () => settings.store.disableAnalytics,
             replacement: {
                 match: /\(0,\i\.analyticsTrackingStoreMaker\)/,
-                replace: "$self.analyticsTrackingStoreMaker",
-            },
+                replace: "$self.analyticsTrackingStoreMaker"
+            }
         },
         {
             find: ".METRICS_V2",
@@ -135,7 +123,9 @@ export default definePlugin({
             configurable: true,
 
             set() {
-                new Logger("NoTrack", "#8caaee").error("Failed to disable Sentry. Falling back to deleting window.DiscordSentry");
+                new Logger("NoTrack", "#8caaee").error(
+                    "Failed to disable Sentry. Falling back to deleting window.DiscordSentry"
+                );
 
                 Reflect.deleteProperty(Function.prototype, "d");
                 Reflect.deleteProperty(window, "DiscordSentry");
@@ -147,7 +137,7 @@ export default definePlugin({
         class AnalyticsTrackingStoreStub extends Flux.Store {
             static displayName = "AnalyticsTrackingStore";
 
-            requestDrain() { }
+            requestDrain() {}
 
             async submitEventsImmediately() {
                 // This is supposed to return a Discord rest response but we can't know what the correct shape would be, because

@@ -1,20 +1,8 @@
 /*
- * Vencord, a modification for Discord's desktop app
+ * Vencord, a Discord client mod
  * Copyright (c) 2022 Vendicated and contributors
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <https://www.gnu.org/licenses/>.
-*/
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
 
 import { CodeBlock } from "@components/CodeBlock";
 import { Divider } from "@components/Divider";
@@ -33,17 +21,20 @@ import { FullPatchInput } from "./FullPatchInput";
 import { PatchPreview } from "./PatchPreview";
 import { ReplacementInput } from "./ReplacementInput";
 
-const findCandidates = debounce(function ({ find, setModule, setError }) {
+interface FindCandidatesArgs {
+    find: string | RegExp;
+    setModule(module: [id: string, factory: Function]): void;
+    setError(error: string): void;
+}
+
+const findCandidates = debounce(function ({ find, setModule, setError }: FindCandidatesArgs) {
     const candidates = search(find);
     const keys = Object.keys(candidates);
     const len = keys.length;
 
-    if (len === 0)
-        setError("No match. Perhaps that module is lazy loaded?");
-    else if (len !== 1)
-        setError("Multiple matches. Please refine your filter");
-    else
-        setModule([keys[0], candidates[keys[0]]]);
+    if (len === 0) setError("No match. Perhaps that module is lazy loaded?");
+    else if (len !== 1) setError("Multiple matches. Please refine your filter");
+    else setModule([keys[0], candidates[keys[0]]]);
 });
 
 function PatchHelper() {
@@ -57,7 +48,7 @@ function PatchHelper() {
     const [matchError, setMatchError] = useState<string>();
     const [replacementError, setReplacementError] = useState<string>();
 
-    const [module, setModule] = useState<[number, Function]>();
+    const [module, setModule] = useState<[id: string, factory: Function]>();
 
     const code = useMemo(() => {
         const find = parsedFind instanceof RegExp ? parsedFind.toString() : JSON.stringify(parsedFind);
@@ -114,20 +105,10 @@ function PatchHelper() {
             />
 
             <HeadingTertiary className={Margins.top8}>Find</HeadingTertiary>
-            <TextInput
-                type="text"
-                value={find}
-                onChange={onFindChange}
-                error={findError}
-            />
+            <TextInput type="text" value={find} onChange={onFindChange} error={findError} />
 
             <HeadingTertiary className={Margins.top8}>Match</HeadingTertiary>
-            <TextInput
-                type="text"
-                value={match}
-                onChange={onMatchChange}
-                error={matchError}
-            />
+            <TextInput type="text" value={match} onChange={onMatchChange} error={matchError} />
 
             <div className={Margins.top8} />
             <ReplacementInput
@@ -151,12 +132,8 @@ function PatchHelper() {
                     <HeadingTertiary className={Margins.top20}>Code</HeadingTertiary>
                     <CodeBlock lang="js" content={code} />
                     <Flex className={Margins.top16}>
-                        <Button onClick={() => copyWithToast(code)}>
-                            Copy to Clipboard
-                        </Button>
-                        <Button onClick={() => copyWithToast("```ts\n" + code + "\n```")}>
-                            Copy as Codeblock
-                        </Button>
+                        <Button onClick={() => copyWithToast(code)}>Copy to Clipboard</Button>
+                        <Button onClick={() => copyWithToast("```ts\n" + code + "\n```")}>Copy as Codeblock</Button>
                     </Flex>
                 </>
             )}

@@ -5,7 +5,6 @@
  */
 
 import "./Heading.css";
-
 import { classes } from "@utils/misc";
 import type { ComponentPropsWithoutRef } from "react";
 
@@ -21,12 +20,7 @@ export type HeadingProps<Tag extends HeadingTag> = ComponentPropsWithoutRef<Tag>
  * If you need more control, use the BaseText component instead.
  */
 export function Heading<T extends HeadingTag>(props: HeadingProps<T>) {
-    const {
-        tag: Tag = "h5",
-        children,
-        className,
-        ...restProps
-    } = props;
+    const { tag: Tag = "h5", children, className, ...restProps } = props;
 
     return (
         <Tag className={classes(`vc-${Tag}`, !className && `vc-${Tag}-defaultMargin`, className)} {...restProps}>

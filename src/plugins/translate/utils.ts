@@ -1,20 +1,8 @@
 /*
- * Vencord, a modification for Discord's desktop app
+ * Vencord, a Discord client mod
  * Copyright (c) 2023 Vendicated and contributors
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <https://www.gnu.org/licenses/>.
-*/
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
 
 import { classNameFactory } from "@utils/css";
 import { onlyOnce } from "@utils/onlyOnce";
@@ -27,6 +15,11 @@ import { resetLanguageDefaults, settings } from "./settings";
 export const cl = classNameFactory("vc-trans-");
 
 const Native = VencordNative.pluginHelpers.Translate as PluginNative<typeof import("./native")>;
+
+/** Display name of a language code the service detected, or the code itself if we don't know it */
+function getLanguageName(languages: Partial<Record<string, string>>, code: string) {
+    return languages[code] ?? code;
+}
 
 interface GoogleData {
     translation: string;
@@ -67,71 +60,65 @@ export const getLanguages = () => {
 };
 
 export async function translate(kind: "received" | "sent", text: string): Promise<TranslationValue> {
-    const translate = IS_WEB ? googleTranslate : (() => {
-        switch (settings.store.service) {
-            case "google":
-                return googleTranslate;
-            case "kagi":
-                return kagiTranslate;
-            default:
-                return deeplTranslate;
-        }
-    })();
+    const translate = IS_WEB
+        ? googleTranslate
+        : (() => {
+              switch (settings.store.service) {
+                  case "google":
+                      return googleTranslate;
+                  case "kagi":
+                      return kagiTranslate;
+                  default:
+                      return deeplTranslate;
+              }
+          })();
 
     try {
-        return await translate(
-            text,
-            settings.store[`${kind}Input`],
-            settings.store[`${kind}Output`]
-        );
+        return await translate(text, settings.store[`${kind}Input`], settings.store[`${kind}Output`]);
     } catch (e) {
-        const userMessage = typeof e === "string"
-            ? e
-            : "Something went wrong. If this issue persists, please check the console or ask for help in the support server.";
+        const userMessage =
+            typeof e === "string"
+                ? e
+                : "Something went wrong. If this issue persists, please check the console or ask for help in the support server.";
 
         showToast({ text: userMessage, variant: "critical" });
 
-        throw e instanceof Error
-            ? e
-            : new Error(userMessage);
+        throw e instanceof Error ? e : new Error(userMessage);
     }
 }
 
 async function googleTranslate(text: string, sourceLang: string, targetLang: string): Promise<TranslationValue> {
-    const url = "https://translate-pa.googleapis.com/v1/translate?" + new URLSearchParams({
-        "params.client": "gtx",
-        "dataTypes": "TRANSLATION",
-        "key": "AIzaSyDLEeFI5OtFBwYBIoK_jj5m32rZK5CkCXA", // some google API key
-        "query.sourceLanguage": sourceLang,
-        "query.targetLanguage": targetLang,
-        "query.text": text,
-    });
+    const url =
+        "https://translate-pa.googleapis.com/v1/translate?" +
+        new URLSearchParams({
+            "params.client": "gtx",
+            dataTypes: "TRANSLATION",
+            key: "AIzaSyDLEeFI5OtFBwYBIoK_jj5m32rZK5CkCXA", // some google API key
+            "query.sourceLanguage": sourceLang,
+            "query.targetLanguage": targetLang,
+            "query.text": text
+        });
 
     const res = await fetch(url);
     if (!res.ok)
         throw new Error(
-            `Failed to translate "${text}" (${sourceLang} -> ${targetLang})`
-            + `\n${res.status} ${res.statusText}`
+            `Failed to translate "${text}" (${sourceLang} -> ${targetLang})` + `\n${res.status} ${res.statusText}`
         );
 
     const { sourceLanguage, translation }: GoogleData = await res.json();
 
     return {
-        sourceLanguage: GoogleLanguages[sourceLanguage] ?? sourceLanguage,
+        sourceLanguage: getLanguageName(GoogleLanguages, sourceLanguage),
         text: translation
     };
 }
 
 function fallbackToGoogle(text: string, sourceLang: string, targetLang: string): Promise<TranslationValue> {
-    return googleTranslate(
-        text,
-        deeplLanguageToGoogleLanguage(sourceLang),
-        deeplLanguageToGoogleLanguage(targetLang)
-    );
+    return googleTranslate(text, deeplLanguageToGoogleLanguage(sourceLang), deeplLanguageToGoogleLanguage(targetLang));
 }
 
-const showDeeplApiQuotaToast = onlyOnce(
-    () => showToast({ text: "Deepl API quota exceeded. Falling back to Google Translate", variant: "critical" })
+const showDeeplApiQuotaToast = onlyOnce(() =>
+    showToast({ text: "Deepl API quota exceeded. Falling back to Google Translate", variant: "critical" })
 );
 
 async function deeplTranslate(text: string, sourceLang: string, targetLang: string): Promise<TranslationValue> {
@@ -173,14 +160,17 @@ async function deeplTranslate(text: string, sourceLang: string, targetLang: stri
     const src = translations[0].detected_source_language;
 
     return {
-        sourceLanguage: DeeplLanguages[src] ?? src,
+        sourceLanguage: getLanguageName(DeeplLanguages, src),
         text: translations[0].text
     };
 }
 
 async function kagiTranslate(text: string, sourceLang: string, targetLang: string): Promise<TranslationValue> {
     const { status, data } = await Native.makeKagiTranslateRequest(
-        settings.store.kagiSession, text, sourceLang, targetLang
+        settings.store.kagiSession,
+        text,
+        sourceLang,
+        targetLang
     );
 
     switch (status) {

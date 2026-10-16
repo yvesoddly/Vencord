@@ -14,14 +14,11 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
-*/
+ */
 
 /// <reference path="../src/modules.d.ts" />
 /// <reference path="../src/globals.d.ts" />
 
-// Be very careful with imports in this file to avoid circular dependency issues.
-// Only import pure modules that don't import other parts of Vencord.
-import monacoHtmlLocal from "file://monacoWin.html?minify";
 import * as DataStore from "@api/DataStore";
 import type { Settings } from "@api/Settings";
 import { getThemeInfo } from "@main/themes";
@@ -29,11 +26,14 @@ import { debounce } from "@shared/debounce";
 import { localStorage } from "@utils/localStorage";
 import { getStylusWebStoreUrl } from "@utils/web";
 import { EXTENSION_BASE_URL, metaReady, RENDERER_CSS_URL } from "@utils/web-metadata";
+// Be very careful with imports in this file to avoid circular dependency issues.
+// Only import pure modules that don't import other parts of Vencord.
+import monacoHtmlLocal from "file://monacoWin.html?minify";
 
 // listeners for ipc.on
 const cssListeners = new Set<(css: string) => void>();
-const NOOP = () => { };
-const NOOP_ASYNC = async () => { };
+const NOOP = () => {};
+const NOOP_ASYNC = async () => {};
 
 const setCssDebounced = debounce((css: string) => VencordNative.quickCss.set(css));
 
@@ -44,19 +44,20 @@ window.VencordNative = {
     themes: {
         uploadTheme: (fileName: string, fileData: string) => DataStore.set(fileName, fileData, themeStore),
         deleteTheme: (fileName: string) => DataStore.del(fileName, themeStore),
-        getThemesList: () => DataStore.entries(themeStore).then(entries =>
-            entries.map(([name, css]) => getThemeInfo(css, name.toString()))
-        ),
+        getThemesList: () =>
+            DataStore.entries(themeStore).then(entries =>
+                entries.map(([name, css]) => getThemeInfo(css, name.toString()))
+            ),
         getThemeData: (fileName: string) => DataStore.get(fileName, themeStore),
         getSystemValues: async () => ({}),
 
-        openFolder: async () => Promise.reject("themes:openFolder is not supported on web"),
+        openFolder: async () => Promise.reject("themes:openFolder is not supported on web")
     },
 
     native: {
         getVersions: () => ({}),
         supportsWindowsMaterial: () => false,
-        openExternal: async (url) => void open(url, "_blank"),
+        openExternal: async url => void open(url, "_blank"),
         getRendererCss: async () => {
             if (IS_USERSCRIPT)
                 // need to wait for next tick for _vcUserScriptRendererCss to be set
@@ -64,17 +65,16 @@ window.VencordNative = {
 
             await metaReady;
 
-            return fetch(RENDERER_CSS_URL)
-                .then(res => res.text());
+            return fetch(RENDERER_CSS_URL).then(res => res.text());
         },
-        onRendererCssUpdate: NOOP,
+        onRendererCssUpdate: NOOP
     },
 
     updater: {
         getRepo: async () => ({ ok: true, value: "https://github.com/Vendicated/Vencord" }),
         getUpdates: async () => ({ ok: true, value: [] }),
         update: async () => ({ ok: true, value: false }),
-        rebuild: async () => ({ ok: true, value: true }),
+        rebuild: async () => ({ ok: true, value: true })
     },
 
     quickCss: {
@@ -90,7 +90,9 @@ window.VencordNative = {
         openFile: NOOP_ASYNC,
         async openEditor() {
             if (IS_USERSCRIPT) {
-                const shouldOpenWebStore = confirm("QuickCSS is not supported on the Userscript. You can instead use the Stylus extension.\n\nDo you want to open the Stylus web store page?");
+                const shouldOpenWebStore = confirm(
+                    "QuickCSS is not supported on the Userscript. You can instead use the Stylus extension.\n\nDo you want to open the Stylus web store page?"
+                );
                 if (shouldOpenWebStore) {
                     window.open(getStylusWebStoreUrl(), "_blank");
                 }
@@ -114,9 +116,7 @@ window.VencordNative = {
         getEditorTheme: () => {
             const { getTheme, Theme } = require("@utils/discord");
 
-            return getTheme() === Theme.Light
-                ? "vs-light"
-                : "vs-dark";
+            return getTheme() === Theme.Light ? "vs-light" : "vs-dark";
         }
     },
 
@@ -130,9 +130,9 @@ window.VencordNative = {
             }
         },
         set: async (s: Settings) => localStorage.setItem("VencordSettings", JSON.stringify(s)),
-        openFolder: async () => Promise.reject("settings:openFolder is not supported on web"),
+        openFolder: async () => Promise.reject("settings:openFolder is not supported on web")
     },
 
     pluginHelpers: {} as any,
-    csp: {} as any,
+    csp: {} as any
 };

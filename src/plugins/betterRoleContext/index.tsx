@@ -15,7 +15,15 @@ import { classes } from "@utils/misc";
 import definePlugin, { OptionType } from "@utils/types";
 import { Guild, Role } from "@vencord/discord-types";
 import { findByCodeLazy, findByPropsLazy, findCssClassesLazy } from "@webpack";
-import { ContextMenuApi, GuildRoleStore, Menu, PermissionStore, Popout, RoleMemberPopout, useRef } from "@webpack/common";
+import {
+    ContextMenuApi,
+    GuildRoleStore,
+    Menu,
+    PermissionStore,
+    Popout,
+    RoleMemberPopout,
+    useRef
+} from "@webpack/common";
 
 const GuildSettingsActions = findByPropsLazy("open", "selectRole", "updateGuild");
 const MenuItemClasses = findCssClassesLazy("item", "labelContainer", "colorDefault", "label", "iconContainer");
@@ -25,14 +33,11 @@ const DeveloperMode = getUserSettingLazy("appearance", "developerMode")!;
 
 function PencilIcon() {
     return (
-        <svg
-            role="img"
-            width="18"
-            height="18"
-            fill="none"
-            viewBox="0 0 24 24"
-        >
-            <path fill="currentColor" d="m13.96 5.46 4.58 4.58a1 1 0 0 0 1.42 0l1.38-1.38a2 2 0 0 0 0-2.82l-3.18-3.18a2 2 0 0 0-2.82 0l-1.38 1.38a1 1 0 0 0 0 1.42ZM2.11 20.16l.73-4.22a3 3 0 0 1 .83-1.61l7.87-7.87a1 1 0 0 1 1.42 0l4.58 4.58a1 1 0 0 1 0 1.42l-7.87 7.87a3 3 0 0 1-1.6.83l-4.23.73a1.5 1.5 0 0 1-1.73-1.73Z" />
+        <svg role="img" width="18" height="18" fill="none" viewBox="0 0 24 24">
+            <path
+                fill="currentColor"
+                d="m13.96 5.46 4.58 4.58a1 1 0 0 0 1.42 0l1.38-1.38a2 2 0 0 0 0-2.82l-3.18-3.18a2 2 0 0 0-2.82 0l-1.38 1.38a1 1 0 0 0 0 1.42ZM2.11 20.16l.73-4.22a3 3 0 0 1 .83-1.61l7.87-7.87a1 1 0 0 1 1.42 0l4.58 4.58a1 1 0 0 1 0 1.42l-7.87 7.87a3 3 0 0 1-1.6.83l-4.23.73a1.5 1.5 0 0 1-1.73-1.73Z"
+            />
         </svg>
     );
 }
@@ -40,7 +45,10 @@ function PencilIcon() {
 function AppearanceIcon() {
     return (
         <svg width="18" height="18" viewBox="0 0 24 24">
-            <path fill="currentColor" d="M 12,0 C 5.3733333,0 0,5.3733333 0,12 c 0,6.626667 5.3733333,12 12,12 1.106667,0 2,-0.893333 2,-2 0,-0.52 -0.2,-0.986667 -0.52,-1.346667 -0.306667,-0.346666 -0.506667,-0.813333 -0.506667,-1.32 0,-1.106666 0.893334,-2 2,-2 h 2.36 C 21.013333,17.333333 24,14.346667 24,10.666667 24,4.7733333 18.626667,0 12,0 Z M 4.6666667,12 c -1.1066667,0 -2,-0.893333 -2,-2 0,-1.1066667 0.8933333,-2 2,-2 1.1066666,0 2,0.8933333 2,2 0,1.106667 -0.8933334,2 -2,2 z M 8.666667,6.6666667 c -1.106667,0 -2.0000003,-0.8933334 -2.0000003,-2 0,-1.1066667 0.8933333,-2 2.0000003,-2 1.106666,0 2,0.8933333 2,2 0,1.1066666 -0.893334,2 -2,2 z m 6.666666,0 c -1.106666,0 -2,-0.8933334 -2,-2 0,-1.1066667 0.893334,-2 2,-2 1.106667,0 2,0.8933333 2,2 0,1.1066666 -0.893333,2 -2,2 z m 4,5.3333333 c -1.106666,0 -2,-0.893333 -2,-2 0,-1.1066667 0.893334,-2 2,-2 1.106667,0 2,0.8933333 2,2 0,1.106667 -0.893333,2 -2,2 z" />
+            <path
+                fill="currentColor"
+                d="M 12,0 C 5.3733333,0 0,5.3733333 0,12 c 0,6.626667 5.3733333,12 12,12 1.106667,0 2,-0.893333 2,-2 0,-0.52 -0.2,-0.986667 -0.52,-1.346667 -0.306667,-0.346666 -0.506667,-0.813333 -0.506667,-1.32 0,-1.106666 0.893334,-2 2,-2 h 2.36 C 21.013333,17.333333 24,14.346667 24,10.666667 24,4.7733333 18.626667,0 12,0 Z M 4.6666667,12 c -1.1066667,0 -2,-0.893333 -2,-2 0,-1.1066667 0.8933333,-2 2,-2 1.1066666,0 2,0.8933333 2,2 0,1.106667 -0.8933334,2 -2,2 z M 8.666667,6.6666667 c -1.106667,0 -2.0000003,-0.8933334 -2.0000003,-2 0,-1.1066667 0.8933333,-2 2.0000003,-2 1.106666,0 2,0.8933333 2,2 0,1.1066666 -0.893334,2 -2,2 z m 6.666666,0 c -1.106666,0 -2,-0.8933334 -2,-2 0,-1.1066667 0.893334,-2 2,-2 1.106667,0 2,0.8933333 2,2 0,1.1066666 -0.893333,2 -2,2 z m 4,5.3333333 c -1.106666,0 -2,-0.893333 -2,-2 0,-1.1066667 0.893334,-2 2,-2 1.106667,0 2,0.8933333 2,2 0,1.106667 -0.893333,2 -2,2 z"
+            />
         </svg>
     );
 }
@@ -48,7 +56,10 @@ function AppearanceIcon() {
 function RoleMembersIcon() {
     return (
         <svg width="18" height="18" viewBox="0 0 24 24">
-            <path fill="currentColor" d="M12 10a4 4 0 1 0 0-8 4 4 0 0 0 0 8ZM11.53 11A9.53 9.53 0 0 0 2 20.53c0 .81.66 1.47 1.47 1.47h.22c.24 0 .44-.17.5-.4.29-1.12.84-2.17 1.32-2.91.14-.21.43-.1.4.15l-.26 2.61c-.02.3.2.55.5.55h11.7a.5.5 0 0 0 .5-.55l-.27-2.6c-.02-.26.27-.37.41-.16.48.74 1.03 1.8 1.32 2.9.06.24.26.41.5.41h.22c.81 0 1.47-.66 1.47-1.47A9.53 9.53 0 0 0 12.47 11h-.94Z" />
+            <path
+                fill="currentColor"
+                d="M12 10a4 4 0 1 0 0-8 4 4 0 0 0 0 8ZM11.53 11A9.53 9.53 0 0 0 2 20.53c0 .81.66 1.47 1.47 1.47h.22c.24 0 .44-.17.5-.4.29-1.12.84-2.17 1.32-2.91.14-.21.43-.1.4.15l-.26 2.61c-.02.3.2.55.5.55h11.7a.5.5 0 0 0 .5-.55l-.27-2.6c-.02-.26.27-.37.41-.16.48.74 1.03 1.8 1.32 2.9.06.24.26.41.5.41h.22c.81 0 1.47-.66 1.47-1.47A9.53 9.53 0 0 0 12.47 11h-.94Z"
+            />
         </svg>
     );
 }
@@ -65,7 +76,7 @@ const settings = definePluginSettings({
             },
             {
                 label: "webp",
-                value: "webp",
+                value: "webp"
             },
             {
                 label: "jpg",
@@ -74,7 +85,6 @@ const settings = definePluginSettings({
         ]
     }
 });
-
 
 export function buildExtraRoleContextMenuItems(role: Role, guild: Guild, popoutRef?: React.RefObject<any>) {
     if (!role) return { before: [], after: [] };
@@ -144,7 +154,11 @@ export function buildExtraRoleContextMenuItems(role: Role, guild: Guild, popoutR
                     >
                         {popoutProps => (
                             <div
-                                className={classes(MenuItemClasses.item, MenuItemClasses.labelContainer, MenuItemClasses.colorDefault)}
+                                className={classes(
+                                    MenuItemClasses.item,
+                                    MenuItemClasses.labelContainer,
+                                    MenuItemClasses.colorDefault
+                                )}
                                 ref={popoutRef}
                                 role="menuitem"
                                 {...popoutProps}
@@ -165,7 +179,10 @@ export function buildExtraRoleContextMenuItems(role: Role, guild: Guild, popoutR
     return { before, after };
 }
 
-export function openRoleContextMenu(event: React.MouseEvent<HTMLElement>, { guildId, id: roleId }: { guildId: string; id: string; }) {
+export function openRoleContextMenu(
+    event: React.MouseEvent<HTMLElement>,
+    { guildId, id: roleId }: { guildId: string; id: string }
+) {
     const guild = getCurrentGuild();
     if (!guild || guild.id !== guildId) return;
 
@@ -199,7 +216,8 @@ export function openRoleContextMenu(event: React.MouseEvent<HTMLElement>, { guil
 
 export default definePlugin({
     name: "BetterRoleContext",
-    description: "Adds options to copy role color / edit role / view role icon when right clicking roles in the user profile or in the member list",
+    description:
+        "Adds options to copy role color / edit role / view role icon when right clicking roles in the user profile or in the member list",
     tags: ["Roles", "Appearance"],
     authors: [Devs.Ven, Devs.goodbee, Devs.nightmaresan],
     dependencies: ["UserSettingsAPI"],
@@ -229,7 +247,7 @@ export default definePlugin({
     },
 
     contextMenus: {
-        "dev-context"(children, { id }: { id: string; }) {
+        "dev-context"(children, { id }: { id: string }) {
             const popoutRef = useRef(null);
 
             const guild = getCurrentGuild();

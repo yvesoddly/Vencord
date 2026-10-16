@@ -1,23 +1,10 @@
 /*
- * Vencord, a modification for Discord's desktop app
+ * Vencord, a Discord client mod
  * Copyright (c) 2022 Vendicated and contributors
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <https://www.gnu.org/licenses/>.
-*/
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
 
 import "./styles.css";
-
 import * as DataStore from "@api/DataStore";
 import { isPluginEnabled } from "@api/PluginManager";
 import { useSettings } from "@api/Settings";
@@ -36,9 +23,22 @@ import { classes } from "@utils/misc";
 import { PluginTarget } from "@utils/pluginTargets";
 import { useAwaiter, useCleanupEffect } from "@utils/react";
 import { PluginTag, PluginTags } from "@utils/types";
-import { Button, ConfirmModal, lodash, openModal, Parser, React, SearchableSelect, Select, TextInput, Tooltip, useMemo, useRef, useState } from "@webpack/common";
+import {
+    Button,
+    ConfirmModal,
+    lodash,
+    openModal,
+    Parser,
+    React,
+    SearchableSelect,
+    Select,
+    TextInput,
+    Tooltip,
+    useMemo,
+    useRef,
+    useState
+} from "@webpack/common";
 import { JSX } from "react";
-
 import Plugins, { ExcludedPlugins, PluginMeta } from "~plugins";
 
 import { PluginCard } from "./PluginCard";
@@ -47,28 +47,26 @@ import { UIElementsButton } from "./UIElements";
 export const cl = classNameFactory("vc-plugins-");
 export const logger = new Logger("PluginSettings", "#a6d189");
 
-function ReloadRequiredCard({ required }: { required: boolean; }) {
+function ReloadRequiredCard({ required }: { required: boolean }) {
     return (
         <Card variant={required ? "warning" : "normal"} className={cl("info-card")}>
-            {required
-                ? (
-                    <>
-                        <HeadingTertiary>Restart required!</HeadingTertiary>
-                        <Paragraph className={cl("dep-text")}>
-                            Restart now to apply new plugins and their settings
-                        </Paragraph>
-                        <Button onClick={() => location.reload()} className={cl("restart-button")}>
-                            Restart
-                        </Button>
-                    </>
-                )
-                : (
-                    <>
-                        <HeadingTertiary>Plugin Management</HeadingTertiary>
-                        <Paragraph>Press the cog wheel or info icon to get more info on a plugin</Paragraph>
-                        <Paragraph>Plugins with a cog wheel have settings you can modify!</Paragraph>
-                    </>
-                )}
+            {required ? (
+                <>
+                    <HeadingTertiary>Restart required!</HeadingTertiary>
+                    <Paragraph className={cl("dep-text")}>
+                        Restart now to apply new plugins and their settings
+                    </Paragraph>
+                    <Button onClick={() => location.reload()} className={cl("restart-button")}>
+                        Restart
+                    </Button>
+                </>
+            ) : (
+                <>
+                    <HeadingTertiary>Plugin Management</HeadingTertiary>
+                    <Paragraph>Press the cog wheel or info icon to get more info on a plugin</Paragraph>
+                    <Paragraph>Plugins with a cog wheel have settings you can modify!</Paragraph>
+                </>
+            )}
         </Card>
     );
 }
@@ -83,10 +81,9 @@ const enum SearchStatus {
     API_PLUGINS
 }
 
-function ExcludedPluginsList({ search }: { search: string; }) {
+function ExcludedPluginsList({ search }: { search: string }) {
     const matchingExcludedPlugins = search
-        ? Object.entries(ExcludedPlugins)
-            .filter(([name]) => name.toLowerCase().includes(search))
+        ? Object.entries(ExcludedPlugins).filter(([name]) => name.toLowerCase().includes(search))
         : [];
 
     const ExcludedReasons: Record<PluginTarget, string> = {
@@ -100,8 +97,8 @@ function ExcludedPluginsList({ search }: { search: string; }) {
 
     return (
         <Paragraph className={Margins.top16}>
-            {matchingExcludedPlugins.length
-                ? <>
+            {matchingExcludedPlugins.length ? (
+                <>
                     <Paragraph>Are you looking for:</Paragraph>
                     <ul>
                         {matchingExcludedPlugins.map(([name, reason]) => (
@@ -111,8 +108,9 @@ function ExcludedPluginsList({ search }: { search: string; }) {
                         ))}
                     </ul>
                 </>
-                : "No plugins meet the search criteria."
-            }
+            ) : (
+                "No plugins meet the search criteria."
+            )}
         </Paragraph>
     );
 }
@@ -120,7 +118,7 @@ function ExcludedPluginsList({ search }: { search: string; }) {
 function PluginSettings() {
     const settings = useSettings();
     const changeRef = useRef<ChangeList<string>>(null);
-    const changes = changeRef.current ??= new ChangeList<string>();
+    const changes = (changeRef.current ??= new ChangeList<string>());
 
     useCleanupEffect(() => {
         if (changes.hasChanges)
@@ -135,12 +133,14 @@ function PluginSettings() {
                 >
                     <>
                         <p>The following plugins require a restart:</p>
-                        <div>{changes.map((s, i) => (
-                            <React.Fragment key={s}>
-                                {i > 0 && ", "}
-                                {Parser.parse("`" + s.split(".")[0] + "`")}
-                            </React.Fragment>
-                        ))}</div>
+                        <div>
+                            {changes.map((s, i) => (
+                                <React.Fragment key={s}>
+                                    {i > 0 && ", "}
+                                    {Parser.parse("`" + s.split(".")[0] + "`")}
+                                </React.Fragment>
+                            ))}
+                        </div>
                     </>
                 </ConfirmModal>
             ));
@@ -160,11 +160,14 @@ function PluginSettings() {
         return o;
     }, []);
 
-    const sortedPlugins = useMemo(() =>
-        Object.values(Plugins).sort((a, b) => a.name.localeCompare(b.name)),
+    const sortedPlugins = useMemo(
+        () => Object.values(Plugins).sort((a, b) => a.name.localeCompare(b.name)),
         []
-    )
-        .toSorted((a, b) => Number(settings.plugins[b.name]?.isFavorite ?? false) - Number(settings.plugins[a.name]?.isFavorite ?? false));
+    ).toSorted(
+        (a, b) =>
+            Number(settings.plugins[b.name]?.isFavorite ?? false) -
+            Number(settings.plugins[a.name]?.isFavorite ?? false)
+    );
 
     const hasUserPlugins = useMemo(() => !IS_STANDALONE && Object.values(PluginMeta).some(m => m.userPlugin), []);
 
@@ -173,7 +176,7 @@ function PluginSettings() {
     const search = searchValue.value.toLowerCase();
     const onSearch = (query: string) => setSearchValue(prev => ({ ...prev, value: query }));
 
-    const pluginFilter = (plugin: typeof Plugins[keyof typeof Plugins]) => {
+    const pluginFilter = (plugin: (typeof Plugins)[keyof typeof Plugins]) => {
         const { status, tags } = searchValue;
 
         switch (status) {
@@ -209,39 +212,41 @@ function PluginSettings() {
         );
     };
 
-    const [newPlugins] = useAwaiter(() => DataStore.get("Vencord_existingPlugins").then((cachedPlugins: Record<string, number> | undefined) => {
-        const now = Date.now() / 1000;
-        const existingTimestamps: Record<string, number> = {};
-        const sortedPluginNames = Object.values(sortedPlugins).map(plugin => plugin.name);
+    const [newPlugins] = useAwaiter(() =>
+        DataStore.get("Vencord_existingPlugins").then((cachedPlugins: Record<string, number> | undefined) => {
+            const now = Date.now() / 1000;
+            const existingTimestamps: Record<string, number> = {};
+            const sortedPluginNames = Object.values(sortedPlugins).map(plugin => plugin.name);
 
-        const newPlugins: string[] = [];
-        for (const { name: p } of sortedPlugins) {
-            const time = existingTimestamps[p] = cachedPlugins?.[p] ?? now;
-            if ((time + 60 * 60 * 24 * 2) > now) {
-                newPlugins.push(p);
+            const newPlugins: string[] = [];
+            for (const { name: p } of sortedPlugins) {
+                const time = (existingTimestamps[p] = cachedPlugins?.[p] ?? now);
+                if (time + 60 * 60 * 24 * 2 > now) {
+                    newPlugins.push(p);
+                }
             }
-        }
-        DataStore.set("Vencord_existingPlugins", existingTimestamps);
+            DataStore.set("Vencord_existingPlugins", existingTimestamps);
 
-        return lodash.isEqual(newPlugins, sortedPluginNames) ? [] : newPlugins;
-    }));
+            return lodash.isEqual(newPlugins, sortedPluginNames) ? [] : newPlugins;
+        })
+    );
 
     const plugins = [] as JSX.Element[];
     const requiredPlugins = [] as JSX.Element[];
 
     const showApi = searchValue.status === SearchStatus.API_PLUGINS;
     for (const p of sortedPlugins) {
-        if (p.hidden || (!p.settings && p.name.endsWith("API") && !showApi))
-            continue;
+        if (p.hidden || (!p.settings && p.name.endsWith("API") && !showApi)) continue;
 
         if (!pluginFilter(p)) continue;
 
         const isRequired = p.required || p.isDependency || depMap[p.name]?.some(d => settings.plugins[d].enabled);
 
         if (isRequired) {
-            const tooltipText = p.required || !depMap[p.name]
-                ? "This plugin is required for Vencord to function."
-                : makeDependencyList(depMap[p.name]?.filter(d => settings.plugins[d].enabled));
+            const tooltipText =
+                p.required || !depMap[p.name]
+                    ? "This plugin is required for Vencord to function."
+                    : makeDependencyList(depMap[p.name]?.filter(d => settings.plugins[d].enabled));
 
             requiredPlugins.push(
                 <Tooltip text={tooltipText} key={p.name}>
@@ -276,9 +281,7 @@ function PluginSettings() {
 
             <UIElementsButton />
 
-            <HeadingTertiary className={classes(Margins.top20, Margins.bottom8)}>
-                Filters
-            </HeadingTertiary>
+            <HeadingTertiary className={classes(Margins.top20, Margins.bottom8)}>Filters</HeadingTertiary>
 
             <ErrorBoundary noop>
                 <TextInput
@@ -300,7 +303,7 @@ function PluginSettings() {
                             { label: "Show Disabled", value: SearchStatus.DISABLED },
                             { label: "Show New", value: SearchStatus.NEW },
                             hasUserPlugins && { label: "Show UserPlugins", value: SearchStatus.USER_PLUGINS },
-                            { label: "Show API Plugins", value: SearchStatus.API_PLUGINS },
+                            { label: "Show API Plugins", value: SearchStatus.API_PLUGINS }
                         ].filter(isTruthy)}
                         serialize={String}
                         select={status => setSearchValue(prev => ({ ...prev, status }))}
@@ -321,32 +324,22 @@ function PluginSettings() {
 
             <HeadingTertiary className={Margins.top20}>Plugins</HeadingTertiary>
 
-            {plugins.length || requiredPlugins.length
-                ? (
-                    <div className={cl("grid")}>
-                        {plugins.length
-                            ? plugins
-                            : <Paragraph>No plugins meet the search criteria.</Paragraph>
-                        }
-                    </div>
-                )
-                : <ExcludedPluginsList search={search} />
-            }
-
+            {plugins.length || requiredPlugins.length ? (
+                <div className={cl("grid")}>
+                    {plugins.length ? plugins : <Paragraph>No plugins meet the search criteria.</Paragraph>}
+                </div>
+            ) : (
+                <ExcludedPluginsList search={search} />
+            )}
 
             <Divider className={Margins.top20} />
 
-            <HeadingTertiary className={classes(Margins.top20, Margins.bottom8)}>
-                Required Plugins
-            </HeadingTertiary>
+            <HeadingTertiary className={classes(Margins.top20, Margins.bottom8)}>Required Plugins</HeadingTertiary>
 
             <div className={cl("grid")}>
-                {requiredPlugins.length
-                    ? requiredPlugins
-                    : <Paragraph>No plugins meet the search criteria.</Paragraph>
-                }
+                {requiredPlugins.length ? requiredPlugins : <Paragraph>No plugins meet the search criteria.</Paragraph>}
             </div>
-        </SettingsTab >
+        </SettingsTab>
     );
 }
 
@@ -354,7 +347,11 @@ function makeDependencyList(deps: string[]) {
     return (
         <>
             <Paragraph>This plugin is required by:</Paragraph>
-            {deps.map((dep: string) => <Paragraph key={dep} className={cl("dep-text")}>{dep}</Paragraph>)}
+            {deps.map((dep: string) => (
+                <Paragraph key={dep} className={cl("dep-text")}>
+                    {dep}
+                </Paragraph>
+            ))}
         </>
     );
 }

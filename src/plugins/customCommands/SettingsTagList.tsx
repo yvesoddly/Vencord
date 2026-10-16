@@ -20,11 +20,15 @@ export function SettingsTagList() {
 
     return (
         <section className={Margins.top8}>
-            <BaseText size="md" weight="semibold">Registered Tags</BaseText>
+            <BaseText size="md" weight="semibold">
+                Registered Tags
+            </BaseText>
             <Flex flexDirection="column" gap="0.5em" className={Margins.top8}>
                 {Object.values(tagsList).map(tag => (
                     <Card key={tag.name} className="vc-customCommands-card">
-                        <Paragraph size="md" weight="medium">{tag.name}</Paragraph>
+                        <Paragraph size="md" weight="medium">
+                            {tag.name}
+                        </Paragraph>
 
                         <Button variant="secondary" size="iconOnly" onClick={() => openCreateTagModal(tag)}>
                             <PencilIcon aria-label="Edit Tag" width={20} height={20} />

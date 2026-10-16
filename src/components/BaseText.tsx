@@ -5,7 +5,6 @@
  */
 
 import "./BaseText.css";
-
 import { classNameFactory } from "@utils/css";
 import { classes } from "@utils/misc";
 import type { Text as DiscordText } from "@vencord/discord-types";
@@ -31,7 +30,7 @@ const Weights = {
     medium: "500",
     semibold: "600",
     bold: "700",
-    extrabold: "800",
+    extrabold: "800"
 } as const;
 
 export function generateTextCss() {
@@ -71,7 +70,10 @@ export function BaseText<T extends TextTag = "div">(props: BaseTextProps<T>): Re
     } = props;
 
     return (
-        <Tag className={classes(textCls("base", size, weight, defaultColor && "defaultColor"), className)} {...restProps}>
+        <Tag
+            className={classes(textCls("base", size, weight, defaultColor && "defaultColor"), className)}
+            {...restProps}
+        >
             {children}
         </Tag>
     );

@@ -6,33 +6,39 @@
 
 import { FormSwitch } from "@components/FormSwitch";
 import { Margins } from "@utils/margins";
+import type { ReplaceFn } from "@utils/types";
 import { Forms, Parser, TextInput, useEffect, useState } from "@webpack/common";
+import type { SetStateAction } from "react";
 
 const RegexGuide = {
     "\\i": "Special regex escape sequence that matches identifiers (varnames, classnames, etc.)",
-    "$$": "Insert a $",
+    $$: "Insert a $",
     "$&": "Insert the entire match",
     "$`\u200b": "Insert the substring before the match",
     "$'": "Insert the substring after the match",
-    "$n": "Insert the nth capturing group ($1, $2...)",
-    "$self": "Insert the plugin instance",
+    $n: "Insert the nth capturing group ($1, $2...)",
+    $self: "Insert the plugin instance"
 } as const;
 
-export function ReplacementInput({ replacement, setReplacement, replacementError }) {
+interface ReplacementInputProps {
+    replacement: string | ReplaceFn;
+    setReplacement(v: SetStateAction<string | ReplaceFn>): void;
+    replacementError: string | undefined;
+}
+
+export function ReplacementInput({ replacement, setReplacement, replacementError }: ReplacementInputProps) {
     const [isFunc, setIsFunc] = useState(false);
     const [error, setError] = useState<string>();
 
-    function onChange(v: string) {
+    function onChange(v: string | ReplaceFn) {
         setError(void 0);
 
         if (isFunc) {
             try {
-                const func = (0, eval)(v);
-                if (typeof func === "function")
-                    setReplacement(() => func);
-
-                else
-                    setError("Replacement must be a function");
+                // indirect eval returns non-string values as is
+                const func = typeof v === "string" ? (0, eval)(v) : v;
+                if (typeof func === "function") setReplacement(() => func);
+                else setError("Replacement must be a function");
             } catch (e) {
                 setReplacement(v);
                 setError((e as Error).message);
@@ -43,21 +49,15 @@ export function ReplacementInput({ replacement, setReplacement, replacementError
     }
 
     useEffect(() => {
-        if (isFunc)
-            onChange(replacement);
-        else
-            setError(void 0);
+        if (isFunc) onChange(replacement);
+        else setError(void 0);
     }, [isFunc]);
 
     return (
         <>
             {/* FormTitle adds a class if className is not set, so we set it to an empty string to prevent that */}
             <Forms.FormTitle className="">Replacement</Forms.FormTitle>
-            <TextInput
-                value={replacement?.toString()}
-                onChange={onChange}
-                error={error ?? replacementError}
-            />
+            <TextInput value={replacement?.toString()} onChange={onChange} error={error ?? replacementError} />
             {!isFunc && (
                 <div>
                     <Forms.FormTitle className={Margins.top8}>Cheat Sheet</Forms.FormTitle>

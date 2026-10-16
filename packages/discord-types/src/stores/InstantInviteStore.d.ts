@@ -2,6 +2,7 @@ import { FluxStore } from "..";
 import { Invite } from "./InviteStore";
 
 export interface FriendInvite extends Invite {
+    expires_at: string;
     max_age: number;
     max_uses: number;
     uses: number;

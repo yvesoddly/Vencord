@@ -57,26 +57,24 @@ const table = new Uint32Array(256);
 
 for (let i = 0; i < 256; i++) {
     let c = i;
-    for (let k = 0; k < 8; k++) c = (c & 1) ? 0xEDB88320 ^ (c >>> 1) : c >>> 1;
+    for (let k = 0; k < 8; k++) c = c & 1 ? 0xedb88320 ^ (c >>> 1) : c >>> 1;
     table[i] = c;
 }
 
 function crc32(bytes: U8Arr, start: number = 0, length?: number): number {
-    length = length ?? (bytes.length - start);
+    length = length ?? bytes.length - start;
     let crc = -1;
     for (let i = start, l = start + length; i < l; i++) {
-        crc = (crc >>> 8) ^ table[(crc ^ bytes[i]) & 0xFF];
+        crc = (crc >>> 8) ^ table[(crc ^ bytes[i]) & 0xff];
     }
-    return crc ^ (-1);
+    return crc ^ -1;
 }
-
 
 const PNG_SIGNATURE_BYTES = new Uint8Array([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]);
 
 export function parseAPNG(buffer: ArrayBuffer): Promise<Animation> {
     const bytes = new Uint8Array(buffer);
     return new Promise(function (resolve, reject) {
-
         for (let i = 0; i < PNG_SIGNATURE_BYTES.length; i++) {
             if (PNG_SIGNATURE_BYTES[i] != bytes[i]) {
                 reject("Not a PNG file (invalid file signature)");
@@ -124,7 +122,7 @@ export function parseAPNG(buffer: ArrayBuffer): Promise<Animation> {
                     let delayN = readWord(bytes, off + 8 + 20);
                     let delayD = readWord(bytes, off + 8 + 22);
                     if (delayD == 0) delayD = 100;
-                    frame.delay = 1000 * delayN / delayD;
+                    frame.delay = (1000 * delayN) / delayD;
                     // see http://mxr.mozilla.org/mozilla/source/gfx/src/shared/gfxImageFrame.cpp#343
                     if (frame.delay <= 10) frame.delay = 100;
                     anim.playTime += frame.delay;
@@ -170,7 +168,7 @@ export function parseAPNG(buffer: ArrayBuffer): Promise<Animation> {
                 bb.push(makeChunkBytes("IDAT", frame.dataParts![j]));
             }
             bb.push(postBlob);
-            const url = URL.createObjectURL(new Blob(bb, { "type": "image/png" }));
+            const url = URL.createObjectURL(new Blob(bb, { type: "image/png" }));
             delete frame.dataParts;
 
             /**
@@ -178,7 +176,7 @@ export function parseAPNG(buffer: ArrayBuffer): Promise<Animation> {
              * https://code.google.com/p/chromium/issues/detail?id=238071
              * http://stackoverflow.com/questions/16377375/using-canvas-drawimage-in-chrome-extension-content-script/16378270
              */
-            const img = frame.img = new Image();
+            const img = (frame.img = new Image());
             img.onload = function () {
                 URL.revokeObjectURL(img.src);
                 createdImages++;
@@ -194,7 +192,10 @@ export function parseAPNG(buffer: ArrayBuffer): Promise<Animation> {
     });
 }
 
-function parseChunks(bytes: U8Arr, callback: (type: string, bytes: U8Arr, off: number, length: number) => boolean | void): void {
+function parseChunks(
+    bytes: U8Arr,
+    callback: (type: string, bytes: U8Arr, off: number, length: number) => boolean | void
+): void {
     let off = 8;
     let res: boolean | void;
     let type: string;
@@ -210,14 +211,14 @@ function parseChunks(bytes: U8Arr, callback: (type: string, bytes: U8Arr, off: n
 function readDWord(bytes: U8Arr, off: number): number {
     let x = 0;
     // Force the most-significant byte to unsigned.
-    x += ((bytes[0 + off] << 24) >>> 0);
-    for (let i = 1; i < 4; i++) x += ((bytes[i + off] << ((3 - i) * 8)));
+    x += (bytes[0 + off] << 24) >>> 0;
+    for (let i = 1; i < 4; i++) x += bytes[i + off] << ((3 - i) * 8);
     return x;
 }
 
 function readWord(bytes: U8Arr, off: number): number {
     let x = 0;
-    for (let i = 0; i < 2; i++) x += (bytes[i + off] << ((1 - i) * 8));
+    for (let i = 0; i < 2; i++) x += bytes[i + off] << ((1 - i) * 8);
     return x;
 }
 
@@ -255,4 +256,4 @@ function makeChunkBytes(type: string, dataBytes: U8Arr): U8Arr {
     const crc = crc32(bytes, 4, crcLen);
     bytes.set(makeDWordArray(crc), crcLen + 4);
     return bytes;
-};
+}

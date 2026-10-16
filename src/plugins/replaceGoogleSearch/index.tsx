@@ -27,7 +27,7 @@ const DefaultEngines = {
 
 const enum ReplacementEngineValue {
     OFF = "off",
-    CUSTOM = "custom",
+    CUSTOM = "custom"
 }
 
 const settings = definePluginSettings({
@@ -61,18 +61,21 @@ function makeSearchItem(src: string) {
     const { customEngineName, customEngineURL, replacementEngine } = settings.store;
 
     const hasCustomEngine = Boolean(customEngineName && customEngineURL);
-    const hasValidReplacementEngine = replacementEngine !== ReplacementEngineValue.OFF && !(replacementEngine === ReplacementEngineValue.CUSTOM && !hasCustomEngine);
+    const hasValidReplacementEngine =
+        replacementEngine !== ReplacementEngineValue.OFF &&
+        !(replacementEngine === ReplacementEngineValue.CUSTOM && !hasCustomEngine);
 
-    const Engines = { ...DefaultEngines };
+    const Engines: Record<string, string> = { ...DefaultEngines };
 
-    if (hasCustomEngine) {
-        Engines[customEngineName!] = customEngineURL;
+    if (customEngineName && customEngineURL) {
+        Engines[customEngineName] = customEngineURL;
     }
 
     if (hasValidReplacementEngine) {
-        const name = replacementEngine === ReplacementEngineValue.CUSTOM && hasCustomEngine
-            ? customEngineName
-            : replacementEngine;
+        const name =
+            replacementEngine === ReplacementEngineValue.CUSTOM && hasCustomEngine
+                ? customEngineName
+                : replacementEngine;
 
         return (
             <Menu.MenuItem
@@ -98,7 +101,10 @@ function makeSearchItem(src: string) {
                         key={key}
                         id={key}
                         label={engine}
-                        leadingAccessory={{ type: "image", src: `https://icons.duckduckgo.com/ip3/${new URL(Engines[engine]).hostname}.ico` }}
+                        leadingAccessory={{
+                            type: "image",
+                            src: `https://icons.duckduckgo.com/ip3/${new URL(Engines[engine]).hostname}.ico`
+                        }}
                         action={() => search(src, Engines[engine])}
                     />
                 );
@@ -127,6 +133,6 @@ export default definePlugin({
     settings,
 
     contextMenus: {
-        "message": messageContextMenuPatch
+        message: messageContextMenuPatch
     }
 });

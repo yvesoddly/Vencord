@@ -1,26 +1,13 @@
 /*
- * Vencord, a modification for Discord's desktop app
+ * Vencord, a Discord client mod
  * Copyright (c) 2023 Vendicated and contributors
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <https://www.gnu.org/licenses/>.
-*/
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
 
 import { definePluginSettings } from "@api/Settings";
 import { Devs, IS_MAC } from "@utils/constants";
 import definePlugin, { OptionType } from "@utils/types";
 import { SettingsRouter } from "@webpack/common";
-
 
 const settings = definePluginSettings({
     showNavigationButtons: {
@@ -31,15 +18,17 @@ const settings = definePluginSettings({
     },
     overrideCommonKeybinds: {
         type: OptionType.BOOLEAN,
-        description: "Allows discord to override the most common tab navigation keybinds (ctrl+t, ctrl+shift+t, ctrl+tab, ctrl+shift+tab, ctrl+n). Only works in a few select browsers that allow website keybinds to take priority over native ones.",
+        description:
+            "Allows discord to override the most common tab navigation keybinds (ctrl+t, ctrl+shift+t, ctrl+tab, ctrl+shift+tab, ctrl+n). Only works in a few select browsers that allow website keybinds to take priority over native ones.",
         default: IS_VESKTOP,
-        restartNeeded: true,
+        restartNeeded: true
     }
 });
 
 export default definePlugin({
     name: "WebKeybinds",
-    description: "Re-adds keybinds missing in the web version of Discord. Only works fully on Vesktop/Legcord, not inside your browser",
+    description:
+        "Re-adds keybinds missing in the web version of Discord. Only works fully on Vesktop/Legcord, not inside your browser",
     tags: ["Shortcuts"],
     authors: [Devs.Ven, Devs.Davri],
     enabledByDefault: true,
@@ -61,7 +50,7 @@ export default definePlugin({
                 match: /\({showBackForwardButtons:(\i)/,
                 replace: "({showBackForwardButtons:($1=true)"
             },
-            predicate: () => settings.store.showNavigationButtons,
+            predicate: () => settings.store.showNavigationButtons
         }
     ],
 

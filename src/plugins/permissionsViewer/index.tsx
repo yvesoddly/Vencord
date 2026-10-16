@@ -1,23 +1,10 @@
 /*
- * Vencord, a modification for Discord's desktop app
+ * Vencord, a Discord client mod
  * Copyright (c) 2023 Vendicated and contributors
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <https://www.gnu.org/licenses/>.
-*/
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
 
 import "./styles.css";
-
 import { findGroupChildrenByChildId, NavContextMenuPatchCallback } from "@api/ContextMenu";
 import { definePluginSettings } from "@api/Settings";
 import ErrorBoundary from "@components/ErrorBoundary";
@@ -29,7 +16,21 @@ import definePlugin, { OptionType } from "@utils/types";
 import type { Guild, RoleOrUserPermission } from "@vencord/discord-types";
 import { PermissionOverwriteType } from "@vencord/discord-types/enums";
 import { findCssClassesLazy } from "@webpack";
-import { Button, ChannelStore, Dialog, GuildMemberStore, GuildRoleStore, GuildStore, match, Menu, PermissionsBits, Popout, useEffect, useRef, UserStore } from "@webpack/common";
+import {
+    Button,
+    ChannelStore,
+    Dialog,
+    GuildMemberStore,
+    GuildRoleStore,
+    GuildStore,
+    match,
+    Menu,
+    PermissionsBits,
+    Popout,
+    useEffect,
+    useRef,
+    UserStore
+} from "@webpack/common";
 
 import openRolesAndUsersPermissionsModal from "./components/RolesAndUsersPermissions";
 import UserPermissions from "./components/UserPermissions";
@@ -56,10 +57,13 @@ export const settings = definePluginSettings({
             { label: "Highest Role", value: PermissionsSortOrder.HighestRole, default: true },
             { label: "Lowest Role", value: PermissionsSortOrder.LowestRole }
         ]
-    },
+    }
 });
 
-function MenuItem(guildId: string, { id, type, withIcon }: { id?: string, type?: MenuItemParentType, withIcon?: boolean; }) {
+function MenuItem(
+    guildId: string,
+    { id, type, withIcon }: { id?: string; type?: MenuItemParentType; withIcon?: boolean }
+) {
     if (type === MenuItemParentType.User && !GuildMemberStore.isMember(guildId, id!)) return null;
 
     return (
@@ -71,15 +75,16 @@ function MenuItem(guildId: string, { id, type, withIcon }: { id?: string, type?:
                 const guild = GuildStore.getGuild(guildId);
 
                 const { permissions, header } = match(type)
-                    .returnType<{ permissions: RoleOrUserPermission[], header: string; }>()
+                    .returnType<{ permissions: RoleOrUserPermission[]; header: string }>()
                     .with(MenuItemParentType.User, () => {
                         const member = GuildMemberStore.getMember(guildId, id!)!;
 
-                        const permissions: RoleOrUserPermission[] = getSortedRolesForMember(guild, member)
-                            .map(role => ({
+                        const permissions: RoleOrUserPermission[] = getSortedRolesForMember(guild, member).map(
+                            role => ({
                                 type: PermissionOverwriteType.ROLE,
                                 ...role
-                            }));
+                            })
+                        );
 
                         if (guild.ownerId === id) {
                             permissions.push({
@@ -96,12 +101,15 @@ function MenuItem(guildId: string, { id, type, withIcon }: { id?: string, type?:
                     .with(MenuItemParentType.Channel, () => {
                         const channel = ChannelStore.getChannel(id!);
 
-                        const permissions = sortPermissionOverwrites(Object.values(channel.permissionOverwrites).map(({ id, allow, deny, type }) => ({
-                            type,
-                            id,
-                            overwriteAllow: allow,
-                            overwriteDeny: deny
-                        })), guildId);
+                        const permissions = sortPermissionOverwrites(
+                            Object.values(channel.permissionOverwrites).map(({ id, allow, deny, type }) => ({
+                                type,
+                                id,
+                                overwriteAllow: allow,
+                                overwriteDeny: deny
+                            })),
+                            guildId
+                        );
 
                         return {
                             permissions,
@@ -126,7 +134,11 @@ function MenuItem(guildId: string, { id, type, withIcon }: { id?: string, type?:
     );
 }
 
-function makeContextMenuPatch(childId: string | string[], type?: MenuItemParentType, withIcon = false): NavContextMenuPatchCallback {
+function makeContextMenuPatch(
+    childId: string | string[],
+    type?: MenuItemParentType,
+    withIcon = false
+): NavContextMenuPatchCallback {
     return (children, props) => {
         if (
             !props ||
@@ -175,41 +187,44 @@ export default definePlugin({
         }
     ],
 
-    ViewPermissionsButton: ErrorBoundary.wrap(({ className, guild, userId }: { className: string; guild: Guild; userId: string; }) => {
-        const buttonRef = useRef(null);
-        useEffect(() => void loadGetGuildPermissionSpecMap(), []);
+    ViewPermissionsButton: ErrorBoundary.wrap(
+        ({ className, guild, userId }: { className: string; guild: Guild; userId: string }) => {
+            const buttonRef = useRef(null);
+            useEffect(() => void loadGetGuildPermissionSpecMap(), []);
 
-        const guildMember = GuildMemberStore.getMember(guild.id, userId);
-        if (!guildMember) return null;
+            const guildMember = GuildMemberStore.getMember(guild.id, userId);
+            if (!guildMember) return null;
 
-        return (
-            <Popout
-                position="bottom"
-                align="center"
-                targetElementRef={buttonRef}
-                renderPopout={({ closePopout }) => (
-                    <Dialog className={PopoutClasses.container} style={{ width: "500px" }}>
-                        <UserPermissions guild={guild} guildMember={guildMember} closePopout={closePopout} />
-                    </Dialog>
-                )}
-            >
-                {popoutProps => (
-                    <TooltipContainer text="View Permissions">
-                        <Button
-                            {...popoutProps}
-                            ref={buttonRef}
-                            color={Button.Colors.CUSTOM}
-                            look={Button.Looks.FILLED}
-                            size={Button.Sizes.NONE}
-                            className={classes(className, "vc-permviewer-role-button")}
-                        >
-                            <SafetyIcon height="16" width="16" />
-                        </Button>
-                    </TooltipContainer>
-                )}
-            </Popout>
-        );
-    }, { noop: true }),
+            return (
+                <Popout
+                    position="bottom"
+                    align="center"
+                    targetElementRef={buttonRef}
+                    renderPopout={({ closePopout }) => (
+                        <Dialog className={PopoutClasses.container} style={{ width: "500px" }}>
+                            <UserPermissions guild={guild} guildMember={guildMember} closePopout={closePopout} />
+                        </Dialog>
+                    )}
+                >
+                    {popoutProps => (
+                        <TooltipContainer text="View Permissions">
+                            <Button
+                                {...popoutProps}
+                                ref={buttonRef}
+                                color={Button.Colors.CUSTOM}
+                                look={Button.Looks.FILLED}
+                                size={Button.Sizes.NONE}
+                                className={classes(className, "vc-permviewer-role-button")}
+                            >
+                                <SafetyIcon height="16" width="16" />
+                            </Button>
+                        </TooltipContainer>
+                    )}
+                </Popout>
+            );
+        },
+        { noop: true }
+    ),
 
     contextMenus: {
         "user-context": makeContextMenuPatch("roles", MenuItemParentType.User),

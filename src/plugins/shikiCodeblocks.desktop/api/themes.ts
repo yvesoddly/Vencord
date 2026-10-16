@@ -1,26 +1,15 @@
 /*
- * Vencord, a modification for Discord's desktop app
+ * Vencord, a Discord client mod
  * Copyright (c) 2024 Vendicated and contributors
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <https://www.gnu.org/licenses/>.
-*/
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
 
 import { IShikiTheme } from "@vap/shiki";
 
 export const SHIKI_REPO = "shikijs/textmate-grammars-themes";
 export const SHIKI_REPO_COMMIT = "bc5436518111d87ea58eb56d97b3f9bec30e6b83";
-export const shikiRepoTheme = (name: string) => `https://cdn.jsdelivr.net/gh/${SHIKI_REPO}@${SHIKI_REPO_COMMIT}/packages/tm-themes/themes/${name}.json`;
+export const shikiRepoTheme = (name: string) =>
+    `https://cdn.jsdelivr.net/gh/${SHIKI_REPO}@${SHIKI_REPO_COMMIT}/packages/tm-themes/themes/${name}.json`;
 
 export const themes = {
     // Default
@@ -88,7 +77,7 @@ export const themes = {
     Vesper: shikiRepoTheme("vesper"),
     VitesseBlack: shikiRepoTheme("vitesse-black"),
     VitesseDark: shikiRepoTheme("vitesse-dark"),
-    VitesseLight: shikiRepoTheme("vitesse-light"),
+    VitesseLight: shikiRepoTheme("vitesse-light")
 };
 
 export const themeCache = new Map<string, IShikiTheme>();

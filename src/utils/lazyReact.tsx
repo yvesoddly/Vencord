@@ -10,7 +10,7 @@ import { makeLazy } from "./lazy";
 
 const NoopComponent = () => null;
 
-export type LazyComponentWrapper<ComponentType> = ComponentType & { $$vencordGetWrappedComponent(): ComponentType; };
+export type LazyComponentWrapper<ComponentType> = ComponentType & { $$vencordGetWrappedComponent(): ComponentType };
 
 /**
  * A lazy component. The factory method is called on first render.
@@ -18,7 +18,10 @@ export type LazyComponentWrapper<ComponentType> = ComponentType & { $$vencordGet
  * @param attempts How many times to try to get the component before giving up
  * @returns Result of factory function
  */
-export function LazyComponent<T extends object = any>(factory: () => ComponentType<T>, attempts = 5): LazyComponentWrapper<ComponentType<T>> {
+export function LazyComponent<T extends object = any>(
+    factory: () => ComponentType<T>,
+    attempts = 5
+): LazyComponentWrapper<ComponentType<T>> {
     const get = makeLazy(factory, attempts);
     const LazyComponent = (props: T) => {
         const Component = get() ?? NoopComponent;

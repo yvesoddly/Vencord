@@ -1,23 +1,10 @@
 /*
- * Vencord, a modification for Discord's desktop app
+ * Vencord, a Discord client mod
  * Copyright (c) 2022 Vendicated and contributors
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <https://www.gnu.org/licenses/>.
-*/
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
 
 import "./styles.css";
-
 import { get, set } from "@api/DataStore";
 import { updateMessage } from "@api/MessageUpdater";
 import { migratePluginSettings } from "@api/Settings";
@@ -33,7 +20,7 @@ const KEY = "HideAttachments_HiddenIds";
 let hiddenMessages = new Set<string>();
 
 async function getHiddenMessages() {
-    hiddenMessages = await get(KEY) ?? new Set();
+    hiddenMessages = (await get(KEY)) ?? new Set();
     return hiddenMessages;
 }
 
@@ -41,12 +28,12 @@ const saveHiddenMessages = (ids: Set<string>) => set(KEY, ids);
 
 migratePluginSettings("HideMedia", "HideAttachments");
 
-const hasMedia = (msg: Message) => msg.attachments.length > 0 || msg.embeds.length > 0 || msg.stickerItems.length > 0 || msg.components.length > 0;
+const hasMedia = (msg: Message) =>
+    msg.attachments.length > 0 || msg.embeds.length > 0 || msg.stickerItems.length > 0 || msg.components.length > 0;
 
 async function toggleHide(channelId: string, messageId: string) {
     const ids = await getHiddenMessages();
-    if (!ids.delete(messageId))
-        ids.add(messageId);
+    if (!ids.delete(messageId)) ids.add(messageId);
 
     await saveHiddenMessages(ids);
     updateMessage(channelId, messageId);
@@ -59,13 +46,15 @@ export default definePlugin({
     authors: [Devs.Ven],
     dependencies: ["MessageUpdaterAPI"],
 
-    patches: [{
-        find: "this.renderAttachments(",
-        replacement: {
-            match: /(?<=\i=)this\.render(?:Attachments|Embeds|StickersAccessories|ComponentAccessories)\((\i)\)/g,
-            replace: "$self.shouldHide($1?.id)?null:$&"
+    patches: [
+        {
+            find: "this.renderAttachments(",
+            replacement: {
+                match: /(?<=\i=)this\.render(?:Attachments|Embeds|StickersAccessories|ComponentAccessories)\((\i)\)/g,
+                replace: "$self.shouldHide($1?.id)?null:$&"
+            }
         }
-    }],
+    ],
 
     messagePopoverButton: {
         icon: ImageInvisible,
@@ -81,14 +70,16 @@ export default definePlugin({
                 channel: ChannelStore.getChannel(msg.channel_id),
                 onClick: () => toggleHide(msg.channel_id, msg.id)
             };
-        },
+        }
     },
 
     renderMessageAccessory({ message }) {
         if (!this.shouldHide(message.id)) return null;
 
         return (
-            <span className={classes("vc-hideAttachments-accessory", !message.content && "vc-hideAttachments-no-content")}>
+            <span
+                className={classes("vc-hideAttachments-accessory", !message.content && "vc-hideAttachments-no-content")}
+            >
                 Media Hidden
             </span>
         );
@@ -104,5 +95,5 @@ export default definePlugin({
 
     shouldHide(messageId: string) {
         return hiddenMessages.has(messageId);
-    },
+    }
 });

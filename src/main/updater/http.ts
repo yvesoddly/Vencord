@@ -1,92 +1,117 @@
 /*
- * Vencord, a modification for Discord's desktop app
+ * Vencord, a Discord client mod
  * Copyright (c) 2022 Vendicated and contributors
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <https://www.gnu.org/licenses/>.
-*/
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
 
-import { fetchBuffer, fetchJson } from "@main/utils/http";
-import { IpcEvents } from "@shared/IpcEvents";
-import { VENCORD_USER_AGENT } from "@shared/vencordUserAgent";
-import { ipcMain } from "electron";
-import { writeFile } from "fs/promises";
 import { join } from "path";
 
+import { VENCORD_USER_AGENT } from "@shared/vencordUserAgent";
+import * as Effect from "effect/Effect";
+import * as FileSystem from "effect/FileSystem";
+import { HttpClient, HttpClientRequest, HttpClientResponse } from "effect/http";
+import * as Layer from "effect/Layer";
+import * as Ref from "effect/Ref";
+import * as Schema from "effect/Schema";
 import gitHash from "~git-hash";
 import gitRemote from "~git-remote";
 
-import { serializeErrors, VENCORD_FILES } from "./common";
+import { Updater, UpdaterError, VENCORD_FILES } from "./common";
 
-const API_BASE = `https://api.github.com/repos/${gitRemote}`;
-let PendingUpdates = [] as [string, string][];
+const Release = Schema.Struct({
+    // "DevBuild <hash>"
+    name: Schema.String,
+    assets: Schema.Array(Schema.Struct({ name: Schema.String, browser_download_url: Schema.String }))
+});
 
-async function githubGet<T = any>(endpoint: string) {
-    return fetchJson<T>(API_BASE + endpoint, {
-        headers: {
-            Accept: "application/vnd.github+json",
-            // "All API requests MUST include a valid User-Agent header.
-            // Requests with no User-Agent header will be rejected."
-            "User-Agent": VENCORD_USER_AGENT
-        }
-    });
-}
+const Comparison = Schema.Struct({
+    commits: Schema.Array(
+        Schema.Struct({
+            sha: Schema.String,
+            author: Schema.NullOr(Schema.Struct({ login: Schema.String })),
+            commit: Schema.Struct({
+                message: Schema.String,
+                author: Schema.NullOr(Schema.Struct({ name: Schema.String }))
+            })
+        })
+    )
+});
 
-async function calculateGitChanges() {
-    const isOutdated = await fetchUpdates();
-    if (!isOutdated) return [];
+/** Updates a standalone build from the repo's latest GitHub release. */
+export const HttpUpdater = Layer.effect(
+    Updater,
+    Effect.gen(function* () {
+        const fs = yield* FileSystem.FileSystem;
+        const client = (yield* HttpClient.HttpClient).pipe(
+            HttpClient.mapRequest(
+                HttpClientRequest.setHeaders({
+                    Accept: "application/vnd.github+json",
+                    // "All API requests MUST include a valid User-Agent header."
+                    "User-Agent": VENCORD_USER_AGENT
+                })
+            ),
+            HttpClient.filterStatusOk
+        );
 
-    const data = await githubGet(`/compare/${gitHash}...HEAD`);
+        /** Release assets downloaded by `update` and written by `rebuild`, as [file name, url]. */
+        const pending = yield* Ref.make<ReadonlyArray<readonly [string, string]>>([]);
 
-    return data.commits.map((c: any) => ({
-        // github api only sends the long sha
-        hash: c.sha.slice(0, 7),
-        author: c.author?.login ?? c.commit?.author?.name ?? "Unknown Author",
-        message: c.commit.message.split("\n")[0]
-    }));
-}
+        const github = <S extends Schema.Top>(endpoint: string, schema: S) =>
+            client
+                .get(`https://api.github.com/repos/${gitRemote}${endpoint}`)
+                .pipe(Effect.flatMap(HttpClientResponse.schemaBodyJson(schema)));
 
-async function fetchUpdates() {
-    const data = await githubGet("/releases/latest");
+        // Queues the latest release's files when it was built from another commit.
+        const fetchUpdates = Effect.gen(function* () {
+            const release = yield* github("/releases/latest", Release);
+            const hash = release.name.slice(release.name.lastIndexOf(" ") + 1);
+            if (hash === gitHash) return false;
 
-    const hash = data.name.slice(data.name.lastIndexOf(" ") + 1);
-    if (hash === gitHash)
-        return false;
+            yield* Ref.set(
+                pending,
+                release.assets
+                    .filter(({ name }) => VENCORD_FILES.some(file => name.startsWith(file)))
+                    .map(({ name, browser_download_url }) => [name, browser_download_url] as const)
+            );
+            return true;
+        });
 
-    data.assets.forEach(({ name, browser_download_url }) => {
-        if (VENCORD_FILES.some(s => name.startsWith(s))) {
-            PendingUpdates.push([name, browser_download_url]);
-        }
-    });
+        const changes = Effect.gen(function* () {
+            if (!(yield* fetchUpdates)) return [];
+            const { commits } = yield* github(`/compare/${gitHash}...HEAD`, Comparison);
+            return commits.map(c => ({
+                // the API only sends the long sha
+                hash: c.sha.slice(0, 7),
+                author: c.author?.login ?? c.commit.author?.name ?? "Unknown Author",
+                message: c.commit.message.split("\n")[0]
+            }));
+        });
 
-    return true;
-}
+        const rebuild = Effect.gen(function* () {
+            const files = yield* Effect.forEach(
+                yield* Ref.get(pending),
+                ([name, url]) =>
+                    client.get(url).pipe(
+                        Effect.flatMap(response => response.arrayBuffer),
+                        Effect.map(contents => [join(__dirname, name), new Uint8Array(contents)] as const)
+                    ),
+                { concurrency: "unbounded" }
+            );
+            // Download everything before writing anything, so a failed download leaves the install intact.
+            yield* Effect.forEach(files, ([file, contents]) => fs.writeFile(file, contents), { discard: true });
+            yield* Ref.set(pending, []);
+            return true;
+        });
 
-async function applyUpdates() {
-    const fileContents = await Promise.all(PendingUpdates.map(async ([name, url]) => {
-        const contents = await fetchBuffer(url);
-        return [join(__dirname, name), contents] as const;
-    }));
+        const toUpdaterError = Effect.mapError(
+            (error: { readonly message: string }) => new UpdaterError({ message: error.message })
+        );
 
-    await Promise.all(fileContents.map(async ([filename, contents]) =>
-        writeFile(filename, contents))
-    );
-
-    PendingUpdates = [];
-    return true;
-}
-
-ipcMain.handle(IpcEvents.GET_REPO, serializeErrors(() => `https://github.com/${gitRemote}`));
-ipcMain.handle(IpcEvents.GET_UPDATES, serializeErrors(calculateGitChanges));
-ipcMain.handle(IpcEvents.UPDATE, serializeErrors(fetchUpdates));
-ipcMain.handle(IpcEvents.BUILD, serializeErrors(applyUpdates));
+        return Updater.of({
+            repo: Effect.succeed(`https://github.com/${gitRemote}`),
+            changes: changes.pipe(toUpdaterError),
+            update: fetchUpdates.pipe(toUpdaterError),
+            rebuild: rebuild.pipe(toUpdaterError)
+        });
+    })
+);

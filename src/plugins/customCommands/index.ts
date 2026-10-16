@@ -1,24 +1,18 @@
 /*
- * Vencord, a modification for Discord's desktop app
+ * Vencord, a Discord client mod
  * Copyright (c) 2022 Vendicated and contributors
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <https://www.gnu.org/licenses/>.
-*/
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
 
 import "./styles.css";
-
-import { ApplicationCommandInputType, ApplicationCommandOptionType, findOption, registerCommand, sendBotMessage, unregisterCommand } from "@api/Commands";
+import {
+    ApplicationCommandInputType,
+    ApplicationCommandOptionType,
+    findOption,
+    registerCommand,
+    sendBotMessage,
+    unregisterCommand
+} from "@api/Commands";
 import { migratePluginSettings } from "@api/Settings";
 import { Devs } from "@utils/constants";
 import { sendMessage } from "@utils/discord";
@@ -32,7 +26,7 @@ const CustomCommandsMarker = Symbol("CustomCommands");
 const ArgumentRegex = /{{(.+?)}}/g;
 
 export function parseTagArguments(message: string) {
-    const args = [] as { name: string, defaultValue: string | null; }[];
+    const args = [] as { name: string; defaultValue: string | null }[];
 
     for (const [, value] of message.matchAll(ArgumentRegex)) {
         const [name, defaultValue] = value.split("=").map(s => s.trim());
@@ -49,50 +43,57 @@ export function parseTagArguments(message: string) {
 export function registerTagCommand(tag: Tag) {
     const tagArguments = parseTagArguments(tag.message);
 
-    registerCommand({
-        name: tag.name,
-        description: tag.name,
-        inputType: ApplicationCommandInputType.BUILT_IN,
-        options: [
-            ...tagArguments.map(arg => ({
-                name: arg.name,
-                description: arg.name,
-                type: ApplicationCommandOptionType.STRING,
-                required: arg.defaultValue === null
-            })),
-            {
-                name: "ephemeral",
-                description: "Whether the response should only be visible to you",
-                type: ApplicationCommandOptionType.BOOLEAN,
-                required: false
-            }
-        ],
+    registerCommand(
+        {
+            name: tag.name,
+            description: tag.name,
+            inputType: ApplicationCommandInputType.BUILT_IN,
+            options: [
+                ...tagArguments.map(arg => ({
+                    name: arg.name,
+                    description: arg.name,
+                    type: ApplicationCommandOptionType.STRING,
+                    required: arg.defaultValue === null
+                })),
+                {
+                    name: "ephemeral",
+                    description: "Whether the response should only be visible to you",
+                    type: ApplicationCommandOptionType.BOOLEAN,
+                    required: false
+                }
+            ],
 
-        execute: async (args, { channel }) => {
-            const ephemeral = findOption(args, "ephemeral", false);
+            execute: async (args, { channel }) => {
+                const ephemeral = findOption(args, "ephemeral", false);
 
-            const response = tag.message
-                .replace(ArgumentRegex, (fullMatch, value: string) => {
-                    const [argName, defaultValue] = value.split("=").map(s => s.trim());
-                    return findOption(args, argName, null) ?? defaultValue ?? fullMatch;
-                })
-                .replaceAll("\\n", "\n");
+                const response = tag.message
+                    .replace(ArgumentRegex, (fullMatch, value: string) => {
+                        const [argName, defaultValue] = value.split("=").map(s => s.trim());
+                        return findOption(args, argName, null) ?? defaultValue ?? fullMatch;
+                    })
+                    .replaceAll("\\n", "\n");
 
-            const doSend = ephemeral ? sendBotMessage : sendMessage;
-            doSend(channel.id, { content: response }, false, MessageActions.getSendMessageOptionsForReply(PendingReplyStore.getPendingReply(channel.id)));
-            FluxDispatcher.dispatch({ type: "DELETE_PENDING_REPLY", channelId: channel.id });
+                const doSend = ephemeral ? sendBotMessage : sendMessage;
+                doSend(
+                    channel.id,
+                    { content: response },
+                    false,
+                    MessageActions.getSendMessageOptionsForReply(PendingReplyStore.getPendingReply(channel.id))
+                );
+                FluxDispatcher.dispatch({ type: "DELETE_PENDING_REPLY", channelId: channel.id });
+            },
+            [CustomCommandsMarker]: true
         },
-        [CustomCommandsMarker]: true,
-    }, "CustomCommands");
+        "CustomCommands"
+    );
 }
-
 
 migratePluginSettings("CustomCommands", "MessageTags");
 export default definePlugin({
     name: "CustomCommands",
     description: "Allows you to create custom slash commands / tags",
     searchTerms: ["MessageTags"],
-    authors: [Devs.Ven, Devs.Luna,],
+    authors: [Devs.Ven, Devs.Luna],
     tags: ["Commands", "Customisation", "Utility"],
     settings,
 
@@ -113,7 +114,7 @@ export default definePlugin({
                 {
                     name: "create",
                     description: "Create a new tag",
-                    type: ApplicationCommandOptionType.SUB_COMMAND,
+                    type: ApplicationCommandOptionType.SUB_COMMAND
                 },
                 {
                     name: "list",
@@ -133,7 +134,7 @@ export default definePlugin({
                             required: true
                         }
                     ]
-                },
+                }
             ],
 
             async execute(args, ctx) {
@@ -162,11 +163,14 @@ export default definePlugin({
 
                     case "list": {
                         const content = getTags()
-                            .map(tag => `\`${tag.name}\`: ${tag.message.slice(0, 72).replaceAll("\\n", " ")}${tag.message.length > 72 ? "..." : ""}`)
+                            .map(
+                                tag =>
+                                    `\`${tag.name}\`: ${tag.message.slice(0, 72).replaceAll("\\n", " ")}${tag.message.length > 72 ? "..." : ""}`
+                            )
                             .join("\n");
 
                         sendBotMessage(ctx.channel.id, {
-                            content: content || "Woops! There are no tags yet, use `/tags create` to create one!",
+                            content: content || "Woops! There are no tags yet, use `/tags create` to create one!"
                         });
 
                         break;

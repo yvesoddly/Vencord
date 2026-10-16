@@ -25,5 +25,5 @@ export default definePlugin({
 
     stop() {
         window.removeEventListener("mouseup", preventMiddleClick);
-    },
+    }
 });

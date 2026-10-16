@@ -1,20 +1,8 @@
 /*
- * Vencord, a modification for Discord's desktop app
+ * Vencord, a Discord client mod
  * Copyright (c) 2023 Vendicated and contributors
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <https://www.gnu.org/licenses/>.
-*/
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
 
 import { NavContextMenuPatchCallback } from "@api/ContextMenu";
 import { ScreenshareIcon } from "@components/Icons";
@@ -25,29 +13,29 @@ import { ApplicationStream, Channel, Stream, User } from "@vencord/discord-types
 import { ApplicationStreamingStore, ApplicationStreamPreviewStore, Menu } from "@webpack/common";
 
 export interface UserContextProps {
-    channel: Channel,
-    channelSelected: boolean,
-    className: string,
-    config: { context: string; };
-    context: string,
-    onHeightUpdate: Function,
-    position: string,
-    target: HTMLElement,
-    theme: string,
+    channel: Channel;
+    channelSelected: boolean;
+    className: string;
+    config: { context: string };
+    context: string;
+    onHeightUpdate: Function;
+    position: string;
+    target: HTMLElement;
+    theme: string;
     user: User;
 }
 
 export interface StreamContextProps {
-    appContext: string,
-    className: string,
-    config: { context: string; };
-    context: string,
-    exitFullscreen: Function,
-    onHeightUpdate: Function,
-    position: string,
-    target: HTMLElement,
-    stream: Stream,
-    theme: string,
+    appContext: string;
+    className: string;
+    config: { context: string };
+    context: string;
+    exitFullscreen: Function;
+    onHeightUpdate: Function;
+    position: string;
+    target: HTMLElement;
+    stream: Stream;
+    theme: string;
 }
 
 export const handleViewPreview = async ({ guildId, channelId, ownerId }: ApplicationStream | Stream) => {
@@ -61,7 +49,10 @@ export const handleViewPreview = async ({ guildId, channelId, ownerId }: Applica
     });
 };
 
-export const addViewStreamContext: NavContextMenuPatchCallback = (children, { userId }: { userId: string | bigint; }) => {
+export const addViewStreamContext: NavContextMenuPatchCallback = (
+    children,
+    { userId }: { userId: string | bigint }
+) => {
     const stream = ApplicationStreamingStore.getAnyStreamForUser(userId);
     if (!stream) return;
 

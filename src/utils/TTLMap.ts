@@ -10,7 +10,10 @@
 export class TTLMap<K, V> extends Map<K, V> {
     private readonly _timers = new Map<K, NodeJS.Timeout>();
 
-    public constructor(public readonly expiryMs: number, private readonly onExpire?: (key: K, value: V) => void) {
+    public constructor(
+        public readonly expiryMs: number,
+        private readonly onExpire?: (key: K, value: V) => void
+    ) {
         super();
     }
 
@@ -38,8 +41,7 @@ export class TTLMap<K, V> extends Map<K, V> {
     }
 
     clear(): void {
-        for (const timeoutId of this._timers.values())
-            clearTimeout(timeoutId);
+        for (const timeoutId of this._timers.values()) clearTimeout(timeoutId);
 
         this._timers.clear();
         return super.clear();

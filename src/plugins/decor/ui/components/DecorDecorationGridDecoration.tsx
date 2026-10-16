@@ -21,15 +21,13 @@ interface DecorDecorationGridDecorationProps extends HTMLProps<HTMLDivElement> {
 export default function DecorDecorationGridDecoration(props: DecorDecorationGridDecorationProps) {
     const { decoration } = props;
 
-    return <DecorationGridDecoration
-        {...props}
-        onContextMenu={e => {
-            ContextMenuApi.openContextMenu(e, () => (
-                <DecorationContextMenu
-                    decoration={decoration}
-                />
-            ));
-        }}
-        avatarDecoration={decorationToAvatarDecoration(decoration)}
-    />;
+    return (
+        <DecorationGridDecoration
+            {...props}
+            onContextMenu={e => {
+                ContextMenuApi.openContextMenu(e, () => <DecorationContextMenu decoration={decoration} />);
+            }}
+            avatarDecoration={decorationToAvatarDecoration(decoration)}
+        />
+    );
 }

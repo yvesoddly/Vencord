@@ -1,20 +1,8 @@
 /*
- * Vencord, a modification for Discord's desktop app
+ * Vencord, a Discord client mod
  * Copyright (c) 2023 Vendicated and contributors
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <https://www.gnu.org/licenses/>.
-*/
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
 
 export const enum UserType {
     Banned = -1,
@@ -83,19 +71,19 @@ export interface ReviewDBCurrentUser extends ReviewDBUser {
 }
 
 export interface ReviewAuthor {
-    id: number,
-    discordID: string,
-    username: string,
-    profilePhoto: string,
+    id: number;
+    discordID: string;
+    username: string;
+    profilePhoto: string;
     badges: Badge[];
 }
 
 export interface Review {
-    comment: string,
-    id: number,
-    score?: number,
-    star: number,
-    sender: ReviewAuthor,
+    comment: string;
+    id: number;
+    score?: number;
+    star: number;
+    sender: ReviewAuthor;
     timestamp: number;
     type?: ReviewType;
     userVote?: boolean | null;

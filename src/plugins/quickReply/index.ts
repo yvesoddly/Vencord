@@ -1,20 +1,8 @@
 /*
- * Vencord, a modification for Discord's desktop app
+ * Vencord, a Discord client mod
  * Copyright (c) 2022 Vendicated and contributors
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <https://www.gnu.org/licenses/>.
-*/
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
 
 import { isPluginEnabled } from "@api/PluginManager";
 import { definePluginSettings } from "@api/Settings";
@@ -24,7 +12,19 @@ import { Devs, IS_MAC } from "@utils/constants";
 import definePlugin, { OptionType } from "@utils/types";
 import { Message } from "@vencord/discord-types";
 import { MessageFlags } from "@vencord/discord-types/enums";
-import { ChannelStore, ComponentDispatch, FluxDispatcher as Dispatcher, MessageActions, MessageStore, MessageTypeSets, PermissionsBits, PermissionStore, RelationshipStore, SelectedChannelStore, UserStore } from "@webpack/common";
+import {
+    ChannelStore,
+    ComponentDispatch,
+    FluxDispatcher as Dispatcher,
+    MessageActions,
+    MessageStore,
+    MessageTypeSets,
+    PermissionsBits,
+    PermissionStore,
+    RelationshipStore,
+    SelectedChannelStore,
+    UserStore
+} from "@webpack/common";
 
 let currentlyReplyingId: string | null = null;
 let currentlyEditingId: string | null = null;
@@ -46,7 +46,7 @@ const settings = definePluginSettings({
                 default: true
             },
             { label: "Enabled", value: MentionOptions.ENABLED },
-            { label: "Disabled", value: MentionOptions.DISABLED },
+            { label: "Disabled", value: MentionOptions.DISABLED }
         ]
     },
     ignoreBlockedAndIgnored: {
@@ -92,13 +92,13 @@ function onStartEdit({ messageId, _isQuickEdit }: any) {
     currentlyEditingId = messageId;
 }
 
-function onCreatePendingReply({ message, _isQuickReply }: { message: Message; _isQuickReply: boolean; }) {
+function onCreatePendingReply({ message, _isQuickReply }: { message: Message; _isQuickReply: boolean }) {
     if (_isQuickReply) return;
 
     currentlyReplyingId = message.id;
 }
 
-const isCtrl = (e: KeyboardEvent) => IS_MAC ? e.metaKey : e.ctrlKey;
+const isCtrl = (e: KeyboardEvent) => (IS_MAC ? e.metaKey : e.ctrlKey);
 const isAltOrMeta = (e: KeyboardEvent) => e.altKey || (!IS_MAC && e.metaKey);
 
 function onKeydown(e: KeyboardEvent) {
@@ -108,10 +108,8 @@ function onKeydown(e: KeyboardEvent) {
 
     e.preventDefault();
 
-    if (e.shiftKey)
-        nextEdit(isUp);
-    else
-        nextReply(isUp);
+    if (e.shiftKey) nextEdit(isUp);
+    else nextReply(isUp);
 }
 
 function jumpIfOffScreen(channelId: string, messageId: string) {
@@ -191,7 +189,7 @@ function nextReply(isUp: boolean) {
     if (!message) {
         return void Dispatcher.dispatch({
             type: "DELETE_PENDING_REPLY",
-            channelId: SelectedChannelStore.getChannelId(),
+            channelId: SelectedChannelStore.getChannelId()
         });
     }
 

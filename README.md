@@ -9,16 +9,15 @@ The cutest Discord client mod
 
 ## Features
 
--   Easy to install
--   [100+ built in plugins](https://vencord.dev/plugins)
--   Fairly lightweight despite the many inbuilt plugins
--   Excellent Browser Support: Run Vencord in your Browser via extension or UserScript
--   Works on any Discord branch: Stable, Canary or PTB all work
--   Custom CSS and Themes: Inbuilt css editor with support to import any css files (including BetterDiscord themes)
--   Privacy friendly: blocks Discord analytics & crash reporting out of the box and has no telemetry
--   Maintained very actively, broken plugins are usually fixed within 12 hours
--   Settings sync: Keep your plugins and their settings synchronised between devices / apps (optional)
-
+- Easy to install
+- [100+ built in plugins](https://vencord.dev/plugins)
+- Fairly lightweight despite the many inbuilt plugins
+- Excellent Browser Support: Run Vencord in your Browser via extension or UserScript
+- Works on any Discord branch: Stable, Canary or PTB all work
+- Custom CSS and Themes: Inbuilt css editor with support to import any css files (including BetterDiscord themes)
+- Privacy friendly: blocks Discord analytics & crash reporting out of the box and has no telemetry
+- Maintained very actively, broken plugins are usually fixed within 12 hours
+- Settings sync: Keep your plugins and their settings synchronised between devices / apps (optional)
 
 ## Installing / Uninstalling
 
@@ -33,8 +32,7 @@ https://discord.gg/D9uwnFnqmd
 |     **Thanks a lot to all Vencord [sponsors](https://github.com/sponsors/Vendicated)!!**     |
 | :------------------------------------------------------------------------------------------: |
 |   [![](https://meow.vendicated.dev/sponsors.png)](https://github.com/sponsors/Vendicated)    |
-| *generated using [github-sponsor-graph](https://github.com/Vendicated/github-sponsor-graph)* |
-
+| _generated using [github-sponsor-graph](https://github.com/Vendicated/github-sponsor-graph)_ |
 
 ## Star History
 

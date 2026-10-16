@@ -1,23 +1,10 @@
 /*
- * Vencord, a modification for Discord's desktop app
+ * Vencord, a Discord client mod
  * Copyright (c) 2022 Vendicated and contributors
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <https://www.gnu.org/licenses/>.
-*/
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
 
 import "./shiki.css";
-
 import { enableStyle } from "@api/Styles";
 import { Devs } from "@utils/constants";
 import definePlugin, { ReporterTestable } from "@utils/types";
@@ -25,10 +12,11 @@ import previewExampleText from "file://previewExample.tsx";
 
 import { shiki } from "./api/shiki";
 import { HighlighterContainer } from "./components/Highlighter";
-import deviconStyle from "./devicon.css?managed";
 import { settings } from "./settings";
 import { DeviconSetting } from "./types";
 import { clearStyles } from "./utils/createStyle";
+
+import deviconStyle from "./devicon.css?managed";
 
 export default definePlugin({
     name: "ShikiCodeblocks",
@@ -56,8 +44,7 @@ export default definePlugin({
     ],
 
     start: async () => {
-        if (settings.store.useDevIcon !== DeviconSetting.Disabled)
-            enableStyle(deviconStyle);
+        if (settings.store.useDevIcon !== DeviconSetting.Disabled) enableStyle(deviconStyle);
 
         await shiki.init(settings.store.customTheme || settings.store.theme);
     },
@@ -70,7 +57,7 @@ export default definePlugin({
 
     // exports
     shiki,
-    renderHighlighter: ({ lang, content }: { lang: string; content: string; }) => {
+    renderHighlighter: ({ lang, content }: { lang: string; content: string }) => {
         return <HighlighterContainer lang={lang?.toLowerCase()} content={content} isPreview={false} />;
-    },
+    }
 });

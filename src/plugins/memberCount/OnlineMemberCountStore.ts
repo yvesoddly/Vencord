@@ -29,17 +29,16 @@ export const OnlineMemberCountStore = proxyLazy(() => {
             if (!guildId || onlineMemberMap.has(guildId)) return;
 
             preloadQueue.push(() =>
-                this._ensureCount(guildId)
-                    .then(
-                        () => sleep(200),
-                        () => sleep(200)
-                    )
+                this._ensureCount(guildId).then(
+                    () => sleep(200),
+                    () => sleep(200)
+                )
             );
         }
     }
 
     return new OnlineMemberCountStore(FluxDispatcher, {
-        GUILD_MEMBER_LIST_UPDATE({ guildId, groups }: { guildId: string, groups: { count: number; id: string; }[]; }) {
+        GUILD_MEMBER_LIST_UPDATE({ guildId, groups }: { guildId: string; groups: { count: number; id: string }[] }) {
             onlineMemberMap.set(
                 guildId,
                 groups.reduce((total, curr) => total + (curr.id === "offline" ? 0 : curr.count), 0)

@@ -1,23 +1,10 @@
 /*
- * Vencord, a modification for Discord's desktop app
+ * Vencord, a Discord client mod
  * Copyright (c) 2022 Vendicated and contributors
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <https://www.gnu.org/licenses/>.
-*/
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
 
 import "./styles.css";
-
 import { BaseText } from "@components/BaseText";
 import { Card } from "@components/Card";
 import { Flex } from "@components/Flex";
@@ -49,16 +36,10 @@ function ThemesTab() {
                 selectedItem={currentTab}
                 onItemSelect={setCurrentTab}
             >
-                <TabBar.Item
-                    className="vc-settings-tab-bar-item"
-                    id={ThemeTab.LOCAL}
-                >
+                <TabBar.Item className="vc-settings-tab-bar-item" id={ThemeTab.LOCAL}>
                     Local Themes
                 </TabBar.Item>
-                <TabBar.Item
-                    className="vc-settings-tab-bar-item"
-                    id={ThemeTab.ONLINE}
-                >
+                <TabBar.Item className="vc-settings-tab-bar-item" id={ThemeTab.ONLINE}>
                     Online Themes
                 </TabBar.Item>
             </TabBar>
@@ -67,10 +48,13 @@ function ThemesTab() {
                 <CspErrorCard />
 
                 <Card variant="warning">
-                    <BaseText tag="h3" size="md" weight="medium" className={Margins.bottom8}>Theme Performance</BaseText>
+                    <BaseText tag="h3" size="md" weight="medium" className={Margins.bottom8}>
+                        Theme Performance
+                    </BaseText>
                     <Paragraph>
-                        Themes and custom CSS have the potential to cause major lag! If you experience performance issues, try
-                        disabling your themes and CSS to see if they're the cause. The most common cause of lag is the <code>:has()</code> operator.
+                        Themes and custom CSS have the potential to cause major lag! If you experience performance
+                        issues, try disabling your themes and CSS to see if they're the cause. The most common cause of
+                        lag is the <code>:has()</code> operator.
                     </Paragraph>
                 </Card>
 
@@ -95,6 +79,4 @@ function UserscriptThemesTab() {
     );
 }
 
-export default IS_USERSCRIPT
-    ? wrapTab(UserscriptThemesTab, "Themes")
-    : wrapTab(ThemesTab, "Themes");
+export default IS_USERSCRIPT ? wrapTab(UserscriptThemesTab, "Themes") : wrapTab(ThemesTab, "Themes");

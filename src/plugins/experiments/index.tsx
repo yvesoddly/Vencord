@@ -1,20 +1,8 @@
 /*
- * Vencord, a modification for Discord's desktop app
+ * Vencord, a Discord client mod
  * Copyright (c) 2022 Vendicated and contributors
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <https://www.gnu.org/licenses/>.
-*/
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
 
 import { BaseText } from "@components/BaseText";
 import ErrorBoundary from "@components/ErrorBoundary";
@@ -27,7 +15,6 @@ import definePlugin from "@utils/types";
 import { findByPropsLazy } from "@webpack";
 import { React } from "@webpack/common";
 
-
 const KbdStyles = findByPropsLazy("key", "combo");
 const modKey = IS_MAC ? "cmd" : "ctrl";
 const altKey = IS_MAC ? "opt" : "alt";
@@ -36,13 +23,7 @@ export default definePlugin({
     name: "Experiments",
     description: "Enable Access to Experiments & other dev-only features in Discord!",
     tags: ["Developers", "Utility"],
-    authors: [
-        Devs.Megu,
-        Devs.Ven,
-        Devs.Nickyux,
-        Devs.BanTheNons,
-        Devs.Nuckyz,
-    ],
+    authors: [Devs.Megu, Devs.Ven, Devs.Nickyux, Devs.BanTheNons, Devs.Nuckyz],
 
     patches: [
         {
@@ -121,35 +102,40 @@ export default definePlugin({
     settingsAboutComponent: () => {
         return (
             <Paragraph size="md">
-                Tip: You can open Discord's DevTools via {" "}
+                Tip: You can open Discord's DevTools via{" "}
                 <div className={KbdStyles.combo} style={{ display: "inline-flex" }}>
-                    <kbd className={KbdStyles.key}>{modKey}</kbd>{" "}
-                    <kbd className={KbdStyles.key}>{altKey}</kbd>{" "}
+                    <kbd className={KbdStyles.key}>{modKey}</kbd> <kbd className={KbdStyles.key}>{altKey}</kbd>{" "}
                     <kbd className={KbdStyles.key}>O</kbd>{" "}
                 </div>
             </Paragraph>
         );
     },
 
-    WarningCard: ErrorBoundary.wrap(() => (
-        <ErrorCard id="vc-experiments-warning-card" className={Margins.bottom16}>
-            <Flex flexDirection="column" gap={8}>
-                <BaseText tag="h2" weight="bold" size="lg">Hold on!!</BaseText>
+    WarningCard: ErrorBoundary.wrap(
+        () => (
+            <ErrorCard id="vc-experiments-warning-card" className={Margins.bottom16}>
+                <Flex flexDirection="column" gap={8}>
+                    <BaseText tag="h2" weight="bold" size="lg">
+                        Hold on!!
+                    </BaseText>
 
-                <Paragraph>
-                    Experiments are unreleased Discord features. They might not work, or even break your client or get your account disabled.
-                </Paragraph>
+                    <Paragraph>
+                        Experiments are unreleased Discord features. They might not work, or even break your client or
+                        get your account disabled.
+                    </Paragraph>
 
-                <Paragraph>
-                    Only use experiments if you know what you're doing. Vencord is not responsible for any damage caused by enabling experiments.
+                    <Paragraph>
+                        Only use experiments if you know what you're doing. Vencord is not responsible for any damage
+                        caused by enabling experiments. If you don't know what an experiment does, ignore it. Do not ask
+                        us what experiments do either, we probably don't know.
+                    </Paragraph>
 
-                    If you don't know what an experiment does, ignore it. Do not ask us what experiments do either, we probably don't know.
-                </Paragraph>
-
-                <Paragraph>
-                    <b>You cannot use server-side features like checking the "Send to Client" box.</b>
-                </Paragraph>
-            </Flex>
-        </ErrorCard>
-    ), { noop: true })
+                    <Paragraph>
+                        <b>You cannot use server-side features like checking the "Send to Client" box.</b>
+                    </Paragraph>
+                </Flex>
+            </ErrorCard>
+        ),
+        { noop: true }
+    )
 });

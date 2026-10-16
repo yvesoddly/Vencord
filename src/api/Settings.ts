@@ -1,27 +1,14 @@
 /*
- * Vencord, a modification for Discord's desktop app
+ * Vencord, a Discord client mod
  * Copyright (c) 2022 Vendicated and contributors
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <https://www.gnu.org/licenses/>.
-*/
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
 
 import { SettingsStore as SettingsStoreClass } from "@shared/SettingsStore";
 import { Logger } from "@utils/Logger";
 import { mergeDefaults } from "@utils/mergeDefaults";
 import { DefinedSettings, OptionType, SettingsChecks, SettingsDefinition } from "@utils/types";
 import { React, useEffect } from "@webpack/common";
-
 import plugins from "~plugins";
 
 const logger = new Logger("Settings");
@@ -39,7 +26,7 @@ export type SettingsPluginUiElements = {
 
 export interface Settings {
     autoUpdate: boolean;
-    autoUpdateNotification: boolean,
+    autoUpdateNotification: boolean;
     useQuickCss: boolean;
     eagerPatches: boolean;
     enabledThemes: string[];
@@ -49,19 +36,19 @@ export interface Settings {
     transparent: boolean;
     winCtrlQ: boolean;
     macosVibrancyStyle:
-    | "content"
-    | "fullscreen-ui"
-    | "header"
-    | "hud"
-    | "menu"
-    | "popover"
-    | "selection"
-    | "sidebar"
-    | "titlebar"
-    | "tooltip"
-    | "under-page"
-    | "window"
-    | undefined;
+        | "content"
+        | "fullscreen-ui"
+        | "header"
+        | "hud"
+        | "menu"
+        | "popover"
+        | "selection"
+        | "sidebar"
+        | "titlebar"
+        | "tooltip"
+        | "under-page"
+        | "window"
+        | undefined;
     windowsMaterial: "none" | "mica" | "tabbed" | "acrylic";
     disableMinSize: boolean;
     nativeTitleBar: boolean;
@@ -76,7 +63,7 @@ export interface Settings {
     uiElements: {
         messagePopoverButtons: SettingsPluginUiElements;
         chatBarButtons: SettingsPluginUiElements;
-    },
+    };
 
     notifications: {
         timeout: number;
@@ -130,23 +117,19 @@ const DefaultSettings: Settings = {
     }
 };
 
-const settings = !IS_REPORTER ? VencordNative.settings.get() : {} as Settings;
+const settings = !IS_REPORTER ? VencordNative.settings.get() : ({} as Settings);
 mergeDefaults(settings, DefaultSettings);
 
 export const SettingsStore = new SettingsStoreClass(settings, {
     readOnly: true,
-    getDefaultValue({
-        target,
-        key,
-        path
-    }) {
+    getDefaultValue({ target, key, path }) {
         const v = target[key];
         if (!plugins) return v; // plugins not initialised yet. this means this path was reached by being called on the top level
 
         if (path === "plugins" && key in plugins)
-            return target[key] = {
+            return (target[key] = {
                 enabled: IS_REPORTER || plugins[key].required || plugins[key].enabledByDefault || false
-            };
+            });
 
         // Since the property is not set, check if this is a plugin's setting and if so, try to resolve
         // the default value.
@@ -162,8 +145,7 @@ export const SettingsStore = new SettingsStoreClass(settings, {
 
                 if (setting.type === OptionType.SELECT) {
                     const def = setting.options.find(o => o.default);
-                    if (def)
-                        target[key] = def.value;
+                    if (def) target[key] = def.value;
                     return def?.value;
                 }
             }
@@ -216,13 +198,14 @@ export function useSettings(paths?: UseSettings<Settings>[]) {
                 }
             });
 
-            return () => paths.forEach(p => {
-                if (p.endsWith(".*")) {
-                    SettingsStore.removePrefixChangeListener(p.slice(0, -2), forceUpdate);
-                } else {
-                    SettingsStore.removeChangeListener(p, forceUpdate);
-                }
-            });
+            return () =>
+                paths.forEach(p => {
+                    if (p.endsWith(".*")) {
+                        SettingsStore.removePrefixChangeListener(p.slice(0, -2), forceUpdate);
+                    } else {
+                        SettingsStore.removeChangeListener(p, forceUpdate);
+                    }
+                });
         } else {
             SettingsStore.addGlobalChangeListener(forceUpdate);
             return () => SettingsStore.removeGlobalChangeListener(forceUpdate);
@@ -278,11 +261,12 @@ export function definePluginSettings<
             if (!definedSettings.pluginName) throw new Error("Cannot access settings before plugin is initialized");
             return PlainSettings.plugins[definedSettings.pluginName] as any;
         },
-        use: settings => useSettings((
-            settings
-                ? settings.map(name => `plugins.${definedSettings.pluginName}.${name}`)
-                : [`plugins.${definedSettings.pluginName}.*`]
-        ) as UseSettings<Settings>[]).plugins[definedSettings.pluginName] as any,
+        use: settings =>
+            useSettings(
+                (settings
+                    ? settings.map(name => `plugins.${definedSettings.pluginName}.${name}`)
+                    : [`plugins.${definedSettings.pluginName}.*`]) as UseSettings<Settings>[]
+            ).plugins[definedSettings.pluginName] as any,
         def,
         pluginName: "",
 
@@ -297,11 +281,14 @@ export function definePluginSettings<
 type UseSettings<T extends object> = ResolveUseSettings<T>[keyof T];
 
 type ResolveUseSettings<T extends object> = {
-    [Key in keyof T]:
-    Key extends string
-    ? T[Key] extends Record<string, unknown>
-    // @ts-expect-error "Type instantiation is excessively deep and possibly infinite"
-    ? `${Key}.*` | (ResolveUseSettings<T[Key]> extends Record<string, string> ? `${Key}.${ResolveUseSettings<T[Key]>[keyof T[Key]]}` : never)
-    : Key
-    : never;
+    [Key in keyof T]: Key extends string
+        ? T[Key] extends Record<string, unknown>
+            ?
+                  | `${Key}.*`
+                  | (ResolveUseSettings<T[Key]> extends Record<string, string>
+                        ? // @ts-expect-error "Type instantiation is excessively deep and possibly infinite"
+                          `${Key}.${ResolveUseSettings<T[Key]>[keyof T[Key]]}`
+                        : never)
+            : Key
+        : never;
 };

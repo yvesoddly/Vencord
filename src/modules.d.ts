@@ -1,30 +1,21 @@
 /*
- * Vencord, a modification for Discord's desktop app
+ * Vencord, a Discord client mod
  * Copyright (c) 2022 Vendicated and contributors
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <https://www.gnu.org/licenses/>.
-*/
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
 
 declare module "~plugins" {
     import { PluginTarget } from "@utils/pluginTargets";
     const plugins: Record<string, import("./utils/types").Plugin>;
 
     export default plugins;
-    export const PluginMeta: Record<string, {
-        folderName: string;
-        userPlugin: boolean;
-    }>;
+    export const PluginMeta: Record<
+        string,
+        {
+            folderName: string;
+            userPlugin: boolean;
+        }
+    >;
     export const ExcludedPlugins: Record<string, PluginTarget>;
 }
 
@@ -47,4 +38,11 @@ declare module "*.css";
 declare module "*.css?managed" {
     const name: string;
     export default name;
+}
+
+// virtual-merge ships types, but its exports map has no "types" condition, so bundler resolution can't find them
+declare module "virtual-merge" {
+    type UnionToIntersection<U> = (U extends unknown ? (k: U) => void : never) extends (k: infer I) => void ? I : never;
+
+    export default function virtualMerge<O extends object[]>(...objects: O): UnionToIntersection<O[number]>;
 }

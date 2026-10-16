@@ -48,6 +48,6 @@ export default definePlugin({
                 match: /url:(\i)\.url\}\);return /,
                 replace: "$&$1.content_type?.startsWith('image/')&&"
             }
-        },
+        }
     ]
 });

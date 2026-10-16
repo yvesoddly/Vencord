@@ -5,7 +5,6 @@
  */
 
 import "./patch-worker";
-
 import * as monaco from "monaco-editor/esm/vs/editor/editor.main.js";
 
 declare global {
@@ -25,17 +24,12 @@ self.MonacoEnvironment = {
 };
 
 getCurrentCss().then(css => {
-    const editor = monaco.editor.create(
-        document.getElementById("container")!,
-        {
-            value: css,
-            language: "css",
-            theme: getTheme(),
-        }
-    );
-    editor.onDidChangeModelContent(() =>
-        setCss(editor.getValue())
-    );
+    const editor = monaco.editor.create(document.getElementById("container")!, {
+        value: css,
+        language: "css",
+        theme: getTheme()
+    });
+    editor.onDidChangeModelContent(() => setCss(editor.getValue()));
     window.addEventListener("resize", () => {
         // make monaco re-layout
         editor.layout();

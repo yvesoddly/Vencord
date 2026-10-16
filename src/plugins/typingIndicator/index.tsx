@@ -1,23 +1,10 @@
 /*
- * Vencord, a modification for Discord's desktop app
+ * Vencord, a Discord client mod
  * Copyright (c) 2022 Vendicated and contributors
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <https://www.gnu.org/licenses/>.
-*/
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
 
 import "./style.css";
-
 import { isPluginEnabled } from "@api/PluginManager";
 import { definePluginSettings } from "@api/Settings";
 import ErrorBoundary from "@components/ErrorBoundary";
@@ -26,7 +13,17 @@ import { Devs } from "@utils/constants";
 import { getIntlMessage } from "@utils/discord";
 import definePlugin, { OptionType } from "@utils/types";
 import { findComponentByCodeLazy } from "@webpack";
-import { GuildMemberStore, RelationshipStore, SelectedChannelStore, Tooltip, TypingStore, UserGuildSettingsStore, UserStore, UserSummaryItem, useStateFromStores } from "@webpack/common";
+import {
+    GuildMemberStore,
+    RelationshipStore,
+    SelectedChannelStore,
+    Tooltip,
+    TypingStore,
+    UserGuildSettingsStore,
+    UserStore,
+    UserSummaryItem,
+    useStateFromStores
+} from "@webpack/common";
 
 const ThreeDots = findComponentByCodeLazy("Math.min(1,Math.max(", "dotRadius:");
 
@@ -40,7 +37,7 @@ function getDisplayName(guildId: string, userId: string) {
     return GuildMemberStore.getNick(guildId, userId) ?? (user as any).globalName ?? user.username;
 }
 
-function TypingIndicator({ channelId, guildId }: { channelId: string; guildId: string; }) {
+function TypingIndicator({ channelId, guildId }: { channelId: string; guildId: string }) {
     const typingUsers: Record<string, number> = useStateFromStores(
         [TypingStore],
         () => ({ ...TypingStore.getTypingUsers(channelId) }),
@@ -65,29 +62,44 @@ function TypingIndicator({ channelId, guildId }: { channelId: string; guildId: s
 
     const myId = UserStore.getCurrentUser()?.id;
 
-    const typingUsersArray = Object.keys(typingUsers).filter(id =>
-        id !== myId && !(RelationshipStore.isBlocked(id) && !settings.store.includeBlockedUsers) && !(RelationshipStore.isIgnored(id) && !settings.store.includeIgnoredUsers)
+    const typingUsersArray = Object.keys(typingUsers).filter(
+        id =>
+            id !== myId &&
+            !(RelationshipStore.isBlocked(id) && !settings.store.includeBlockedUsers) &&
+            !(RelationshipStore.isIgnored(id) && !settings.store.includeIgnoredUsers)
     );
     const [a, b, c] = typingUsersArray;
     let tooltipText: string;
 
     switch (typingUsersArray.length) {
-        case 0: break;
+        case 0:
+            break;
         case 1: {
             tooltipText = getIntlMessage("ONE_USER_TYPING", { a: getDisplayName(guildId, a) });
             break;
         }
         case 2: {
-            tooltipText = getIntlMessage("TWO_USERS_TYPING", { a: getDisplayName(guildId, a), b: getDisplayName(guildId, b) });
+            tooltipText = getIntlMessage("TWO_USERS_TYPING", {
+                a: getDisplayName(guildId, a),
+                b: getDisplayName(guildId, b)
+            });
             break;
         }
         case 3: {
-            tooltipText = getIntlMessage("THREE_USERS_TYPING", { a: getDisplayName(guildId, a), b: getDisplayName(guildId, b), c: getDisplayName(guildId, c) });
+            tooltipText = getIntlMessage("THREE_USERS_TYPING", {
+                a: getDisplayName(guildId, a),
+                b: getDisplayName(guildId, b),
+                c: getDisplayName(guildId, c)
+            });
             break;
         }
         default: {
             tooltipText = isPluginEnabled(TypingTweaksPlugin.name)
-                ? buildSeveralUsers({ users: [a, b].map(UserStore.getUser), count: typingUsersArray.length - 2, guildId })
+                ? buildSeveralUsers({
+                      users: [a, b].map(UserStore.getUser),
+                      count: typingUsersArray.length - 2,
+                      guildId
+                  })
                 : getIntlMessage("SEVERAL_USERS_TYPING");
             break;
         }
@@ -98,7 +110,7 @@ function TypingIndicator({ channelId, guildId }: { channelId: string; guildId: s
             <Tooltip text={tooltipText!}>
                 {props => (
                     <div className="vc-typing-indicator" {...props}>
-                        {((settings.store.indicatorMode & IndicatorMode.Avatars) === IndicatorMode.Avatars) && (
+                        {(settings.store.indicatorMode & IndicatorMode.Avatars) === IndicatorMode.Avatars && (
                             <div
                                 onClick={e => {
                                     e.stopPropagation();
@@ -118,7 +130,7 @@ function TypingIndicator({ channelId, guildId }: { channelId: string; guildId: s
                                 />
                             </div>
                         )}
-                        {((settings.store.indicatorMode & IndicatorMode.Dots) === IndicatorMode.Dots) && (
+                        {(settings.store.indicatorMode & IndicatorMode.Dots) === IndicatorMode.Dots && (
                             <div className="vc-typing-indicator-dots">
                                 <ThreeDots dotRadius={3} themed={true} />
                             </div>
@@ -159,8 +171,8 @@ const settings = definePluginSettings({
         options: [
             { label: "Avatars and animated dots", value: IndicatorMode.Dots | IndicatorMode.Avatars, default: true },
             { label: "Animated dots", value: IndicatorMode.Dots },
-            { label: "Avatars", value: IndicatorMode.Avatars },
-        ],
+            { label: "Avatars", value: IndicatorMode.Avatars }
+        ]
     }
 });
 
@@ -195,5 +207,5 @@ export default definePlugin({
         <ErrorBoundary noop>
             <TypingIndicator channelId={channelId} guildId={guildId} />
         </ErrorBoundary>
-    ),
+    )
 });

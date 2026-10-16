@@ -6,7 +6,14 @@
 
 import { findGroupChildrenByChildId, NavContextMenuPatchCallback } from "@api/ContextMenu";
 import { PinOrder, settings } from "@plugins/pinDms";
-import { addChannelToCategory, canMoveChannelInDirection, currentUserCategories, isPinned, moveChannel, removeChannelFromCategory } from "@plugins/pinDms/data";
+import {
+    addChannelToCategory,
+    canMoveChannelInDirection,
+    currentUserCategories,
+    isPinned,
+    moveChannel,
+    removeChannelFromCategory
+} from "@plugins/pinDms/data";
 import { Menu } from "@webpack/common";
 
 import { openCategoryModal } from "./CreateCategoryModal";
@@ -17,11 +24,7 @@ function createPinMenuItem(channelId: string) {
     const showSeparator = pinned || currentUserCategories.length > 0;
 
     return (
-        <Menu.MenuItem
-            id="vc-pin-dm"
-            label="Pin DMs"
-        >
-
+        <Menu.MenuItem id="vc-pin-dm" label="Pin DMs">
             {!pinned && (
                 <>
                     <Menu.MenuItem
@@ -32,16 +35,14 @@ function createPinMenuItem(channelId: string) {
                     />
                     {showSeparator && <Menu.MenuSeparator />}
 
-                    {
-                        currentUserCategories.map(category => (
-                            <Menu.MenuItem
-                                key={category.id}
-                                id={`pin-category-${category.id}`}
-                                label={category.name}
-                                action={() => addChannelToCategory(channelId, category.id)}
-                            />
-                        ))
-                    }
+                    {currentUserCategories.map(category => (
+                        <Menu.MenuItem
+                            key={category.id}
+                            id={`pin-category-${category.id}`}
+                            label={category.name}
+                            action={() => addChannelToCategory(channelId, category.id)}
+                        />
+                    ))}
                 </>
             )}
 
@@ -54,28 +55,15 @@ function createPinMenuItem(channelId: string) {
                         action={() => removeChannelFromCategory(channelId)}
                     />
 
-                    {
-                        settings.store.pinOrder === PinOrder.Custom && canMoveChannelInDirection(channelId, -1) && (
-                            <Menu.MenuItem
-                                id="move-up"
-                                label="Move Up"
-                                action={() => moveChannel(channelId, -1)}
-                            />
-                        )
-                    }
+                    {settings.store.pinOrder === PinOrder.Custom && canMoveChannelInDirection(channelId, -1) && (
+                        <Menu.MenuItem id="move-up" label="Move Up" action={() => moveChannel(channelId, -1)} />
+                    )}
 
-                    {
-                        settings.store.pinOrder === PinOrder.Custom && canMoveChannelInDirection(channelId, 1) && (
-                            <Menu.MenuItem
-                                id="move-down"
-                                label="Move Down"
-                                action={() => moveChannel(channelId, 1)}
-                            />
-                        )
-                    }
+                    {settings.store.pinOrder === PinOrder.Custom && canMoveChannelInDirection(channelId, 1) && (
+                        <Menu.MenuItem id="move-down" label="Move Down" action={() => moveChannel(channelId, 1)} />
+                    )}
                 </>
             )}
-
         </Menu.MenuItem>
     );
 }

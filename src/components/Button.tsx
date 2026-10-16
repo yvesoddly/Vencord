@@ -5,7 +5,6 @@
  */
 
 import "./Button.css";
-
 import { classNameFactory } from "@utils/css";
 import { classes } from "@utils/misc";
 import type { Button as DiscordButton } from "@vencord/discord-types";
@@ -18,7 +17,14 @@ const btnCls = classNameFactory("vc-btn-");
 const textBtnCls = classNameFactory("vc-text-btn-");
 
 export type ButtonVariant =
-    "primary" | "secondary" | "dangerPrimary" | "dangerSecondary" | "overlayPrimary" | "positive" | "link" | "none";
+    | "primary"
+    | "secondary"
+    | "dangerPrimary"
+    | "dangerSecondary"
+    | "overlayPrimary"
+    | "positive"
+    | "link"
+    | "none";
 export type ButtonSize = "min" | "xs" | "small" | "medium" | "iconOnly";
 
 export type ButtonProps = ComponentPropsWithRef<"button"> & {
@@ -33,7 +39,11 @@ export type LinkButtonProps = ComponentPropsWithRef<"a"> & {
 
 export function Button({ variant = "primary", size = "medium", children, className, ...restProps }: ButtonProps) {
     return (
-        <button data-mana-component="button" className={classes(btnCls("base", variant, size), className)} {...restProps}>
+        <button
+            data-mana-component="button"
+            className={classes(btnCls("base", variant, size), className)}
+            {...restProps}
+        >
             {children}
             {variant === "link" && <OpenExternalIcon className={btnCls("link-icon")} />}
         </button>
@@ -56,17 +66,22 @@ export type TextButtonProps = ComponentPropsWithRef<"button"> & {
 };
 
 export function TextButton({ variant = "primary", className, ...restProps }: TextButtonProps) {
-    return (
-        <button className={classes(textBtnCls("base", variant), className)} {...restProps} />
-    );
+    return <button className={classes(textBtnCls("base", variant), className)} {...restProps} />;
 }
 
 // #region Old compability
 
-export const ButtonCompat: DiscordButton = function ButtonCompat({ look, color = "BRAND", size = "medium", ...restProps }) {
-    return look === "LINK"
-        ? <TextButton variant={TextButtonPropsColorMapping[color]} {...restProps as TextButtonProps} />
-        : <Button variant={ButtonColorMapping[color]} size={size as ButtonSize} {...restProps as ButtonProps} />;
+export const ButtonCompat: DiscordButton = function ButtonCompat({
+    look,
+    color = "BRAND",
+    size = "medium",
+    ...restProps
+}) {
+    return look === "LINK" ? (
+        <TextButton variant={TextButtonPropsColorMapping[color]} {...(restProps as TextButtonProps)} />
+    ) : (
+        <Button variant={ButtonColorMapping[color]} size={size as ButtonSize} {...(restProps as ButtonProps)} />
+    );
 };
 
 /** @deprecated */
@@ -84,10 +99,10 @@ ButtonCompat.Colors = {
     CUSTOM: "CUSTOM",
     GREEN: "GREEN",
     LINK: "LINK",
-    WHITE: "WHITE",
+    WHITE: "WHITE"
 } as const;
 
-const ButtonColorMapping: Record<keyof typeof ButtonCompat["Colors"], ButtonProps["variant"]> = {
+const ButtonColorMapping: Record<string, ButtonVariant | undefined> = {
     BRAND: "primary",
     PRIMARY: "secondary",
     RED: "dangerPrimary",
@@ -96,9 +111,9 @@ const ButtonColorMapping: Record<keyof typeof ButtonCompat["Colors"], ButtonProp
     GREEN: "positive",
     LINK: "link",
     WHITE: "overlayPrimary"
-};
+} satisfies Record<keyof (typeof ButtonCompat)["Colors"], ButtonVariant>;
 
-const TextButtonPropsColorMapping: Record<keyof typeof ButtonCompat["Colors"], TextButtonProps["variant"]> = {
+const TextButtonPropsColorMapping: Record<string, TextButtonVariant | undefined> = {
     BRAND: "primary",
     PRIMARY: "primary",
     RED: "danger",
@@ -107,7 +122,7 @@ const TextButtonPropsColorMapping: Record<keyof typeof ButtonCompat["Colors"], T
     GREEN: "primary",
     LINK: "link",
     WHITE: "secondary"
-};
+} satisfies Record<keyof (typeof ButtonCompat)["Colors"], TextButtonVariant>;
 
 /** @deprecated */
 ButtonCompat.Sizes = {

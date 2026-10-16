@@ -17,14 +17,12 @@ import { parseTagArguments } from ".";
 import { addTag, getTag, removeTag, Tag } from "./settings";
 
 export function openCreateTagModal(initialValue: Tag = { name: "", message: "" }) {
-    openModal(modalProps => (
-        <CreateTagDialog initialValue={initialValue} modalProps={modalProps} />
-    ));
+    openModal(modalProps => <CreateTagDialog initialValue={initialValue} modalProps={modalProps} />);
 }
 
 const EXAMPLE_RESPONSE = "Hello {{user}}! I am feeling {{mood = great}}.";
 
-function CreateTagDialog({ initialValue, modalProps }: { initialValue: Tag; modalProps: RenderModalProps; }) {
+function CreateTagDialog({ initialValue, modalProps }: { initialValue: Tag; modalProps: RenderModalProps }) {
     const [name, setName] = useState(initialValue.name);
     const [message, setMessage] = useState(initialValue.message.replaceAll("\\n", "\n"));
 
@@ -37,14 +35,16 @@ function CreateTagDialog({ initialValue, modalProps }: { initialValue: Tag; moda
     const notice = hasReservedEphemeral
         ? 'The argument name "ephemeral" is reserved and cannot be used.'
         : nameAlreadyExists
-            ? `A tag with the name "${name}" already exists and will be overwritten.`
-            : undefined;
+          ? `A tag with the name "${name}" already exists and will be overwritten.`
+          : undefined;
 
     return (
         <Modal
             {...modalProps}
             title={isEdit ? "Edit Tag" : "Create New Tag"}
-            subtitle={isEdit ? "Edit your custom command." : "Create a new tag which will be registered as a slash command."}
+            subtitle={
+                isEdit ? "Edit your custom command." : "Create a new tag which will be registered as a slash command."
+            }
             actions={[
                 {
                     text: "Cancel",
@@ -86,7 +86,8 @@ function CreateTagDialog({ initialValue, modalProps }: { initialValue: Tag; moda
                             <ul>
                                 {detectedArguments.map(arg => (
                                     <li key={arg.name}>
-                                        &mdash; <b>{arg.name}</b>{arg.defaultValue ? ` (default: ${arg.defaultValue})` : ""}
+                                        &mdash; <b>{arg.name}</b>
+                                        {arg.defaultValue ? ` (default: ${arg.defaultValue})` : ""}
                                     </li>
                                 ))}
                             </ul>
@@ -98,16 +99,25 @@ function CreateTagDialog({ initialValue, modalProps }: { initialValue: Tag; moda
                     renderContent={() => (
                         <Flex flexDirection="column" gap={12}>
                             <Paragraph>
-                                Your response can include variables wrapped in double curly braces which will become command arguments, for example <InlineCode>{"Hello {{user}}"}</InlineCode>.
+                                Your response can include variables wrapped in double curly braces which will become
+                                command arguments, for example <InlineCode>{"Hello {{user}}"}</InlineCode>.
                             </Paragraph>
                             <Paragraph>
-                                You can specify arguments with default values by using an equals sign, for example <InlineCode>{"Hello {{user = pal}}"}</InlineCode>.
+                                You can specify arguments with default values by using an equals sign, for example{" "}
+                                <InlineCode>{"Hello {{user = pal}}"}</InlineCode>.
                             </Paragraph>
 
                             <section>
-                                <Paragraph><b>Example Command response:</b> <InlineCode>{EXAMPLE_RESPONSE}</InlineCode></Paragraph>
-                                <Paragraph><b>Example usage:</b> <InlineCode>{"/greet user:@Clyde"}</InlineCode></Paragraph>
-                                <Paragraph><b>Example output:</b> <InlineCode>{"Hello @Clyde! I am feeling great."}</InlineCode></Paragraph>
+                                <Paragraph>
+                                    <b>Example Command response:</b> <InlineCode>{EXAMPLE_RESPONSE}</InlineCode>
+                                </Paragraph>
+                                <Paragraph>
+                                    <b>Example usage:</b> <InlineCode>{"/greet user:@Clyde"}</InlineCode>
+                                </Paragraph>
+                                <Paragraph>
+                                    <b>Example output:</b>{" "}
+                                    <InlineCode>{"Hello @Clyde! I am feeling great."}</InlineCode>
+                                </Paragraph>
                             </section>
                         </Flex>
                     )}

@@ -1,0 +1,19 @@
+{
+    // Node runs these files directly (type stripping), so only erasable syntax and explicit .ts imports.
+    "compilerOptions": {
+        "target": "ESNext",
+        "module": "NodeNext",
+        "moduleResolution": "NodeNext",
+        "noEmit": true,
+        "allowImportingTsExtensions": true,
+        "erasableSyntaxOnly": true,
+        "verbatimModuleSyntax": true,
+        "strict": true,
+        "noImplicitOverride": true,
+        "skipLibCheck": true,
+        "resolveJsonModule": true,
+        "types": ["node"],
+        "lib": ["ESNext"]
+    },
+    "include": ["**/*.ts", "../oxlint-plugin-vencord/**/*.ts", "../vite.config.ts"]
+}

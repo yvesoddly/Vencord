@@ -5,7 +5,14 @@
  */
 
 import { showNotice } from "@api/Notices";
-import { hasAnyVisibleSettings, isPluginEnabled, pluginRequiresRestart, startDependenciesRecursive, startPlugin, stopPlugin } from "@api/PluginManager";
+import {
+    hasAnyVisibleSettings,
+    isPluginEnabled,
+    pluginRequiresRestart,
+    startDependenciesRecursive,
+    startPlugin,
+    stopPlugin
+} from "@api/PluginManager";
 import { Settings } from "@api/Settings";
 import { CogWheel, InfoIcon } from "@components/Icons";
 import { AddonCard } from "@components/settings/AddonCard";
@@ -91,11 +98,13 @@ export function PluginCard({ plugin, disabled, onRestartNeeded, onMouseEnter, on
                     onClick={() => openPluginModal(plugin, onRestartNeeded)}
                     className={cl("info-button")}
                 >
-                    {hasAnyVisibleSettings(plugin)
-                        ? <CogWheel className={cl("info-icon")} />
-                        : <InfoIcon className={cl("info-icon")} />
-                    }
+                    {hasAnyVisibleSettings(plugin) ? (
+                        <CogWheel className={cl("info-icon")} />
+                    ) : (
+                        <InfoIcon className={cl("info-icon")} />
+                    )}
                 </button>
-            } />
+            }
+        />
     );
 }

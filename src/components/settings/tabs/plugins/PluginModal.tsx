@@ -1,23 +1,10 @@
 /*
- * Vencord, a modification for Discord's desktop app
+ * Vencord, a Discord client mod
  * Copyright (c) 2022 Vendicated and contributors
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <https://www.gnu.org/licenses/>.
-*/
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
 
 import "./PluginModal.css";
-
 import { generateId } from "@api/Commands";
 import { hasAnyVisibleSettings, isSettingHidden } from "@api/PluginManager";
 import { useSettings } from "@api/Settings";
@@ -32,9 +19,23 @@ import { classes } from "@utils/misc";
 import { OptionType, Plugin, PluginTag } from "@utils/types";
 import { RenderModalProps, User } from "@vencord/discord-types";
 import { findCssClassesLazy } from "@webpack";
-import { Clickable, FluxDispatcher, Forms, Modal, openModal, React, Text, Tooltip, useEffect, useMemo, UserStore, UserSummaryItem, UserUtils, useState } from "@webpack/common";
+import {
+    Clickable,
+    FluxDispatcher,
+    Forms,
+    Modal,
+    openModal,
+    React,
+    Text,
+    Tooltip,
+    useEffect,
+    useMemo,
+    UserStore,
+    UserSummaryItem,
+    UserUtils,
+    useState
+} from "@webpack/common";
 import { Constructor } from "type-fest";
-
 import { PluginMeta } from "~plugins";
 
 import { OptionComponentMap } from "./components";
@@ -51,28 +52,30 @@ interface PluginModalProps extends RenderModalProps {
     onRestartNeeded(key: string): void;
 }
 
-function makeDummyUser(user: { username: string; id?: string; avatar?: string; }) {
+function makeDummyUser(user: { username: string; id?: string; avatar?: string }) {
     const newUser = new UserRecord({
         username: user.username,
         id: user.id ?? generateId(),
         avatar: user.avatar,
         /** To stop discord making unwanted requests... */
-        bot: true,
+        bot: true
     });
 
     FluxDispatcher.dispatch({
         type: "USER_UPDATE",
-        user: newUser,
+        user: newUser
     });
 
     return newUser;
 }
 
-function PluginTags({ tags }: { tags: PluginTag[]; }) {
+function PluginTags({ tags }: { tags: PluginTag[] }) {
     return (
         <div className={cl("tags")}>
             {tags.map(tag => (
-                <div key={tag} className={cl("tag")}>{tag}</div>
+                <div key={tag} className={cl("tag")}>
+                    {tag}
+                </div>
             ))}
         </div>
     );
@@ -91,8 +94,7 @@ export default function PluginModal({ plugin, onRestartNeeded, onClose, transiti
             for (const user of plugin.authors.slice(0, 6)) {
                 try {
                     const author = user.id
-                        ? await UserUtils.getUser(String(user.id))
-                            .catch(() => makeDummyUser({ username: user.name }))
+                        ? await UserUtils.getUser(String(user.id)).catch(() => makeDummyUser({ username: user.name }))
                         : makeDummyUser({ username: user.name });
 
                     setAuthors(a => [...a, author]);
@@ -105,8 +107,7 @@ export default function PluginModal({ plugin, onRestartNeeded, onClose, transiti
 
     function renderSettings() {
         const { settings } = plugin;
-        if (!hasSettings || !settings)
-            return <Forms.FormText>There are no settings for this plugin.</Forms.FormText>;
+        if (!hasSettings || !settings) return <Forms.FormText>There are no settings for this plugin.</Forms.FormText>;
 
         const options = Object.entries(settings.def).map(([key, setting]) => {
             if (setting.type === OptionType.CUSTOM) return null;
@@ -137,11 +138,7 @@ export default function PluginModal({ plugin, onRestartNeeded, onClose, transiti
             );
         });
 
-        return (
-            <div className="vc-plugins-settings">
-                {options}
-            </div>
-        );
+        return <div className="vc-plugins-settings">{options}</div>;
     }
 
     function renderMoreUsers(_label: string, count: number) {
@@ -150,13 +147,14 @@ export default function PluginModal({ plugin, onRestartNeeded, onClose, transiti
         const sliceEnd = sliceStart + plugin.authors.length - count;
 
         return (
-            <Tooltip text={plugin.authors.slice(sliceStart, sliceEnd).map(u => u.name).join(", ")}>
+            <Tooltip
+                text={plugin.authors
+                    .slice(sliceStart, sliceEnd)
+                    .map(u => u.name)
+                    .join(", ")}
+            >
                 {({ onMouseEnter, onMouseLeave }) => (
-                    <div
-                        className={AvatarStyles.moreUsers}
-                        onMouseEnter={onMouseEnter}
-                        onMouseLeave={onMouseLeave}
-                    >
+                    <div className={AvatarStyles.moreUsers} onMouseEnter={onMouseEnter} onMouseLeave={onMouseLeave}>
                         +{sliceCount}
                     </div>
                 )}
@@ -173,17 +171,16 @@ export default function PluginModal({ plugin, onRestartNeeded, onClose, transiti
             size="lg"
             title={
                 <div className={cl("header")}>
-                    <BaseText tag="h1" weight="semibold" size="lg">{plugin.name}</BaseText>
+                    <BaseText tag="h1" weight="semibold" size="lg">
+                        {plugin.name}
+                    </BaseText>
                     {!pluginMeta.userPlugin && (
                         <div className="vc-settings-modal-links">
                             <FavoriteButton
                                 isFavorite={pluginSettings.isFavorite ?? false}
-                                onClick={() => pluginSettings.isFavorite = !pluginSettings.isFavorite}
+                                onClick={() => (pluginSettings.isFavorite = !pluginSettings.isFavorite)}
                             />
-                            <WebsiteButton
-                                text="View more info"
-                                href={`https://vencord.dev/plugins/${plugin.name}`}
-                            />
+                            <WebsiteButton text="View more info" href={`https://vencord.dev/plugins/${plugin.name}`} />
                             <GithubButton
                                 text="View source code"
                                 href={`https://github.com/${gitRemote}/tree/main/src/plugins/${pluginMeta.folderName}`}
@@ -203,7 +200,9 @@ export default function PluginModal({ plugin, onRestartNeeded, onClose, transiti
         >
             <div className={"vc-settings-modal-content"}>
                 <section>
-                    <Text variant="heading-lg/semibold" className={classes(Margins.top8, Margins.bottom8)}>Authors</Text>
+                    <Text variant="heading-lg/semibold" className={classes(Margins.top8, Margins.bottom8)}>
+                        Authors
+                    </Text>
                     <div style={{ width: "fit-content" }}>
                         <ErrorBoundary noop>
                             <UserSummaryItem
@@ -242,7 +241,9 @@ export default function PluginModal({ plugin, onRestartNeeded, onClose, transiti
                 )}
 
                 <section>
-                    <Text variant="heading-lg/semibold" className={classes(Margins.top16, Margins.bottom8)}>Settings</Text>
+                    <Text variant="heading-lg/semibold" className={classes(Margins.top16, Margins.bottom8)}>
+                        Settings
+                    </Text>
                     {renderSettings()}
                 </section>
             </div>

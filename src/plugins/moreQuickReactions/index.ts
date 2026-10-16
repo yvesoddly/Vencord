@@ -13,7 +13,7 @@ const settings = definePluginSettings({
         description: "Number of reactions (0-42)",
         type: OptionType.NUMBER,
         default: 5
-    },
+    }
 });
 
 export default definePlugin({
@@ -35,5 +35,5 @@ export default definePlugin({
                 replace: ".slice(0,$self.reactionCount)"
             }
         }
-    ],
+    ]
 });

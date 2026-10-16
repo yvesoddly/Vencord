@@ -1,20 +1,8 @@
 /*
- * Vencord, a modification for Discord's desktop app
+ * Vencord, a Discord client mod
  * Copyright (c) 2022 Vendicated and contributors
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <https://www.gnu.org/licenses/>.
-*/
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
 
 import { traceFunction } from "@debug/Tracer";
 import { makeLazy, proxyLazy } from "@utils/lazy";
@@ -34,7 +22,7 @@ export let _resolveReady: () => void;
  * Fired once a gateway connection to Discord has been established.
  * This indicates that the core webpack modules have been initialised
  */
-export const onceReady = new Promise<void>(r => _resolveReady = r);
+export const onceReady = new Promise<void>(r => (_resolveReady = r));
 
 export let wreq: WebpackRequire;
 export let cache: WebpackRequire["c"];
@@ -48,11 +36,7 @@ export type CodeFilter = Array<string | RegExp>;
 export type StoreNameFilter = string;
 
 export const stringMatches = (s: string, filter: CodeFilter) =>
-    filter.every(f =>
-        typeof f === "string"
-            ? s.includes(f)
-            : (f.global && (f.lastIndex = 0), f.test(s))
-    );
+    filter.every(f => (typeof f === "string" ? s.includes(f) : (f.global && (f.lastIndex = 0), f.test(s))));
 
 export function makeClassNameRegex(className: string) {
     return new RegExp(`(?<=^|\\s)${escapeRegExp(className)}(?:_\\S*)?(?=$|\\s)`);
@@ -60,13 +44,11 @@ export function makeClassNameRegex(className: string) {
 
 export const filters = {
     byProps: (...props: PropsFilter): FilterFn =>
-        props.length === 1
-            ? m => m[props[0]] !== void 0
-            : m => props.every(p => m[p] !== void 0),
+        props.length === 1 ? m => m[props[0]] !== void 0 : m => props.every(p => m[p] !== void 0),
 
     byCode: (...code: CodeFilter): FilterFn => {
         const parsedCode = code.map(canonicalizeMatch);
-        const filter = m => {
+        const filter = (m: unknown) => {
             if (typeof m !== "function") return false;
             return stringMatches(Function.prototype.toString.call(m), parsedCode);
         };
@@ -74,8 +56,10 @@ export const filters = {
         filter.$$vencordProps = [...code];
         return filter;
     },
-    byStoreName: (name: StoreNameFilter): FilterFn => m =>
-        m.constructor?.displayName === name,
+    byStoreName:
+        (name: StoreNameFilter): FilterFn =>
+        m =>
+            m.constructor?.displayName === name,
 
     componentByCode: (...code: CodeFilter): FilterFn => {
         const byCodeFilter = filters.byCode(...code);
@@ -160,7 +144,11 @@ function makePropertyNonEnumerable(target: Record<PropertyKey, any>, key: Proper
     });
 }
 
-export function _blacklistBadModules(requireCache: NonNullable<AnyWebpackRequire["c"]>, exports: ModuleExports, moduleId: PropertyKey) {
+export function _blacklistBadModules(
+    requireCache: NonNullable<AnyWebpackRequire["c"]>,
+    exports: ModuleExports,
+    moduleId: PropertyKey
+) {
     try {
         if (shouldIgnoreValue(exports)) {
             makePropertyNonEnumerable(requireCache, moduleId);
@@ -168,9 +156,12 @@ export function _blacklistBadModules(requireCache: NonNullable<AnyWebpackRequire
         }
     } catch (err) {
         logger.error(
-            "Error while blacklisting module:\n", err,
-            "\n\nModule id:", moduleId,
-            "\n\nModule exports:", exports,
+            "Error while blacklisting module:\n",
+            err,
+            "\n\nModule id:",
+            moduleId,
+            "\n\nModule exports:",
+            exports
         );
     }
 
@@ -195,9 +186,12 @@ export function _blacklistBadModules(requireCache: NonNullable<AnyWebpackRequire
             }
         } catch (err) {
             logger.error(
-                "Error while blacklistng module:\n", err,
-                "\n\nModule id:", moduleId,
-                "\n\nExport value:", exportValue,
+                "Error while blacklistng module:\n",
+                err,
+                "\n\nModule id:",
+                moduleId,
+                "\n\nExport value:",
+                exportValue
             );
         }
     }
@@ -209,7 +203,11 @@ let devToolsOpen = false;
 if (IS_DEV && IS_DISCORD_DESKTOP) {
     // At this point in time, DiscordNative has not been exposed yet, so setImmediate is needed
     setTimeout(() => {
-        DiscordNative/* just to make sure */?.window.setDevtoolsCallbacks(() => devToolsOpen = true, () => devToolsOpen = false);
+        DiscordNative /* just to make sure */?.window
+            .setDevtoolsCallbacks(
+                () => (devToolsOpen = true),
+                () => (devToolsOpen = false)
+            );
     }, 0);
 }
 
@@ -218,58 +216,63 @@ export function handleModuleNotFound(method: string, ...filter: unknown[]) {
     logger.error(err, "Filter:", filter);
 
     // Strict behaviour in DevBuilds to fail early and make sure the issue is found
-    if (IS_DEV && !devToolsOpen)
-        throw err;
+    if (IS_DEV && !devToolsOpen) throw err;
 }
 
 /**
  * Find the first module that matches the filter
  */
-export const find = traceFunction("find", function find(filter: FilterFn, { isIndirect = false, isWaitFor = false, topLevelOnly = false }: { isIndirect?: boolean; isWaitFor?: boolean; topLevelOnly?: boolean; } = {}) {
-    if (IS_ANTI_CRASH_TEST) return null;
+export const find = traceFunction(
+    "find",
+    function find(
+        filter: FilterFn,
+        {
+            isIndirect = false,
+            isWaitFor = false,
+            topLevelOnly = false
+        }: { isIndirect?: boolean; isWaitFor?: boolean; topLevelOnly?: boolean } = {}
+    ) {
+        if (IS_ANTI_CRASH_TEST) return null;
 
-    if (typeof filter !== "function")
-        throw new Error("Invalid filter. Expected a function got " + typeof filter);
+        if (typeof filter !== "function") throw new Error("Invalid filter. Expected a function got " + typeof filter);
 
-    for (const key in cache) {
-        const mod = cache[key];
-        if (!mod?.loaded || mod.exports == null) continue;
+        for (const key in cache) {
+            const mod = cache[key];
+            if (!mod?.loaded || mod.exports == null) continue;
 
-        if (filter(mod.exports)) {
-            return isWaitFor ? [mod.exports, key] : mod.exports;
-        }
+            if (filter(mod.exports)) {
+                return isWaitFor ? [mod.exports, key] : mod.exports;
+            }
 
-        if (typeof mod.exports !== "object" || topLevelOnly) continue;
+            if (typeof mod.exports !== "object" || topLevelOnly) continue;
 
-        for (const nestedMod in mod.exports) {
-            const nested = mod.exports[nestedMod];
-            if (nested && filter(nested)) {
-                return isWaitFor ? [nested, key] : nested;
+            for (const nestedMod in mod.exports) {
+                const nested = mod.exports[nestedMod];
+                if (nested && filter(nested)) {
+                    return isWaitFor ? [nested, key] : nested;
+                }
             }
         }
+
+        if (!isIndirect) {
+            handleModuleNotFound("find", filter);
+        }
+
+        return isWaitFor ? [null, null] : null;
     }
+);
 
-    if (!isIndirect) {
-        handleModuleNotFound("find", filter);
-    }
-
-    return isWaitFor ? [null, null] : null;
-});
-
-export function findAll(filter: FilterFn, { topLevelOnly = false }: { topLevelOnly?: boolean; } = {}) {
-    if (typeof filter !== "function")
-        throw new Error("Invalid filter. Expected a function got " + typeof filter);
+export function findAll(filter: FilterFn, { topLevelOnly = false }: { topLevelOnly?: boolean } = {}) {
+    if (typeof filter !== "function") throw new Error("Invalid filter. Expected a function got " + typeof filter);
 
     const ret = [] as any[];
     for (const key in cache) {
         const mod = cache[key];
         if (!mod?.loaded || mod.exports == null) continue;
 
-        if (filter(mod.exports))
-            ret.push(mod.exports);
+        if (filter(mod.exports)) ret.push(mod.exports);
 
-        if (typeof mod.exports !== "object" || topLevelOnly)
-            continue;
+        if (typeof mod.exports !== "object" || topLevelOnly) continue;
 
         for (const nestedMod in mod.exports) {
             const nested = mod.exports[nestedMod];
@@ -289,13 +292,11 @@ export function findAll(filter: FilterFn, { topLevelOnly = false }: { topLevelOn
 export const findBulk = traceFunction("findBulk", function findBulk(...filterFns: FilterFn[]) {
     if (IS_ANTI_CRASH_TEST) return [];
 
-    if (!Array.isArray(filterFns))
-        throw new Error("Invalid filters. Expected function[] got " + typeof filterFns);
+    if (!Array.isArray(filterFns)) throw new Error("Invalid filters. Expected function[] got " + typeof filterFns);
 
     const { length } = filterFns;
 
-    if (length === 0)
-        throw new Error("Expected at least two filters.");
+    if (length === 0) throw new Error("Expected at least two filters.");
 
     if (length === 1) {
         if (IS_DEV) {
@@ -309,8 +310,7 @@ export const findBulk = traceFunction("findBulk", function findBulk(...filterFns
     let found = 0;
     const results = Array(length);
 
-    outer:
-    for (const key in cache) {
+    outer: for (const key in cache) {
         const mod = cache[key];
         if (!mod?.loaded || mod.exports == null) continue;
 
@@ -326,8 +326,7 @@ export const findBulk = traceFunction("findBulk", function findBulk(...filterFns
                 break;
             }
 
-            if (typeof mod.exports !== "object")
-                continue;
+            if (typeof mod.exports !== "object") continue;
 
             for (const nestedMod in mod.exports) {
                 const nested = mod.exports[nestedMod];
@@ -389,7 +388,28 @@ export function findModuleFactory(...code: CodeFilter) {
     return wreq.m[id];
 }
 
-export const lazyWebpackSearchHistory = [] as Array<["find" | "findByProps" | "findByCode" | "findCssClasses" | "findStore" | "findComponent" | "findComponentByCode" | "findExportedComponent" | "waitFor" | "waitForComponent" | "waitForStore" | "proxyLazyWebpack" | "LazyComponentWebpack" | "extractAndLoadChunks" | "mapMangledModule", any[]]>;
+export const lazyWebpackSearchHistory = [] as Array<
+    [
+        (
+            | "find"
+            | "findByProps"
+            | "findByCode"
+            | "findCssClasses"
+            | "findStore"
+            | "findComponent"
+            | "findComponentByCode"
+            | "findExportedComponent"
+            | "waitFor"
+            | "waitForComponent"
+            | "waitForStore"
+            | "proxyLazyWebpack"
+            | "LazyComponentWebpack"
+            | "extractAndLoadChunks"
+            | "mapMangledModule"
+        ),
+        any[]
+    ]
+>;
 
 /**
  * This is just a wrapper around {@link proxyLazy} to make our reporter test for your webpack finds.
@@ -437,8 +457,7 @@ export function findLazy(filter: FilterFn) {
  */
 export function findByProps(...props: PropsFilter) {
     const res = find(filters.byProps(...props), { isIndirect: true });
-    if (!res)
-        handleModuleNotFound("findByProps", ...props);
+    if (!res) handleModuleNotFound("findByProps", ...props);
     return res;
 }
 
@@ -456,8 +475,7 @@ export function findByPropsLazy(...props: PropsFilter) {
  */
 export function findByCode(...code: CodeFilter) {
     const res = find(filters.byCode(...code), { isIndirect: true });
-    if (!res)
-        handleModuleNotFound("findByCode", ...code);
+    if (!res) handleModuleNotFound("findByCode", ...code);
     return res;
 }
 
@@ -473,9 +491,7 @@ export function findByCodeLazy(...code: CodeFilter) {
 function populateFluxStoreMap() {
     const { Flux } = require("./common") as typeof import("./common");
 
-    Flux.Store.getAll?.().forEach(store =>
-        fluxStores.set(store.getName(), store)
-    );
+    Flux.Store.getAll?.().forEach(store => fluxStores.set(store.getName(), store));
 
     try {
         const getLibdiscore = findByCode("libdiscoreWasm is not initialized");
@@ -491,7 +507,7 @@ function populateFluxStoreMap() {
 
             fluxStores.set(storeName, store);
         }
-    } catch { }
+    } catch {}
 }
 
 /**
@@ -530,8 +546,7 @@ export function findStoreLazy(name: StoreNameFilter) {
  */
 export function findComponentByCode(...code: CodeFilter) {
     const res = find(filters.componentByCode(...code), { isIndirect: true });
-    if (!res)
-        handleModuleNotFound("findComponentByCode", ...code);
+    if (!res) handleModuleNotFound("findComponentByCode", ...code);
     return res;
 }
 
@@ -541,11 +556,9 @@ export function findComponentByCode(...code: CodeFilter) {
 export function findComponentLazy<T extends object = any>(filter: FilterFn) {
     if (IS_REPORTER) lazyWebpackSearchHistory.push(["findComponent", [filter]]);
 
-
     return LazyComponent<T>(() => {
         const res = find(filter, { isIndirect: true });
-        if (!res)
-            handleModuleNotFound("findComponent", filter);
+        if (!res) handleModuleNotFound("findComponent", filter);
         return res;
     });
 }
@@ -558,8 +571,7 @@ export function findComponentByCodeLazy<T extends object = any>(...code: CodeFil
 
     return LazyComponent<T>(() => {
         const res = find(filters.componentByCode(...code), { isIndirect: true });
-        if (!res)
-            handleModuleNotFound("findComponentByCode", ...code);
+        if (!res) handleModuleNotFound("findComponentByCode", ...code);
         return res;
     });
 }
@@ -572,13 +584,15 @@ export function findExportedComponentLazy<T extends object = any>(...props: Prop
 
     return LazyComponent<T>(() => {
         const res = find(filters.byProps(...props), { isIndirect: true });
-        if (!res)
-            handleModuleNotFound("findExportedComponent", ...props);
+        if (!res) handleModuleNotFound("findExportedComponent", ...props);
         return res[props[0]];
     });
 }
 
-export function mapMangledCssClasses<S extends string>(mappedModule: object, classes: S[] | ReadonlyArray<S>): Record<S, string> {
+export function mapMangledCssClasses<S extends string>(
+    mappedModule: object,
+    classes: S[] | ReadonlyArray<S>
+): Record<S, string> {
     const values = Object.values(mappedModule);
     const mapped = {} as Record<S, string>;
 
@@ -586,7 +600,8 @@ export function mapMangledCssClasses<S extends string>(mappedModule: object, cla
         const re = makeClassNameRegex(cls);
         mapped[cls] = values.find(v => typeof v === "string" && re.test(v)) as string;
 
-        if (!mapped[cls]) // this should never happen unless this is used manually with invalid input
+        if (!mapped[cls])
+            // this should never happen unless this is used manually with invalid input
             throw new Error(`mapMangledCssClasses: Invalid input. ${cls} not found in module`);
     }
 
@@ -640,20 +655,20 @@ function getAllPropertyNames(object: Record<PropertyKey, any>, includeNonEnumera
  *             closeModal: filters.byCode("key==")
  *          })
  */
-export const mapMangledModule = traceFunction("mapMangledModule", function mapMangledModule<S extends string>(code: string | RegExp | CodeFilter, mappers: Record<S, FilterFn>, includeBlacklistedExports = false): Record<S, any> {
+export const mapMangledModule = traceFunction("mapMangledModule", function mapMangledModule<
+    S extends string
+>(code: string | RegExp | CodeFilter, mappers: Record<S, FilterFn>, includeBlacklistedExports = false): Record<S, any> {
     const exports = {} as Record<S, any>;
 
     // whitelist Modal API to be able to test modals
     if (IS_ANTI_CRASH_TEST && code !== ':"thin")' && code !== ".modalKey?") return exports;
 
-    const id = findModuleId(...Array.isArray(code) ? code : [code]);
-    if (id === null)
-        return exports;
+    const id = findModuleId(...(Array.isArray(code) ? code : [code]));
+    if (id === null) return exports;
 
     const mod = wreq(id as any);
     const keys = getAllPropertyNames(mod, includeBlacklistedExports);
-    outer:
-    for (const key of keys) {
+    outer: for (const key of keys) {
         const member = mod[key];
         for (const newName in mappers) {
             // if the current mapper matches this module
@@ -668,15 +683,20 @@ export const mapMangledModule = traceFunction("mapMangledModule", function mapMa
 
 /**
  * lazy mapMangledModule
-  * @see {@link mapMangledModule}
+ * @see {@link mapMangledModule}
  */
-export function mapMangledModuleLazy<S extends string>(code: string | RegExp | CodeFilter, mappers: Record<S, FilterFn>, includeBlacklistedExports = false): Record<S, any> {
+export function mapMangledModuleLazy<S extends string>(
+    code: string | RegExp | CodeFilter,
+    mappers: Record<S, FilterFn>,
+    includeBlacklistedExports = false
+): Record<S, any> {
     if (IS_REPORTER) lazyWebpackSearchHistory.push(["mapMangledModule", [code, mappers, includeBlacklistedExports]]);
 
     return proxyLazy(() => mapMangledModule(code, mappers, includeBlacklistedExports));
 }
 
-export const DefaultExtractAndLoadChunksRegex = /(?:(?:Promise\.all\(\[)?((?:\i\.e\("?[^)]+?"?\),?)+?)(?:\]\))?|Promise\.resolve\(\))\.then\(\i\.bind\(\i,"?([^)]+?)"?\)\)/;
+export const DefaultExtractAndLoadChunksRegex =
+    /(?:(?:Promise\.all\(\[)?((?:\i\.e\("?[^)]+?"?\),?)+?)(?:\]\))?|Promise\.resolve\(\))\.then\(\i\.bind\(\i,"?([^)]+?)"?\)\)/;
 export const ChunkIdsRegex = /\("([^"]+?)"\)/g;
 
 /**
@@ -694,8 +714,7 @@ export async function extractAndLoadChunks(code: CodeFilter, matcher = DefaultEx
         logger.warn(err, "Code:", code, "Matcher:", matcher);
 
         // Strict behaviour in DevBuilds to fail early and make sure the issue is found
-        if (IS_DEV && !devToolsOpen)
-            throw err;
+        if (IS_DEV && !devToolsOpen) throw err;
 
         return false;
     }
@@ -706,8 +725,7 @@ export async function extractAndLoadChunks(code: CodeFilter, matcher = DefaultEx
         logger.warn(err, "Code:", code, "Matcher:", matcher);
 
         // Strict behaviour in DevBuilds to fail early and make sure the issue is found
-        if (IS_DEV && !devToolsOpen)
-            throw err;
+        if (IS_DEV && !devToolsOpen) throw err;
 
         return false;
     }
@@ -715,12 +733,13 @@ export async function extractAndLoadChunks(code: CodeFilter, matcher = DefaultEx
     const [, rawChunkIds, entryPointId] = match;
 
     if (entryPointId == null) {
-        const err = new Error("extractAndLoadChunks: Matcher didn't return a capturing group with the chunk ids array or the entry point id");
+        const err = new Error(
+            "extractAndLoadChunks: Matcher didn't return a capturing group with the chunk ids array or the entry point id"
+        );
         logger.warn(err, "Code:", code, "Matcher:", matcher);
 
         // Strict behaviour in DevBuilds to fail early and make sure the issue is found
-        if (IS_DEV && !devToolsOpen)
-            throw err;
+        if (IS_DEV && !devToolsOpen) throw err;
 
         return false;
     }
@@ -738,12 +757,13 @@ export async function extractAndLoadChunks(code: CodeFilter, matcher = DefaultEx
     }
 
     if (wreq.m[entryPoint] == null) {
-        const err = new Error("extractAndLoadChunks: Entry point is not loaded in the module factories, perhaps one of the chunks failed to load");
+        const err = new Error(
+            "extractAndLoadChunks: Entry point is not loaded in the module factories, perhaps one of the chunks failed to load"
+        );
         logger.warn(err, "Code:", code, "Matcher:", matcher);
 
         // Strict behaviour in DevBuilds to fail early and make sure the issue is found
-        if (IS_DEV && !devToolsOpen)
-            throw err;
+        if (IS_DEV && !devToolsOpen) throw err;
 
         return false;
     }
@@ -770,16 +790,19 @@ export function extractAndLoadChunksLazy(code: CodeFilter, matcher = DefaultExtr
  * Wait for a module that matches the provided filter to be registered,
  * then call the callback with the module as the first argument
  */
-export function waitFor(filter: string | PropsFilter | FilterFn, callback: CallbackFn, { isIndirect = false }: { isIndirect?: boolean; } = {}) {
+export function waitFor(
+    filter: string | PropsFilter | FilterFn,
+    callback: CallbackFn,
+    { isIndirect = false }: { isIndirect?: boolean } = {}
+) {
     // if react find fails then we are fully cooked
     if (IS_ANTI_CRASH_TEST && filter !== "useState") return;
 
-    if (IS_REPORTER && !isIndirect) lazyWebpackSearchHistory.push(["waitFor", Array.isArray(filter) ? filter : [filter]]);
+    if (IS_REPORTER && !isIndirect)
+        lazyWebpackSearchHistory.push(["waitFor", Array.isArray(filter) ? filter : [filter]]);
 
-    if (typeof filter === "string")
-        filter = filters.byProps(filter);
-    else if (Array.isArray(filter))
-        filter = filters.byProps(...filter);
+    if (typeof filter === "string") filter = filters.byProps(filter);
+    else if (Array.isArray(filter)) filter = filters.byProps(...filter);
     else if (typeof filter !== "function")
         throw new Error("filter must be a string, string[] or function, got " + typeof filter);
 
@@ -800,14 +823,13 @@ export function waitFor(filter: string | PropsFilter | FilterFn, callback: Callb
 export function search(...code: CodeFilter) {
     code = code.map(canonicalizeMatch);
 
-    const results = {} as Record<number, Function>;
+    const results = {} as Record<string, Function>;
     const factories = wreq.m;
 
     for (const id in factories) {
         const factory = factories[id];
 
-        if (stringMatches(factory.toString(), code))
-            results[id] = factory;
+        if (stringMatches(factory.toString(), code)) results[id] = factory;
     }
 
     return results;
@@ -828,7 +850,8 @@ export function extract(moduleId: PropertyKey) {
     const originalFactoryCode = String(originalFactory);
     const isArrowFunction = originalFactoryCode.startsWith("(");
 
-    const wrappedCode = "0," + (!isArrowFunction ? "function" : "") + originalFactoryCode.slice(originalFactoryCode.indexOf("("));
+    const wrappedCode =
+        "0," + (!isArrowFunction ? "function" : "") + originalFactoryCode.slice(originalFactoryCode.indexOf("("));
     const code = `
 // [EXTRACTED] WebpackModule${String(moduleId)}
 // WARNING: This module was extracted to be more easily readable.

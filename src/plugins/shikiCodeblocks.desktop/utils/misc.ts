@@ -1,20 +1,8 @@
 /*
- * Vencord, a modification for Discord's desktop app
+ * Vencord, a Discord client mod
  * Copyright (c) 2022 Vendicated and contributors
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <https://www.gnu.org/licenses/>.
-*/
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
 
 import { resolveLang } from "@plugins/shikiCodeblocks.desktop/api/languages";
 import { HighlighterProps } from "@plugins/shikiCodeblocks.desktop/components/Highlighter";
@@ -25,15 +13,12 @@ import { DefaultExtractAndLoadChunksRegex, extractAndLoadChunksLazy, findByProps
 export const cl = classNameFactory("vc-shiki-");
 
 export const hljs: typeof import("highlight.js").default = findByPropsLazy("highlight", "registerLanguage");
-export const requireHljs = extractAndLoadChunksLazy(["codeBlock:{react("], new RegExp(`"hljs".+?${DefaultExtractAndLoadChunksRegex.source}`));
+export const requireHljs = extractAndLoadChunksLazy(
+    ["codeBlock:{react("],
+    new RegExp(`"hljs".+?${DefaultExtractAndLoadChunksRegex.source}`)
+);
 
-export const shouldUseHljs = ({
-    lang,
-    tryHljs,
-}: {
-    lang: HighlighterProps["lang"],
-    tryHljs: HljsSetting,
-}) => {
+export const shouldUseHljs = ({ lang, tryHljs }: { lang: HighlighterProps["lang"]; tryHljs: HljsSetting }) => {
     const hljsLang = lang ? hljs?.getLanguage?.(lang) : null;
     const shikiLang = lang ? resolveLang(lang) : null;
     const langName = shikiLang?.name;
@@ -47,6 +32,7 @@ export const shouldUseHljs = ({
             return !langName && !!hljsLang;
         case HljsSetting.Never:
             return false;
-        default: return false;
+        default:
+            return false;
     }
 };

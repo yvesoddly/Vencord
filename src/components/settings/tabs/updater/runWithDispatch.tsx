@@ -6,16 +6,14 @@
 
 import { ErrorCard } from "@components/ErrorCard";
 import { UpdateLogger } from "@utils/updater";
-import { ConfirmModal,openModal, Parser } from "@webpack/common";
+import { ConfirmModal, openModal, Parser } from "@webpack/common";
 
 function getErrorMessage(e: any) {
-    if (!e?.code || !e.cmd)
-        return "An unknown error occurred.\nPlease try again or see the console for more info.";
+    if (!e?.code || !e.cmd) return "An unknown error occurred.\nPlease try again or see the console for more info.";
 
     const { code, path, cmd, stderr } = e;
 
-    if (code === "ENOENT")
-        return `Command \`${path}\` not found.\nPlease install it and try again.`;
+    if (code === "ENOENT") return `Command \`${path}\` not found.\nPlease install it and try again.`;
 
     const extra = stderr || `Code \`${code}\`. See the console for more info.`;
 
@@ -34,16 +32,11 @@ export function runWithDispatch(dispatch: React.Dispatch<React.SetStateAction<bo
             const err = getErrorMessage(e);
 
             openModal(props => (
-                <ConfirmModal
-                    {...props}
-                    title="Oops!"
-                    confirmText="OK"
-                    variant="primary"
-                >
+                <ConfirmModal {...props} title="Oops!" confirmText="OK" variant="primary">
                     <ErrorCard>
-                        {err.split("\n").map((line, idx) =>
+                        {err.split("\n").map((line, idx) => (
                             <div key={idx}>{Parser.parse(line)}</div>
-                        )}
+                        ))}
                     </ErrorCard>
                 </ConfirmModal>
             ));

@@ -12,4 +12,3 @@ The activity stays showing as a detected game even if ignored, but is excluded f
 
 ![](https://github.com/user-attachments/assets/f7b82992-279e-4449-bcad-d6ab536b9f13)
 ![](https://github.com/user-attachments/assets/d498bf1d-36ef-4cbe-8043-2893325176d3)
-

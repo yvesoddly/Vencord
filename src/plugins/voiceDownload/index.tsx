@@ -5,7 +5,6 @@
  */
 
 import "./style.css";
-
 import { Devs } from "@utils/constants";
 import definePlugin from "@utils/types";
 
@@ -31,9 +30,10 @@ export default definePlugin({
                 href={src}
                 onClick={e => e.stopPropagation()}
                 aria-label="Download voice message"
-                {...IS_DISCORD_DESKTOP
-                    ? { target: "_blank" } // open externally
-                    : { download: "voice-message.ogg" } // download directly (not supported on discord desktop)
+                {
+                    ...(IS_DISCORD_DESKTOP
+                        ? { target: "_blank" } // open externally
+                        : { download: "voice-message.ogg" }) // download directly (not supported on discord desktop)
                 }
             >
                 <this.Icon />
@@ -42,15 +42,8 @@ export default definePlugin({
     },
 
     Icon: () => (
-        <svg
-            height="24"
-            width="24"
-            viewBox="0 0 24 24"
-            fill="currentColor"
-        >
-            <path
-                d="M12 2a1 1 0 0 1 1 1v10.59l3.3-3.3a1 1 0 1 1 1.4 1.42l-5 5a1 1 0 0 1-1.4 0l-5-5a1 1 0 1 1 1.4-1.42l3.3 3.3V3a1 1 0 0 1 1-1ZM3 20a1 1 0 1 0 0 2h18a1 1 0 1 0 0-2H3Z"
-            />
+        <svg height="24" width="24" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12 2a1 1 0 0 1 1 1v10.59l3.3-3.3a1 1 0 1 1 1.4 1.42l-5 5a1 1 0 0 1-1.4 0l-5-5a1 1 0 1 1 1.4-1.42l3.3 3.3V3a1 1 0 0 1 1-1ZM3 20a1 1 0 1 0 0 2h18a1 1 0 1 0 0-2H3Z" />
         </svg>
-    ),
+    )
 });

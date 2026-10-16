@@ -1,20 +1,8 @@
 /*
- * Vencord, a modification for Discord's desktop app
+ * Vencord, a Discord client mod
  * Copyright (c) 2022 Vendicated and contributors
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <https://www.gnu.org/licenses/>.
-*/
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
 
 import { cl, hljs } from "@plugins/shikiCodeblocks.desktop/utils/misc";
 import type { IThemedToken } from "@vap/shiki";
@@ -30,30 +18,19 @@ export interface CodeProps {
     tokens: IThemedToken[][] | null;
 }
 
-export const Code = ({
-    theme,
-    useHljs,
-    lang,
-    content,
-    tokens,
-}: CodeProps) => {
+export const Code = ({ theme, useHljs, lang, content, tokens }: CodeProps) => {
     let lines!: JSX.Element[];
 
     if (useHljs) {
         try {
             const { value: hljsHtml } = hljs.highlight(content, { language: lang!, ignoreIllegals: true });
-            lines = hljsHtml
-                .split("\n")
-                .map((line, i) => <span key={i} dangerouslySetInnerHTML={{ __html: line }} />);
+            lines = hljsHtml.split("\n").map((line, i) => <span key={i} dangerouslySetInnerHTML={{ __html: line }} />);
         } catch {
             lines = content.split("\n").map((line, idx) => <span key={idx}>{line}</span>);
         }
     } else {
         const renderTokens =
-            tokens ??
-            content
-                .split("\n")
-                .map(line => [{ color: theme.plainColor, content: line } as IThemedToken]);
+            tokens ?? content.split("\n").map(line => [{ color: theme.plainColor, content: line } as IThemedToken]);
 
         lines = renderTokens.map((line, idx) => {
             // [Cynthia] this makes it so when you highlight the codeblock
@@ -71,7 +48,7 @@ export const Code = ({
                                 color,
                                 fontStyle: (fontStyle ?? 0) & 1 ? "italic" : undefined,
                                 fontWeight: (fontStyle ?? 0) & 2 ? "bold" : undefined,
-                                textDecoration: (fontStyle ?? 0) & 4 ? "underline" : undefined,
+                                textDecoration: (fontStyle ?? 0) & 4 ? "underline" : undefined
                             }}
                         >
                             {content}
@@ -84,7 +61,9 @@ export const Code = ({
 
     const codeTableRows = lines.map((line, i) => (
         <tr className={cl("table-row")} key={i}>
-            <td className={cl("table-cell")} style={{ color: theme.plainColor }}>{i + 1}</td>
+            <td className={cl("table-cell")} style={{ color: theme.plainColor }}>
+                {i + 1}
+            </td>
             <td className={cl("table-cell")}>{line}</td>
         </tr>
     ));

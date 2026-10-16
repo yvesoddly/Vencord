@@ -5,4 +5,4 @@
  */
 
 export const PluginTargets = ["web", "browser", "discordDesktop", "vesktop", "desktop", "dev"] as const;
-export type PluginTarget = typeof PluginTargets[number];
+export type PluginTarget = (typeof PluginTargets)[number];

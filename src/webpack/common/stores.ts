@@ -1,20 +1,8 @@
 /*
- * Vencord, a modification for Discord's desktop app
+ * Vencord, a Discord client mod
  * Copyright (c) 2023 Vendicated and contributors
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <https://www.gnu.org/licenses/>.
-*/
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
 
 import { ConstEnumToRuntimeEnum } from "@utils/types";
 import * as t from "@vencord/discord-types";
@@ -27,7 +15,10 @@ export const Flux: t.Flux = findByPropsLazy("connectStores");
 
 export type GenericStore = t.FluxStore & Record<string, any>;
 
-export const DraftType: ConstEnumToRuntimeEnum<typeof enums.DraftType> = findByPropsLazy("ChannelMessage", "SlashCommand");
+export const DraftType: ConstEnumToRuntimeEnum<typeof enums.DraftType> = findByPropsLazy(
+    "ChannelMessage",
+    "SlashCommand"
+);
 
 export let MessageStore: t.MessageStore;
 
@@ -111,77 +102,77 @@ export let GuildReadStateStore: t.GuildReadStateStore;
  */
 export const useStateFromStores: t.useStateFromStores = findByCodeLazy("useStateFromStores");
 
-waitForStore("AccessibilityStore", s => AccessibilityStore = s);
-waitForStore("ApplicationStore", s => ApplicationStore = s);
-waitForStore("AuthenticationStore", s => AuthenticationStore = s);
-waitForStore("DraftStore", s => DraftStore = s);
-waitForStore("UserStore", s => UserStore = s);
-waitForStore("UserProfileStore", m => UserProfileStore = m);
-waitForStore("ChannelStore", m => ChannelStore = m);
-waitForStore("SelectedChannelStore", m => SelectedChannelStore = m);
-waitForStore("SelectedGuildStore", m => SelectedGuildStore = m);
-waitForStore("GuildStore", m => GuildStore = m);
-waitForStore("GuildMemberStore", m => GuildMemberStore = m);
-waitForStore("RelationshipStore", m => RelationshipStore = m);
-waitForStore("MediaEngineStore", m => MediaEngineStore = m);
-waitForStore("NotificationSettingsStore", m => NotificationSettingsStore = m);
-waitForStore("SpellcheckStore", m => SpellCheckStore = m);
-waitForStore("PermissionStore", m => PermissionStore = m);
-waitForStore("PresenceStore", m => PresenceStore = m);
-waitForStore("ReadStateStore", m => ReadStateStore = m);
-waitForStore("GuildChannelStore", m => GuildChannelStore = m);
-waitForStore("GuildRoleStore", m => GuildRoleStore = m);
-waitForStore("GuildScheduledEventStore", m => GuildScheduledEventStore = m);
-waitForStore("GuildMemberCountStore", m => GuildMemberCountStore = m);
-waitForStore("MessageStore", m => MessageStore = m);
-waitForStore("WindowStore", m => WindowStore = m);
-waitForStore("EmojiStore", m => EmojiStore = m);
-waitForStore("StickersStore", m => StickersStore = m);
-waitForStore("TypingStore", m => TypingStore = m);
-waitForStore("VoiceStateStore", m => VoiceStateStore = m);
-waitForStore("StreamerModeStore", m => StreamerModeStore = m);
-waitForStore("SpotifyStore", m => SpotifyStore = m);
-waitForStore("OverridePremiumTypeStore", m => OverridePremiumTypeStore = m);
-waitForStore("UploadAttachmentStore", m => UploadAttachmentStore = m);
-waitForStore("RunningGameStore", m => RunningGameStore = m);
-waitForStore("ActiveJoinedThreadsStore", m => ActiveJoinedThreadsStore = m);
-waitForStore("UserGuildSettingsStore", m => UserGuildSettingsStore = m);
-waitForStore("UserSettingsProtoStore", m => UserSettingsProtoStore = m);
-waitForStore("CallStore", m => CallStore = m);
-waitForStore("ChannelRTCStore", m => ChannelRTCStore = m);
-waitForStore("FriendsStore", m => FriendsStore = m);
-waitForStore("InstantInviteStore", m => InstantInviteStore = m);
-waitForStore("InviteStore", m => InviteStore = m);
-waitForStore("LocaleStore", m => LocaleStore = m);
-waitForStore("RTCConnectionStore", m => RTCConnectionStore = m);
-waitForStore("SoundboardStore", m => SoundboardStore = m);
-waitForStore("PopoutWindowStore", m => PopoutWindowStore = m);
-waitForStore("PendingReplyStore", m => PendingReplyStore = m);
-waitForStore("ApplicationCommandIndexStore", m => ApplicationCommandIndexStore = m);
-waitForStore("EditMessageStore", m => EditMessageStore = m);
-waitForStore("ExperimentStore", m => ExperimentStore = m);
-waitForStore("UserAffinitiesV2Store", m => UserAffinitiesStore = m);
-waitForStore("ApplicationStreamingStore", m => ApplicationStreamingStore = m);
-waitForStore("ApplicationStreamPreviewStore", m => ApplicationStreamPreviewStore = m);
-waitForStore("SortedGuildStore", m => SortedGuildStore = m);
-waitForStore("JoinedThreadsStore", m => JoinedThreadsStore = m);
-waitForStore("SafetyHubStore", m => SafetyHubStore = m);
-waitForStore("PrivateChannelSortStore", m => PrivateChannelSortStore = m);
-waitForStore("UserProfileSettingsStore", m => UserProfileSettingsStore = m);
-waitForStore("AuthorizedAppsStore", m => AuthorizedAppsStore = m);
-waitForStore("ChannelSectionStore", m => ChannelSectionStore = m);
-waitForStore("ClientThemesBackgroundStore", m => ClientThemesBackgroundStore = m);
-waitForStore("ConnectedAccountsStore", m => ConnectedAccountsStore = m);
-waitForStore("ChannelMemberStore", m => ChannelMemberStore = m);
-waitForStore("ThreadMemberListStore", m => ThreadMemberListStore = m);
-waitForStore("CollapsedVoiceChannelStore", m => CollapsedVoiceChannelStore = m);
-waitForStore("ReferencedMessageStore", m => ReferencedMessageStore = m);
-waitForStore("SessionsStore", m => SessionsStore = m);
-waitForStore("UserGuildJoinRequestStore", m => UserGuildJoinRequestStore = m);
-waitForStore("SelfPresenceStore", m => SelfPresenceStore = m);
-waitForStore("MessageRequestStore", m => MessageRequestStore = m);
-waitForStore("GIFPickerViewStore", m => GIFPickerViewStore = m);
-waitForStore("GuildReadStateStore", m => GuildReadStateStore = m);
+waitForStore("AccessibilityStore", s => (AccessibilityStore = s));
+waitForStore("ApplicationStore", s => (ApplicationStore = s));
+waitForStore("AuthenticationStore", s => (AuthenticationStore = s));
+waitForStore("DraftStore", s => (DraftStore = s));
+waitForStore("UserStore", s => (UserStore = s));
+waitForStore("UserProfileStore", m => (UserProfileStore = m));
+waitForStore("ChannelStore", m => (ChannelStore = m));
+waitForStore("SelectedChannelStore", m => (SelectedChannelStore = m));
+waitForStore("SelectedGuildStore", m => (SelectedGuildStore = m));
+waitForStore("GuildStore", m => (GuildStore = m));
+waitForStore("GuildMemberStore", m => (GuildMemberStore = m));
+waitForStore("RelationshipStore", m => (RelationshipStore = m));
+waitForStore("MediaEngineStore", m => (MediaEngineStore = m));
+waitForStore("NotificationSettingsStore", m => (NotificationSettingsStore = m));
+waitForStore("SpellcheckStore", m => (SpellCheckStore = m));
+waitForStore("PermissionStore", m => (PermissionStore = m));
+waitForStore("PresenceStore", m => (PresenceStore = m));
+waitForStore("ReadStateStore", m => (ReadStateStore = m));
+waitForStore("GuildChannelStore", m => (GuildChannelStore = m));
+waitForStore("GuildRoleStore", m => (GuildRoleStore = m));
+waitForStore("GuildScheduledEventStore", m => (GuildScheduledEventStore = m));
+waitForStore("GuildMemberCountStore", m => (GuildMemberCountStore = m));
+waitForStore("MessageStore", m => (MessageStore = m));
+waitForStore("WindowStore", m => (WindowStore = m));
+waitForStore("EmojiStore", m => (EmojiStore = m));
+waitForStore("StickersStore", m => (StickersStore = m));
+waitForStore("TypingStore", m => (TypingStore = m));
+waitForStore("VoiceStateStore", m => (VoiceStateStore = m));
+waitForStore("StreamerModeStore", m => (StreamerModeStore = m));
+waitForStore("SpotifyStore", m => (SpotifyStore = m));
+waitForStore("OverridePremiumTypeStore", m => (OverridePremiumTypeStore = m));
+waitForStore("UploadAttachmentStore", m => (UploadAttachmentStore = m));
+waitForStore("RunningGameStore", m => (RunningGameStore = m));
+waitForStore("ActiveJoinedThreadsStore", m => (ActiveJoinedThreadsStore = m));
+waitForStore("UserGuildSettingsStore", m => (UserGuildSettingsStore = m));
+waitForStore("UserSettingsProtoStore", m => (UserSettingsProtoStore = m));
+waitForStore("CallStore", m => (CallStore = m));
+waitForStore("ChannelRTCStore", m => (ChannelRTCStore = m));
+waitForStore("FriendsStore", m => (FriendsStore = m));
+waitForStore("InstantInviteStore", m => (InstantInviteStore = m));
+waitForStore("InviteStore", m => (InviteStore = m));
+waitForStore("LocaleStore", m => (LocaleStore = m));
+waitForStore("RTCConnectionStore", m => (RTCConnectionStore = m));
+waitForStore("SoundboardStore", m => (SoundboardStore = m));
+waitForStore("PopoutWindowStore", m => (PopoutWindowStore = m));
+waitForStore("PendingReplyStore", m => (PendingReplyStore = m));
+waitForStore("ApplicationCommandIndexStore", m => (ApplicationCommandIndexStore = m));
+waitForStore("EditMessageStore", m => (EditMessageStore = m));
+waitForStore("ExperimentStore", m => (ExperimentStore = m));
+waitForStore("UserAffinitiesV2Store", m => (UserAffinitiesStore = m));
+waitForStore("ApplicationStreamingStore", m => (ApplicationStreamingStore = m));
+waitForStore("ApplicationStreamPreviewStore", m => (ApplicationStreamPreviewStore = m));
+waitForStore("SortedGuildStore", m => (SortedGuildStore = m));
+waitForStore("JoinedThreadsStore", m => (JoinedThreadsStore = m));
+waitForStore("SafetyHubStore", m => (SafetyHubStore = m));
+waitForStore("PrivateChannelSortStore", m => (PrivateChannelSortStore = m));
+waitForStore("UserProfileSettingsStore", m => (UserProfileSettingsStore = m));
+waitForStore("AuthorizedAppsStore", m => (AuthorizedAppsStore = m));
+waitForStore("ChannelSectionStore", m => (ChannelSectionStore = m));
+waitForStore("ClientThemesBackgroundStore", m => (ClientThemesBackgroundStore = m));
+waitForStore("ConnectedAccountsStore", m => (ConnectedAccountsStore = m));
+waitForStore("ChannelMemberStore", m => (ChannelMemberStore = m));
+waitForStore("ThreadMemberListStore", m => (ThreadMemberListStore = m));
+waitForStore("CollapsedVoiceChannelStore", m => (CollapsedVoiceChannelStore = m));
+waitForStore("ReferencedMessageStore", m => (ReferencedMessageStore = m));
+waitForStore("SessionsStore", m => (SessionsStore = m));
+waitForStore("UserGuildJoinRequestStore", m => (UserGuildJoinRequestStore = m));
+waitForStore("SelfPresenceStore", m => (SelfPresenceStore = m));
+waitForStore("MessageRequestStore", m => (MessageRequestStore = m));
+waitForStore("GIFPickerViewStore", m => (GIFPickerViewStore = m));
+waitForStore("GuildReadStateStore", m => (GuildReadStateStore = m));
 waitForStore("ThemeStore", m => {
     ThemeStore = m;
     // Importing this directly causes all webpack commons to be imported, which can easily cause circular dependencies.

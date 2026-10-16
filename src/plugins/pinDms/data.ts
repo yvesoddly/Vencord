@@ -86,7 +86,9 @@ export function categoryLen() {
 export function getAllUncollapsedChannels() {
     if (settings.store.pinOrder === PinOrder.LastMessage) {
         const sortedChannels = PrivateChannelSortStore.getPrivateChannelIds();
-        return currentUserCategories.filter(c => !c.collapsed).flatMap(c => sortedChannels.filter(channel => c.channels.includes(channel)));
+        return currentUserCategories
+            .filter(c => !c.collapsed)
+            .flatMap(c => sortedChannels.filter(channel => c.channels.includes(channel)));
     }
 
     return currentUserCategories.filter(c => !c.collapsed).flatMap(c => c.channels);
@@ -121,7 +123,6 @@ export const canMoveChannelInDirection = (channelId: string, direction: -1 | 1) 
     const channelIndex = category.channels.indexOf(channelId);
     return canMoveArrayInDirection(category.channels, channelIndex, direction);
 };
-
 
 function swapElementsInArray(array: any[], index1: number, index2: number) {
     if (!array[index1] || !array[index2]) return;

@@ -1,20 +1,8 @@
 /*
- * Vencord, a modification for Discord's desktop app
+ * Vencord, a Discord client mod
  * Copyright (c) 2023 Vendicated and contributors
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <https://www.gnu.org/licenses/>.
-*/
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
 
 import { definePluginSettings } from "@api/Settings";
 import { LinkButton } from "@components/Button";
@@ -36,7 +24,7 @@ const settings = definePluginSettings({
         type: OptionType.SELECT,
         options: [
             { label: "Nitro banner", value: true, default: true },
-            { label: "USRBG banner", value: false },
+            { label: "USRBG banner", value: false }
         ]
     },
     voiceBackground: {
@@ -59,11 +47,10 @@ export default definePlugin({
             replacement: {
                 match: /\i(?:\?)?.getPreviewBanner\(\i,\i,\i\)(?=.{0,100}"COMPLETE")/,
                 replace: "$self.patchBannerUrl(arguments[0])||$&"
-
             }
         },
         {
-            find: "\"data-selenium-video-tile\":",
+            find: '"data-selenium-video-tile":',
             predicate: () => settings.store.voiceBackground,
             replacement: [
                 {
@@ -77,7 +64,7 @@ export default definePlugin({
             predicate: () => settings.store.voiceBackground,
             replacement: {
                 match: /backgroundColor:.{0,25},\{style:(?=\i\?)/,
-                replace: "$&$self.userHasBackground(arguments[0]?.userId)?null:",
+                replace: "$&$self.userHasBackground(arguments[0]?.userId)?null:"
             }
         }
     ],
@@ -118,7 +105,12 @@ export default definePlugin({
         if (!this.userHasBackground(userId)) return null;
 
         // We can assert that data exists because userHasBackground returned true
-        const { endpoint, bucket, prefix, users: { [userId]: etag } } = this.data!;
+        const {
+            endpoint,
+            bucket,
+            prefix,
+            users: { [userId]: etag }
+        } = this.data!;
         return `${endpoint}/${bucket}/${prefix}${userId}?${etag}`;
     },
 

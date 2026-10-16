@@ -1,23 +1,10 @@
 /*
- * Vencord, a modification for Discord's desktop app
+ * Vencord, a Discord client mod
  * Copyright (c) 2022 Vendicated and contributors
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <https://www.gnu.org/licenses/>.
-*/
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
 
 import "./style.css";
-
 import { definePluginSettings } from "@api/Settings";
 import ErrorBoundary from "@components/ErrorBoundary";
 import { Devs } from "@utils/constants";
@@ -29,10 +16,10 @@ import { findStoreLazy } from "@webpack";
 import { MemberCount } from "./MemberCount";
 
 export const ChannelMemberStore = findStoreLazy("ChannelMemberStore") as FluxStore & {
-    getProps(guildId?: string, channelId?: string): { groups: { count: number; id: string; }[]; };
+    getProps(guildId?: string, channelId?: string): { groups: { count: number; id: string }[] };
 };
 export const ThreadMemberListStore = findStoreLazy("ThreadMemberListStore") as FluxStore & {
-    getMemberListSections(channelId?: string): { [sectionId: string]: { sectionId: string; userIds: string[]; }; };
+    getMemberListSections(channelId?: string): { [sectionId: string]: { sectionId: string; userIds: string[] } };
 };
 
 export const settings = definePluginSettings({
@@ -61,7 +48,8 @@ export const cl = classNameFactory("vc-membercount-");
 
 export default definePlugin({
     name: "MemberCount",
-    description: "Shows the number of online members, total members, and users in voice channels on the server — in the member list and tooltip.",
+    description:
+        "Shows the number of online members, total members, and users in voice channels on the server — in the member list and tooltip.",
     tags: ["Servers", "Utility"],
     authors: [Devs.Ven, Devs.Commandtechno, Devs.Apexo],
     settings,
@@ -72,8 +60,8 @@ export default definePlugin({
             replacement: [
                 {
                     match: /children:\[(\i\.useMemo[^}]+"aria-multiselectable")(?<=className:(\i),.+?)/,
-                    replace: "children:[$2?.includes('members')?$self.render():null,$1",
-                },
+                    replace: "children:[$2?.includes('members')?$self.render():null,$1"
+                }
             ],
             predicate: () => settings.store.memberList
         },

@@ -72,7 +72,7 @@ export const CspPolicies: PolicyMap = {
     // Tenor & Giphy, used by GifProviderSwitcher plugin and some themes
     "*.tenor.com": ImageAndMediaSrc,
     "*.tenor.co": ImageAndMediaSrc,
-    "*.giphy.com": ImageAndMediaSrc,
+    "*.giphy.com": ImageAndMediaSrc
 };
 
 const findHeader = (headers: PolicyMap, headerName: Lowercase<string>) => {
@@ -97,11 +97,9 @@ const stringifyPolicy = (policy: PolicyMap): string =>
         .map(directive => directive.flat().join(" "))
         .join("; ");
 
-
 const patchCsp = (headers: PolicyMap) => {
     const reportOnlyHeader = findHeader(headers, "content-security-policy-report-only");
-    if (reportOnlyHeader)
-        delete headers[reportOnlyHeader];
+    if (reportOnlyHeader) delete headers[reportOnlyHeader];
 
     const header = findHeader(headers, "content-security-policy");
 
@@ -142,15 +140,13 @@ const patchCsp = (headers: PolicyMap) => {
 export function initCsp() {
     session.defaultSession.webRequest.onHeadersReceived(({ responseHeaders, resourceType }, cb) => {
         if (responseHeaders) {
-            if (resourceType === "mainFrame")
-                patchCsp(responseHeaders);
+            if (resourceType === "mainFrame") patchCsp(responseHeaders);
 
             // Fix hosts that don't properly set the css content type, such as
             // raw.githubusercontent.com
             if (resourceType === "stylesheet") {
                 const header = findHeader(responseHeaders, "content-type");
-                if (header)
-                    responseHeaders[header] = ["text/css"];
+                if (header) responseHeaders[header] = ["text/css"];
             }
         }
 
@@ -160,5 +156,5 @@ export function initCsp() {
     // assign a noop to onHeadersReceived to prevent other mods from adding their own incompatible ones.
     // For instance, OpenAsar adds their own that doesn't fix content-type for stylesheets which makes it
     // impossible to load css from github raw despite our fix above
-    session.defaultSession.webRequest.onHeadersReceived = () => { };
+    session.defaultSession.webRequest.onHeadersReceived = () => {};
 }

@@ -11,9 +11,9 @@ import { Margins } from "@utils/margins";
 import { classes } from "@utils/misc";
 import { RenderModalProps } from "@vencord/discord-types";
 import { findCssClassesLazy } from "@webpack";
-import { Modal,openModal, TabBar, Timestamp, useState } from "@webpack/common";
+import { Modal, openModal, TabBar, Timestamp, useState } from "@webpack/common";
 
-import { parseEditContent } from ".";
+import { MLEdit, parseEditContent } from ".";
 
 const CodeContainerClasses = findCssClassesLazy("markup", "codeContainer");
 const MiscClasses = findCssClassesLazy("messageContent", "markupRtl");
@@ -21,27 +21,20 @@ const MiscClasses = findCssClassesLazy("messageContent", "markupRtl");
 const cl = classNameFactory("vc-ml-modal-");
 
 export function openHistoryModal(message: any) {
-    openModal(props =>
+    openModal(props => (
         <ErrorBoundary>
-            <HistoryModal
-                modalProps={props}
-                message={message}
-            />
+            <HistoryModal modalProps={props} message={message} />
         </ErrorBoundary>
-    );
+    ));
 }
 
-export function HistoryModal({ modalProps, message }: { modalProps: RenderModalProps; message: any; }) {
+export function HistoryModal({ modalProps, message }: { modalProps: RenderModalProps; message: any }) {
     const [currentTab, setCurrentTab] = useState(message.editHistory.length);
-    const timestamps = [message.firstEditTimestamp, ...message.editHistory.map(m => m.timestamp)];
-    const contents = [...message.editHistory.map(m => m.content), message.content];
+    const timestamps = [message.firstEditTimestamp, ...message.editHistory.map((m: MLEdit) => m.timestamp)];
+    const contents = [...message.editHistory.map((m: MLEdit) => m.content), message.content];
 
     return (
-        <Modal
-            {...modalProps}
-            size="lg"
-            title="Message Edit History"
-        >
+        <Modal {...modalProps} size="lg" title="Message Edit History">
             <TabBar
                 type="top"
                 look="brand"
@@ -51,11 +44,7 @@ export function HistoryModal({ modalProps, message }: { modalProps: RenderModalP
             >
                 {message.firstEditTimestamp.getTime() !== message.timestamp.getTime() && (
                     <TooltipContainer text="This edit state was not logged so it can't be displayed.">
-                        <TabBar.Item
-                            className="vc-settings-tab-bar-item"
-                            id={-1}
-                            disabled
-                        >
+                        <TabBar.Item className="vc-settings-tab-bar-item" id={-1} disabled>
                             <Timestamp
                                 className={cl("timestamp")}
                                 timestamp={message.timestamp}
@@ -67,17 +56,8 @@ export function HistoryModal({ modalProps, message }: { modalProps: RenderModalP
                 )}
 
                 {timestamps.map((timestamp, index) => (
-                    <TabBar.Item
-                        key={index}
-                        className="vc-settings-tab-bar-item"
-                        id={index}
-                    >
-                        <Timestamp
-                            className={cl("timestamp")}
-                            timestamp={timestamp}
-                            isEdited={true}
-                            isInline={false}
-                        />
+                    <TabBar.Item key={index} className="vc-settings-tab-bar-item" id={index}>
+                        <Timestamp className={cl("timestamp")} timestamp={timestamp} isEdited={true} isInline={false} />
                     </TabBar.Item>
                 ))}
             </TabBar>

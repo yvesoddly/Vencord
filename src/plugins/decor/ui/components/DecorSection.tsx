@@ -29,31 +29,34 @@ export default function DecorSection({ hideTitle = false, hideDivider = false, n
         if (authorization.isAuthorized()) fetchDecorations();
     }, [authorization.token]);
 
-    return <CustomizationSection
-        title={!hideTitle && "Decor"}
-        hasBackground={true}
-        hideDivider={hideDivider}
-        className={noMargin && cl("section-remove-margin")}
-    >
-        <Flex gap="4px">
-            <Button
-                onClick={() => {
-                    if (!authorization.isAuthorized()) {
-                        authorization.authorize().then(openChangeDecorationModal).catch(() => { });
-                    } else openChangeDecorationModal();
-                }}
-                variant="primary"
-                size="small"
-            >
-                Change Decoration
-            </Button>
-            {selectedDecoration && authorization.isAuthorized() && <Button
-                onClick={() => selectDecoration(null)}
-                variant="secondary"
-                size={"small"}
-            >
-                Remove Decoration
-            </Button>}
-        </Flex>
-    </CustomizationSection>;
+    return (
+        <CustomizationSection
+            title={!hideTitle && "Decor"}
+            hasBackground={true}
+            hideDivider={hideDivider}
+            className={noMargin && cl("section-remove-margin")}
+        >
+            <Flex gap="4px">
+                <Button
+                    onClick={() => {
+                        if (!authorization.isAuthorized()) {
+                            authorization
+                                .authorize()
+                                .then(openChangeDecorationModal)
+                                .catch(() => {});
+                        } else openChangeDecorationModal();
+                    }}
+                    variant="primary"
+                    size="small"
+                >
+                    Change Decoration
+                </Button>
+                {selectedDecoration && authorization.isAuthorized() && (
+                    <Button onClick={() => selectDecoration(null)} variant="secondary" size={"small"}>
+                        Remove Decoration
+                    </Button>
+                )}
+            </Flex>
+        </CustomizationSection>
+    );
 }

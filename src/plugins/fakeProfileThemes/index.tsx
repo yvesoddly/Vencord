@@ -1,24 +1,11 @@
 /*
- * Vencord, a modification for Discord's desktop app
+ * Vencord, a Discord client mod
  * Copyright (c) 2023 Vendicated and contributors
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <https://www.gnu.org/licenses/>.
-*/
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
 
 // This plugin is a port from Alyxia's Vendetta plugin
 import "./styles.css";
-
 import { definePluginSettings } from "@api/Settings";
 import { Divider } from "@components/Divider";
 import ErrorBoundary from "@components/ErrorBoundary";
@@ -75,7 +62,7 @@ const settings = definePluginSettings({
         type: OptionType.SELECT,
         options: [
             { label: "Nitro colors", value: true, default: true },
-            { label: "Fake colors", value: false },
+            { label: "Fake colors", value: false }
         ]
     }
 });
@@ -95,7 +82,12 @@ interface ProfileModalProps {
     isTryItOut: boolean;
 }
 
-const ProfileModal = findComponentByCodeLazy<ProfileModalProps>("isTryItOut:", "pendingThemeColors:", "pendingAvatarDecoration:", "EDIT_PROFILE_BANNER");
+const ProfileModal = findComponentByCodeLazy<ProfileModalProps>(
+    "isTryItOut:",
+    "pendingThemeColors:",
+    "pendingAvatarDecoration:",
+    "EDIT_PROFILE_BANNER"
+);
 
 function SettingsAboutComponentWrapper() {
     const [, , userProfileLoading] = useAwaiter(() => fetchUserProfile(UserStore.getCurrentUser().id));
@@ -104,9 +96,7 @@ function SettingsAboutComponentWrapper() {
 }
 
 function SettingsAboutComponent() {
-    const existingColors = decode(
-        UserProfileStore.getUserProfile(UserStore.getCurrentUser().id)?.bio ?? ""
-    ) ?? [0, 0];
+    const existingColors = decode(UserProfileStore.getUserProfile(UserStore.getCurrentUser().id)?.bio ?? "") ?? [0, 0];
     const [color1, setColor1] = useState(existingColors[0]);
     const [color2, setColor2] = useState(existingColors[1]);
 
@@ -114,8 +104,8 @@ function SettingsAboutComponent() {
         <section>
             <Forms.FormTitle tag="h3">Usage</Forms.FormTitle>
             <Forms.FormText>
-                After enabling this plugin, you will see custom colors in
-                the profiles of other people using compatible plugins.{" "}
+                After enabling this plugin, you will see custom colors in the profiles of other people using compatible
+                plugins.{" "}
             </Forms.FormText>
             <Forms.FormText className={Margins.top8}>
                 <strong>To set your own profile theme colors:</strong>
@@ -124,18 +114,13 @@ function SettingsAboutComponent() {
                     <li>&mdash; click the "Copy 3y3" button</li>
                     <li>&mdash; paste the invisible text anywhere in your bio</li>
                 </ul>
-                <Divider
-                    className={classes(Margins.top8, Margins.bottom8)}
-                />
+                <Divider className={classes(Margins.top8, Margins.bottom8)} />
                 <Forms.FormTitle tag="h3">Color pickers</Forms.FormTitle>
                 <Flex gap="1em">
                     <ColorPicker
                         color={color1}
                         label={
-                            <Text
-                                variant={"text-xs/normal"}
-                                style={{ marginTop: "4px" }}
-                            >
+                            <Text variant={"text-xs/normal"} style={{ marginTop: "4px" }}>
                                 Primary
                             </Text>
                         }
@@ -146,10 +131,7 @@ function SettingsAboutComponent() {
                     <ColorPicker
                         color={color2}
                         label={
-                            <Text
-                                variant={"text-xs/normal"}
-                                style={{ marginTop: "4px" }}
-                            >
+                            <Text variant={"text-xs/normal"} style={{ marginTop: "4px" }}>
                                 Accent
                             </Text>
                         }
@@ -169,16 +151,14 @@ function SettingsAboutComponent() {
                         Copy 3y3
                     </Button>
                 </Flex>
-                <Divider
-                    className={classes(Margins.top8, Margins.bottom8)}
-                />
+                <Divider className={classes(Margins.top8, Margins.bottom8)} />
                 <Forms.FormTitle tag="h3">Preview</Forms.FormTitle>
                 <div className="vc-fpt-preview">
                     <ProfileModal
                         user={UserStore.getCurrentUser()}
                         pendingThemeColors={[color1, color2]}
-                        onAvatarChange={() => { }}
-                        onBannerChange={() => { }}
+                        onAvatarChange={() => {}}
+                        onBannerChange={() => {}}
                         canUsePremiumCustomization={true}
                         hideExampleButton={true}
                         hideFakeActivity={true}
@@ -186,7 +166,8 @@ function SettingsAboutComponent() {
                     />
                 </div>
             </Forms.FormText>
-        </section>);
+        </section>
+    );
 }
 
 export default definePlugin({
@@ -200,7 +181,7 @@ export default definePlugin({
             replacement: {
                 match: /(?<=getUserProfile\(\i\){return )(.+?)(?=})/,
                 replace: "$self.colorDecodeHook($1)"
-            },
+            }
         },
         {
             find: "#{intl::USER_SETTINGS_RESET_PROFILE_THEME}),onClick:",
@@ -228,16 +209,22 @@ export default definePlugin({
         }
         return user;
     },
-    addCopy3y3Button: ErrorBoundary.wrap(function ({ primary, accent }: Colors) {
-        return <Button
-            onClick={() => {
-                const colorString = encode(primary, accent);
-                copyWithToast(colorString);
-            }}
-            color={Button.Colors.PRIMARY}
-            size={Button.Sizes.XLARGE}
-            className={Margins.left16}
-        >Copy 3y3
-        </Button >;
-    }, { noop: true }),
+    addCopy3y3Button: ErrorBoundary.wrap(
+        function ({ primary, accent }: Colors) {
+            return (
+                <Button
+                    onClick={() => {
+                        const colorString = encode(primary, accent);
+                        copyWithToast(colorString);
+                    }}
+                    color={Button.Colors.PRIMARY}
+                    size={Button.Sizes.XLARGE}
+                    className={Margins.left16}
+                >
+                    Copy 3y3
+                </Button>
+            );
+        },
+        { noop: true }
+    )
 });

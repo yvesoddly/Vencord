@@ -6,7 +6,6 @@
 
 import { definePluginSettings } from "@api/Settings";
 import { Devs } from "@utils/constants";
-import { Logger } from "@utils/Logger";
 import definePlugin, { makeRange, OptionType, PluginNative, ReporterTestable } from "@utils/types";
 import type { Channel, Embed, GuildMember, MessageAttachment, User } from "@vencord/discord-types";
 import { findByCodeLazy, findLazy } from "@webpack";
@@ -15,36 +14,36 @@ import { Button, ChannelStore, GuildRoleStore, GuildStore, UserStore } from "@we
 const ChannelTypes = findLazy(m => m.ANNOUNCEMENT_THREAD === 10);
 
 interface Message {
-    guild_id: string,
-    attachments: MessageAttachment[],
-    author: User,
-    channel_id: string,
-    components: any[],
-    content: string,
-    edited_timestamp: string,
-    embeds: Embed[],
-    sticker_items?: Sticker[],
-    flags: number,
-    id: string,
-    member: GuildMember,
-    mention_everyone: boolean,
-    mention_roles: string[],
-    mentions: Mention[],
-    nonce: string,
-    pinned: false,
-    referenced_message: any,
-    timestamp: string,
-    tts: boolean,
+    guild_id: string;
+    attachments: MessageAttachment[];
+    author: User;
+    channel_id: string;
+    components: any[];
+    content: string;
+    edited_timestamp: string;
+    embeds: Embed[];
+    sticker_items?: Sticker[];
+    flags: number;
+    id: string;
+    member: GuildMember;
+    mention_everyone: boolean;
+    mention_roles: string[];
+    mentions: Mention[];
+    nonce: string;
+    pinned: false;
+    referenced_message: any;
+    timestamp: string;
+    tts: boolean;
     type: number;
 }
 
 interface Mention {
-    avatar: string,
-    avatar_decoration_data: any,
-    discriminator: string,
-    global_name: string,
-    id: string,
-    public_flags: number,
+    avatar: string;
+    avatar_decoration_data: any;
+    discriminator: string;
+    global_name: string;
+    id: string;
+    public_flags: number;
     username: string;
 }
 
@@ -60,19 +59,19 @@ interface Sticker {
 }
 
 interface Call {
-    channel_id: string,
-    guild_id: string,
-    message_id: string,
-    region: string,
+    channel_id: string;
+    guild_id: string;
+    message_id: string;
+    region: string;
     ringing: string[];
 }
 
 interface ApiObject {
-    sender: string,
-    target: string,
-    command: string,
-    jsonData: string,
-    rawData: string | null,
+    sender: string;
+    target: string;
+    command: string;
+    jsonData: string;
+    rawData: string | null;
 }
 
 interface NotificationObject {
@@ -90,7 +89,6 @@ interface NotificationObject {
 }
 
 const notificationsShouldNotify = findByCodeLazy(".SUPPRESS_NOTIFICATIONS))return!1");
-const logger = new Logger("XSOverlay");
 
 const settings = definePluginSettings({
     webSocketPort: {
@@ -104,7 +102,8 @@ const settings = definePluginSettings({
     preferUDP: {
         type: OptionType.BOOLEAN,
         displayName: "Prefer UDP",
-        description: "Enable if you use an older build of XSOverlay unable to connect through websockets. This setting is ignored on web.",
+        description:
+            "Enable if you use an older build of XSOverlay unable to connect through websockets. This setting is ignored on web.",
         default: false,
         disabled: () => IS_WEB
     },
@@ -153,7 +152,7 @@ const settings = definePluginSettings({
     timeout: {
         type: OptionType.NUMBER,
         description: "Notification duration (secs)",
-        default: 3,
+        default: 3
     },
     lengthBasedTimeout: {
         type: OptionType.BOOLEAN,
@@ -171,7 +170,7 @@ const settings = definePluginSettings({
         description: "Volume",
         default: 0.2,
         markers: makeRange(0, 1, 0.1)
-    },
+    }
 });
 
 let socket: WebSocket;
@@ -198,13 +197,13 @@ export default definePlugin({
     settings,
 
     flux: {
-        CALL_UPDATE({ call }: { call: Call; }) {
+        CALL_UPDATE({ call }: { call: Call }) {
             if (call?.ringing?.includes(UserStore.getCurrentUser().id) && settings.store.callNotifications) {
                 const channel = ChannelStore.getChannel(call.channel_id);
                 sendOtherNotif("Incoming call", `${channel.name} is calling you...`);
             }
         },
-        MESSAGE_CREATE({ message, optimistic }: { message: Message; optimistic: boolean; }) {
+        MESSAGE_CREATE({ message, optimistic }: { message: Message; optimistic: boolean }) {
             if (optimistic) return;
             const channel = ChannelStore.getChannel(message.channel_id);
             if (!shouldNotify(message, message.channel_id)) return;
@@ -218,7 +217,6 @@ export default definePlugin({
                 const guild = GuildStore.getGuild(channel.guild_id);
                 titleString = `${message.author.username} (${guild.name}, #${channel.name})`;
             }
-
 
             switch (channel.type) {
                 case ChannelTypes.DM:
@@ -248,23 +246,27 @@ export default definePlugin({
                 }
             }
 
-            const images = message.attachments.filter(e =>
-                typeof e?.content_type === "string"
-                && e?.content_type.startsWith("image")
+            const images = message.attachments.filter(
+                e => typeof e?.content_type === "string" && e?.content_type.startsWith("image")
             );
-
 
             images.forEach(img => {
                 finalMsg += ` [image: ${img.filename}] `;
             });
 
-            message.attachments.filter(a => a && !a.content_type?.startsWith("image")).forEach(a => {
-                finalMsg += ` [attachment: ${a.filename}] `;
-            });
+            message.attachments
+                .filter(a => a && !a.content_type?.startsWith("image"))
+                .forEach(a => {
+                    finalMsg += ` [attachment: ${a.filename}] `;
+                });
 
             // make mentions readable
             if (message.mentions.length > 0) {
-                finalMsg = finalMsg.replace(/<@!?(\d{17,20})>/g, (_, id) => `<color=#${pingColor}><b>@${UserStore.getUser(id)?.username || "unknown-user"}</color></b>`);
+                finalMsg = finalMsg.replace(
+                    /<@!?(\d{17,20})>/g,
+                    (_, id) =>
+                        `<color=#${pingColor}><b>@${UserStore.getUser(id)?.username || "unknown-user"}</color></b>`
+                );
             }
 
             // color role mentions (unity styling btw lol)
@@ -292,7 +294,10 @@ export default definePlugin({
                 for (const cMatch of channelMatches) {
                     let channelId = cMatch.split("<#")[1];
                     channelId = channelId.substring(0, channelId.length - 1);
-                    finalMsg = finalMsg.replace(new RegExp(`${cMatch}`, "g"), `<b><color=#${channelPingColor}>#${ChannelStore.getChannel(channelId).name}</color></b>`);
+                    finalMsg = finalMsg.replace(
+                        new RegExp(`${cMatch}`, "g"),
+                        `<b><color=#${channelPingColor}>#${ChannelStore.getChannel(channelId).name}</color></b>`
+                    );
                 }
             }
 
@@ -326,11 +331,15 @@ function shouldIgnoreForChannelType(channel: Channel) {
 function sendMsgNotif(titleString: string, content: string, message: Message) {
     fetch(`https://cdn.discordapp.com/avatars/${message.author.id}/${message.author.avatar}.png?size=128`)
         .then(response => response.blob())
-        .then(blob => new Promise<string>(resolve => {
-            const r = new FileReader();
-            r.onload = () => resolve((r.result as string).split(",")[1]);
-            r.readAsDataURL(blob);
-        })).then(result => {
+        .then(
+            blob =>
+                new Promise<string>(resolve => {
+                    const r = new FileReader();
+                    r.onload = () => resolve((r.result as string).split(",")[1]);
+                    r.readAsDataURL(blob);
+                })
+        )
+        .then(result => {
             const msgData: NotificationObject = {
                 type: 1,
                 timeout: settings.store.lengthBasedTimeout ? calculateTimeout(content) : settings.store.timeout,

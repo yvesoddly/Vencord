@@ -21,11 +21,11 @@ const settings = definePluginSettings({
         options: [
             {
                 label: "Online",
-                value: "online",
+                value: "online"
             },
             {
                 label: "Idle",
-                value: "idle",
+                value: "idle"
             },
             {
                 label: "Do Not Disturb",
@@ -34,7 +34,7 @@ const settings = definePluginSettings({
             },
             {
                 label: "Invisible",
-                value: "invisible",
+                value: "invisible"
             }
         ]
     }
@@ -55,7 +55,6 @@ async function setStatus(status: string) {
     lastStatus = status;
     await StatusSettings.updateSetting(status);
 }
-
 
 export default definePlugin({
     name: "AutoDNDWhilePlaying",

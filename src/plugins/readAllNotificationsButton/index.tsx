@@ -1,41 +1,36 @@
 /*
- * Vencord, a modification for Discord's desktop app
+ * Vencord, a Discord client mod
  * Copyright (c) 2022 Vendicated and contributors
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <https://www.gnu.org/licenses/>.
-*/
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
 
 import "./style.css";
-
 import { addServerListElement, removeServerListElement, ServerListRenderPosition } from "@api/ServerList";
 import { TextButton } from "@components/Button";
 import ErrorBoundary from "@components/ErrorBoundary";
 import { Devs } from "@utils/constants";
 import definePlugin from "@utils/types";
-import { ActiveJoinedThreadsStore, FluxDispatcher, GuildChannelStore, GuildStore, React, ReadStateStore } from "@webpack/common";
+import {
+    ActiveJoinedThreadsStore,
+    FluxDispatcher,
+    GuildChannelStore,
+    GuildStore,
+    React,
+    ReadStateStore
+} from "@webpack/common";
 
 function onClick() {
     const channels: Array<any> = [];
 
     Object.values(GuildStore.getGuilds()).forEach(guild => {
-        GuildChannelStore.getChannels(guild.id).SELECTABLE
-            .concat(GuildChannelStore.getChannels(guild.id).VOCAL)
+        GuildChannelStore.getChannels(guild.id)
+            .SELECTABLE.concat(GuildChannelStore.getChannels(guild.id).VOCAL)
             .concat(
-                Object.values(ActiveJoinedThreadsStore.getActiveJoinedThreadsForGuild(guild.id))
-                    .flatMap(threadChannels => Object.values(threadChannels))
+                Object.values(ActiveJoinedThreadsStore.getActiveJoinedThreadsForGuild(guild.id)).flatMap(
+                    threadChannels => Object.values(threadChannels)
+                )
             )
-            .forEach((c: { channel: { id: string; }; }) => {
+            .forEach((c: { channel: { id: string } }) => {
                 if (!ReadStateStore.hasUnread(c.channel.id)) return;
 
                 channels.push({
@@ -54,11 +49,7 @@ function onClick() {
 }
 
 const ReadAllButton = () => (
-    <TextButton
-        variant="secondary"
-        onClick={onClick}
-        className="vc-ranb-button"
-    >
+    <TextButton variant="secondary" onClick={onClick} className="vc-ranb-button">
         Read All
     </TextButton>
 );

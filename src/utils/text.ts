@@ -1,20 +1,8 @@
 /*
- * Vencord, a modification for Discord's desktop app
+ * Vencord, a Discord client mod
  * Copyright (c) 2022 Vendicated and contributors
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <https://www.gnu.org/licenses/>.
-*/
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
 
 import { isTruthy } from "./guards";
 
@@ -22,7 +10,7 @@ import { isTruthy } from "./guards";
 
 // Case style to words
 export const wordsFromCamel = (text: string) =>
-    text.split(/(?=[A-Z][a-z])|(?<=[a-z])(?=[A-Z])/).map(w => /^[A-Z]{2,}$/.test(w) ? w : w.toLowerCase());
+    text.split(/(?=[A-Z][a-z])|(?<=[a-z])(?=[A-Z])/).map(w => (/^[A-Z]{2,}$/.test(w) ? w : w.toLowerCase()));
 export const wordsFromSnake = (text: string) => text.toLowerCase().split("_");
 export const wordsFromKebab = (text: string) => text.toLowerCase().split("-");
 export const wordsFromPascal = (text: string) => text.split(/(?=[A-Z])/).map(w => w.toLowerCase());
@@ -33,13 +21,11 @@ export const wordsToCamel = (words: string[]) =>
     words.map((w, i) => (i ? w[0].toUpperCase() + w.slice(1) : w)).join("");
 export const wordsToSnake = (words: string[]) => words.join("_").toUpperCase();
 export const wordsToKebab = (words: string[]) => words.join("-").toLowerCase();
-export const wordsToPascal = (words: string[]) =>
-    words.map(w => w[0].toUpperCase() + w.slice(1)).join("");
-export const wordsToTitle = (words: string[]) =>
-    words.map(w => w[0].toUpperCase() + w.slice(1)).join(" ");
+export const wordsToPascal = (words: string[]) => words.map(w => w[0].toUpperCase() + w.slice(1)).join("");
+export const wordsToTitle = (words: string[]) => words.map(w => w[0].toUpperCase() + w.slice(1)).join(" ");
 
 const units = ["years", "months", "weeks", "days", "hours", "minutes", "seconds"] as const;
-type Units = typeof units[number];
+type Units = (typeof units)[number];
 
 function getUnitStr(unit: Units, isOne: boolean, short: boolean) {
     if (short === false) return isOne ? unit.slice(0, -1) : unit;
@@ -61,8 +47,7 @@ export function formatDurationVerbose(time: number, unit: Units, short: boolean 
 
     let amountsToBeRemoved = 0;
 
-    outer:
-    for (let i = 0; i < unitsAmounts.length; i++) {
+    outer: for (let i = 0; i < unitsAmounts.length; i++) {
         if (unitsAmounts[i].amount === 0 || !(i + 1 < unitsAmounts.length)) continue;
         for (let v = i + 1; v < unitsAmounts.length; v++) {
             if (unitsAmounts[v].amount !== 0) continue outer;
@@ -105,8 +90,8 @@ export function formatDuration(ms: number, human = false) {
     const minutes = Math.floor((ms % HOUR) / MINUTE);
     const seconds = Math.floor((ms % MINUTE) / 1000);
 
-    const pad = (n: number) => human ? n : n.toString().padStart(2, "0");
-    const unit = (s: string) => human ? s : "";
+    const pad = (n: number) => (human ? n : n.toString().padStart(2, "0"));
+    const unit = (s: string) => (human ? s : "");
 
     const showDays = days !== 0;
     const showHours = showDays || hours !== 0;
@@ -116,7 +101,9 @@ export function formatDuration(ms: number, human = false) {
         showHours && `${pad(hours)}${unit("h")}`,
         showMinutes && `${pad(minutes)}${unit("m")}`,
         `${pad(seconds)}${unit("s")}`
-    ].filter(isTruthy).join(human ? " " : ":");
+    ]
+        .filter(isTruthy)
+        .join(human ? " " : ":");
 
     const prefix = showDays ? `${days}d ` : "";
     return prefix + duration;
@@ -135,19 +122,15 @@ export function humanFriendlyJoin(elements: string[]): string;
 export function humanFriendlyJoin<T>(elements: T[], mapper: (e: T) => string): string;
 export function humanFriendlyJoin(elements: any[], mapper: (e: any) => string = s => s): string {
     const { length } = elements;
-    if (length === 0)
-        return "";
-    if (length === 1)
-        return mapper(elements[0]);
+    if (length === 0) return "";
+    if (length === 1) return mapper(elements[0]);
 
     let s = "";
 
     for (let i = 0; i < length; i++) {
         s += mapper(elements[i]);
-        if (length - i > 2)
-            s += ", ";
-        else if (length - i > 1)
-            s += " and ";
+        if (length - i > 2) s += ", ";
+        else if (length - i > 1) s += " and ";
     }
 
     return s;
@@ -176,6 +159,8 @@ export function toInlineCode(s: string) {
     return "``" + ZWSP + s.replaceAll("`", ZWSP + "`" + ZWSP) + ZWSP + "``";
 }
 
-export const escapeRegExp: (s: string) => string = RegExp.escape ?? function (s: string) {
-    return s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-};
+export const escapeRegExp: (s: string) => string =
+    RegExp.escape ??
+    function (s: string) {
+        return s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    };

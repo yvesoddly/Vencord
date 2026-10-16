@@ -9,30 +9,35 @@ import { Devs } from "@utils/constants";
 import definePlugin, { OptionType } from "@utils/types";
 import { UserStore } from "@webpack/common";
 
-export const settings = definePluginSettings({
-    superReactByDefault: {
-        type: OptionType.BOOLEAN,
-        description: "Reaction picker will default to Super Reactions",
-        default: true,
-    },
-    unlimitedSuperReactionPlaying: {
-        type: OptionType.BOOLEAN,
-        description: "Remove the limit on Super Reactions playing at once",
-        default: false,
-    },
+export const settings = definePluginSettings(
+    {
+        superReactByDefault: {
+            type: OptionType.BOOLEAN,
+            description: "Reaction picker will default to Super Reactions",
+            default: true
+        },
+        unlimitedSuperReactionPlaying: {
+            type: OptionType.BOOLEAN,
+            description: "Remove the limit on Super Reactions playing at once",
+            default: false
+        },
 
-    superReactionPlayingLimit: {
-        description: "Max Super Reactions to play at once. 0 to disable playing Super Reactions",
-        type: OptionType.SLIDER,
-        default: 20,
-        markers: [0, 5, 10, 20, 40, 60, 80, 100],
-        stickToMarkers: true,
+        superReactionPlayingLimit: {
+            description: "Max Super Reactions to play at once. 0 to disable playing Super Reactions",
+            type: OptionType.SLIDER,
+            default: 20,
+            markers: [0, 5, 10, 20, 40, 60, 80, 100],
+            stickToMarkers: true
+        }
     },
-}, {
-    superReactionPlayingLimit: {
-        disabled() { return this.store.unlimitedSuperReactionPlaying; },
+    {
+        superReactionPlayingLimit: {
+            disabled() {
+                return this.store.unlimitedSuperReactionPlaying;
+            }
+        }
     }
-});
+);
 
 export default definePlugin({
     name: "SuperReactionTweaks",
@@ -54,7 +59,8 @@ export default definePlugin({
             find: ".EMOJI_PICKER_CONSTANTS_EMOJI_CONTAINER_PADDING_HORIZONTAL)",
             replacement: {
                 match: /(openPopoutType:void 0(?=.+?isBurstReaction:(\i).+?\.intention===(\i\.\i\.REACTION)).+?\[\2,\i\]=\i\.useState\()!1\)(?<=pickerIntention:(\i).+?)/,
-                replace: (_, rest, _isBurstReactionVariable, REACTION_INTENTION, pickerIntention) => `${rest}$self.shouldSuperReactByDefault&&${pickerIntention}===${REACTION_INTENTION})`
+                replace: (_, rest, _isBurstReactionVariable, REACTION_INTENTION, pickerIntention) =>
+                    `${rest}$self.shouldSuperReactByDefault&&${pickerIntention}===${REACTION_INTENTION})`
             }
         }
     ],

@@ -20,7 +20,7 @@ export default definePlugin({
             replacement: {
                 // SimpleEmbedTypes.has(embed.type) && isEmbedInline(embed)
                 match: /\i\.has\(\i\.type\)&&\(0,\i\.\i\)\(\i\)/,
-                replace: "false",
+                replace: "false"
             }
         }
     ]

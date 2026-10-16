@@ -1,20 +1,8 @@
 /*
- * Vencord, a modification for Discord's desktop app
+ * Vencord, a Discord client mod
  * Copyright (c) 2022 Vendicated and contributors
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <https://www.gnu.org/licenses/>.
-*/
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
 
 import { isPluginEnabled } from "@api/PluginManager";
 import OpenInAppPlugin from "@plugins/openInApp";
@@ -49,10 +37,10 @@ export interface Track {
 interface PlayerState {
     accountId: string;
     track: Track | null;
-    volumePercent: number,
-    isPlaying: boolean,
-    repeat: boolean,
-    position: number,
+    volumePercent: number;
+    isPlaying: boolean;
+    repeat: boolean;
+    position: number;
     context?: any;
     device?: Device;
 
@@ -92,9 +80,10 @@ export const SpotifyStore = proxyLazyWebpack(() => {
         public isSettingPosition = false;
 
         public openExternal(path: string) {
-            const url = settings.store.useSpotifyUris || isPluginEnabled(OpenInAppPlugin.name)
-                ? "spotify:" + path.replaceAll("/", (_, idx) => idx === 0 ? "" : ":")
-                : "https://open.spotify.com" + path;
+            const url =
+                settings.store.useSpotifyUris || isPluginEnabled(OpenInAppPlugin.name)
+                    ? "spotify:" + path.replaceAll("/", (_, idx) => (idx === 0 ? "" : ":"))
+                    : "https://open.spotify.com" + path;
 
             VencordNative.native.openExternal(url);
         }
@@ -126,7 +115,6 @@ export const SpotifyStore = proxyLazyWebpack(() => {
                 query: {
                     volume_percent: Math.round(percent)
                 }
-
             }).then(() => {
                 this.volume = percent;
                 this.emitChange();
@@ -168,8 +156,7 @@ export const SpotifyStore = proxyLazyWebpack(() => {
         }
 
         _req(method: "post" | "get" | "put", route: string, data: any = {}) {
-            if (this.device?.is_active)
-                (data.query ??= {}).device_id = this.device.id;
+            if (this.device?.is_active) (data.query ??= {}).device_id = this.device.id;
 
             const { socket } = SpotifySocket.getActiveSocketAndDevice();
             return SpotifyAPI[method](socket.accountId, socket.accessToken, {
@@ -191,7 +178,7 @@ export const SpotifyStore = proxyLazyWebpack(() => {
             store.isSettingPosition = false;
             store.emitChange();
         },
-        SPOTIFY_SET_DEVICES({ devices }: { devices: Device[]; }) {
+        SPOTIFY_SET_DEVICES({ devices }: { devices: Device[] }) {
             store.device = devices.find(d => d.is_active) ?? devices[0] ?? null;
             store.emitChange();
         }

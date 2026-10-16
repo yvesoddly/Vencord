@@ -5,7 +5,6 @@
  */
 
 import "./ui/styles.css";
-
 import ErrorBoundary from "@components/ErrorBoundary";
 import { Devs } from "@utils/constants";
 import definePlugin from "@utils/types";
@@ -35,7 +34,8 @@ export default definePlugin({
             find: "getAvatarDecorationURL:",
             replacement: {
                 match: /(?<=function \i\(\i\){)(?=let{avatarDecoration)/,
-                replace: "const vcDecorDecoration=$self.getDecorAvatarDecorationURL(arguments[0]);if(vcDecorDecoration)return vcDecorDecoration;"
+                replace:
+                    "const vcDecorDecoration=$self.getDecorAvatarDecorationURL(arguments[0]);if(vcDecorDecoration)return vcDecorDecoration;"
             }
         },
         // Patch profile customization settings to include Decor section
@@ -52,11 +52,12 @@ export default definePlugin({
             replacement: [
                 {
                     match: /(?=function (\i)\(\i\){let{children.{20,200}isSelected:\i,\.\.\.\i\}=\i)/,
-                    replace: "$self.DecorationGridItem=$1;",
+                    replace: "$self.DecorationGridItem=$1;"
                 },
                 {
                     match: /(?<=(?:(\i)=)?)(?:\i=>|function (\i)\(\i\)){let{user:\i,avatarDecoration/,
-                    replace: (m, arrowFunctionName, functionName) => `$self.DecorationGridDecoration=${arrowFunctionName ?? functionName}${arrowFunctionName ? "" : ";"}${m}`,
+                    replace: (m, arrowFunctionName, functionName) =>
+                        `$self.DecorationGridDecoration=${arrowFunctionName ?? functionName}${arrowFunctionName ? "" : ";"}${m}`
                 },
                 // Remove NEW label from decor avatar decorations
                 {
@@ -99,7 +100,7 @@ export default definePlugin({
         },
         ...[
             "#{intl::COLLECTIBLES_NAMEPLATE_PREVIEW_A11Y}", // Nameplate preview
-            "#{intl::COLLECTIBLES_PROFILE_PREVIEW_A11Y}", // Avatar preview
+            "#{intl::COLLECTIBLES_PROFILE_PREVIEW_A11Y}" // Avatar preview
         ].map(find => ({
             find,
             replacement: {
@@ -128,7 +129,7 @@ export default definePlugin({
         },
         USER_PROFILE_MODAL_OPEN: data => {
             useUsersDecorationsStore.getState().fetch(data.userId, true);
-        },
+        }
     },
 
     set DecorationGridItem(e: any) {
@@ -152,7 +153,13 @@ export default definePlugin({
         useUsersDecorationsStore.getState().fetch(UserStore.getCurrentUser().id, true);
     },
 
-    getDecorAvatarDecorationURL({ avatarDecoration, canAnimate }: { avatarDecoration: AvatarDecoration | null; canAnimate?: boolean; }) {
+    getDecorAvatarDecorationURL({
+        avatarDecoration,
+        canAnimate
+    }: {
+        avatarDecoration: AvatarDecoration | null;
+        canAnimate?: boolean;
+    }) {
         // Only Decor avatar decorations have this SKU ID
         if (avatarDecoration?.skuId === SKU_ID) {
             const parts = avatarDecoration.asset.split("_");

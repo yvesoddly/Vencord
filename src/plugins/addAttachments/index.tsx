@@ -12,7 +12,17 @@ import definePlugin from "@utils/types";
 import { Message } from "@vencord/discord-types";
 import { MessageFlags, MessageType } from "@vencord/discord-types/enums";
 import { findByPropsLazy } from "@webpack";
-import { AuthenticationStore, ChannelStore, EditMessageStore, MessageStore, PermissionsBits, PermissionStore, RestAPI, SelectedChannelStore, showToast } from "@webpack/common";
+import {
+    AuthenticationStore,
+    ChannelStore,
+    EditMessageStore,
+    MessageStore,
+    PermissionsBits,
+    PermissionStore,
+    RestAPI,
+    SelectedChannelStore,
+    showToast
+} from "@webpack/common";
 
 const { uniqueId } = findByPropsLazy("uniqueId");
 
@@ -43,13 +53,18 @@ async function addAttachments(channelId: string, messageId: string, existingAtta
             return;
         }
 
-        showToast({ text: `You can only add ${pluralise(remaining, "more attachment")} to this message.`, variant: "critical" });
+        showToast({
+            text: `You can only add ${pluralise(remaining, "more attachment")} to this message.`,
+            variant: "critical"
+        });
         return;
     }
 
     showToast({ text: "Uploading, this can take a while...", icon: ClockIcon, iconColor: "var(--text-default)" });
 
-    const { body: { attachments } } = await RestAPI.post({
+    const {
+        body: { attachments }
+    } = (await RestAPI.post({
         url: `/channels/${channelId}/attachments`,
         body: {
             files: Array.from(files, file => ({
@@ -59,7 +74,7 @@ async function addAttachments(channelId: string, messageId: string, existingAtta
                 is_clip: false
             }))
         }
-    }) as { body: { attachments: { id: string, upload_url: string, upload_filename: string; }[]; }; };
+    })) as { body: { attachments: { id: string; upload_url: string; upload_filename: string }[] } };
 
     const newAttachments = await Promise.all(
         attachments.map((file, i) =>
@@ -74,16 +89,12 @@ async function addAttachments(channelId: string, messageId: string, existingAtta
         )
     );
 
-
     const msg = MessageStore.getMessage(channelId, messageId);
 
     await RestAPI.patch({
         url: `/channels/${channelId}/messages/${messageId}`,
         body: {
-            attachments: [
-                ...msg.attachments,
-                ...newAttachments
-            ]
+            attachments: [...msg.attachments, ...newAttachments]
         }
     });
 
@@ -138,7 +149,7 @@ export default definePlugin({
                 channel: ChannelStore.getChannel(msg.channel_id),
                 onClick: () => chooseAttachments(msg.channel_id, msg.id, msg.attachments.length)
             };
-        },
+        }
     },
 
     chatBarButton: {

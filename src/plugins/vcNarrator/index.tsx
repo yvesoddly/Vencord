@@ -1,20 +1,8 @@
 /*
- * Vencord, a modification for Discord's desktop app
+ * Vencord, a Discord client mod
  * Copyright (c) 2023 Vendicated and contributors
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <https://www.gnu.org/licenses/>.
-*/
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
 
 import { ErrorCard } from "@components/ErrorCard";
 import { Devs, IS_LINUX } from "@utils/constants";
@@ -22,7 +10,18 @@ import { Logger } from "@utils/Logger";
 import { Margins } from "@utils/margins";
 import { wordsToTitle } from "@utils/text";
 import definePlugin, { ReporterTestable } from "@utils/types";
-import { AuthenticationStore, Button, ChannelStore, Forms, GuildMemberStore, SelectedChannelStore, SelectedGuildStore, useMemo, UserStore, VoiceStateStore } from "@webpack/common";
+import {
+    AuthenticationStore,
+    Button,
+    ChannelStore,
+    Forms,
+    GuildMemberStore,
+    SelectedChannelStore,
+    SelectedGuildStore,
+    useMemo,
+    UserStore,
+    VoiceStateStore
+} from "@webpack/common";
 import { ReactElement } from "react";
 
 import { getCurrentVoice, settings } from "./settings";
@@ -61,10 +60,7 @@ function clean(str: string) {
         ? /[^\p{Script=Latin}\p{Number}\p{Punctuation}\s]/gu
         : /[^\p{Letter}\p{Number}\p{Punctuation}\s]/gu;
 
-    return str.normalize("NFKC")
-        .replace(replacer, "")
-        .replace(/_{2,}/g, "_")
-        .trim();
+    return str.normalize("NFKC").replace(replacer, "").replace(/_{2,}/g, "_").trim();
 }
 
 function formatText(str: string, user: string, channel: string, displayName: string, nickname: string) {
@@ -87,7 +83,13 @@ let StatusMap = {} as Record<string, {
 // for some ungodly reason
 let myLastChannelId: string | undefined;
 
-function getTypeAndChannelId({ channelId, oldChannelId }: VoiceStateChangeEvent, isMe: boolean) {
+/** "join", "mute", ... one per `${event}Message` setting */
+type NarratorEvent = keyof typeof settings.def extends infer K ? (K extends `${infer E}Message` ? E : never) : never;
+
+function getTypeAndChannelId(
+    { channelId, oldChannelId }: VoiceStateChangeEvent,
+    isMe: boolean
+): [type: NarratorEvent | "", channelId: string] {
     if (isMe && channelId !== myLastChannelId) {
         oldChannelId = myLastChannelId;
         myLastChannelId = channelId;
@@ -140,17 +142,19 @@ function updateStatuses(type: string, { deaf, mute, selfDeaf, selfMute, userId, 
 }
 */
 
-function playSample(type: string) {
+function playSample(type: NarratorEvent) {
     const currentUser = UserStore.getCurrentUser();
     const myGuildId = SelectedGuildStore.getGuildId();
 
-    speak(formatText(
-        settings.store[type + "Message"],
-        currentUser.username,
-        "general",
-        currentUser.globalName ?? currentUser.username,
-        GuildMemberStore.getNick(myGuildId!, currentUser.id) ?? currentUser.username
-    ));
+    speak(
+        formatText(
+            settings.store[`${type}Message`],
+            currentUser.username,
+            "general",
+            currentUser.globalName ?? currentUser.username,
+            GuildMemberStore.getNick(myGuildId!, currentUser.id) ?? currentUser.username
+        )
+    );
 }
 
 export default definePlugin({
@@ -163,7 +167,7 @@ export default definePlugin({
     settings,
 
     flux: {
-        VOICE_STATE_UPDATES({ voiceStates }: { voiceStates: VoiceStateChangeEvent[]; }) {
+        VOICE_STATE_UPDATES({ voiceStates }: { voiceStates: VoiceStateChangeEvent[] }) {
             const myGuildId = SelectedGuildStore.getGuildId();
             const myChanId = SelectedChannelStore.getVoiceChannelId();
             const myId = UserStore.getCurrentUser().id;
@@ -182,7 +186,7 @@ export default definePlugin({
                 const [type, id] = getTypeAndChannelId(state, isMe);
                 if (!type) continue;
 
-                const template = settings.store[type + "Message"];
+                const template = settings.store[`${type}Message`];
                 const user = isMe && !settings.store.sayOwnName ? "" : UserStore.getUser(userId).username;
                 const displayName = user && ((UserStore.getUser(userId) as any).globalName ?? user);
                 const nickname = user && (GuildMemberStore.getNick(myGuildId!, userId) ?? displayName);
@@ -200,7 +204,7 @@ export default definePlugin({
             if (!s) return;
 
             const event = s.mute || s.selfMute ? "unmute" : "mute";
-            speak(formatText(settings.store[event + "Message"], "", ChannelStore.getChannel(chanId).name, "", ""));
+            speak(formatText(settings.store[`${event}Message`], "", ChannelStore.getChannel(chanId).name, "", ""));
         },
 
         AUDIO_TOGGLE_SELF_DEAF() {
@@ -209,7 +213,7 @@ export default definePlugin({
             if (!s) return;
 
             const event = s.deaf || s.selfDeaf ? "undeafen" : "deafen";
-            speak(formatText(settings.store[event + "Message"], "", ChannelStore.getChannel(chanId).name, "", ""));
+            speak(formatText(settings.store[`${event}Message`], "", ChannelStore.getChannel(chanId).name, "", ""));
         }
     },
 
@@ -220,7 +224,6 @@ export default definePlugin({
             );
             return;
         }
-
     },
 
     settingsAboutComponent() {
@@ -230,8 +233,11 @@ export default definePlugin({
         }, []);
 
         const types = useMemo(
-            () => Object.keys(settings.def).filter(k => k.endsWith("Message")).map(k => k.slice(0, -7)),
-            [],
+            () =>
+                Object.keys(settings.def)
+                    .filter(k => k.endsWith("Message"))
+                    .map(k => k.slice(0, -7) as NarratorEvent),
+            []
         );
 
         let errorComponent: ReactElement<any> | null = null;
@@ -242,26 +248,33 @@ export default definePlugin({
                 : "Try installing some in the Narrator settings of your Operating System";
             errorComponent = <ErrorCard>{error}</ErrorCard>;
         } else if (!hasEnglishVoices) {
-            errorComponent = <ErrorCard>You don't have any English voices installed, so the narrator might sound weird</ErrorCard>;
+            errorComponent = (
+                <ErrorCard>You don't have any English voices installed, so the narrator might sound weird</ErrorCard>
+            );
         }
 
         return (
             <section>
                 <Forms.FormText>
-                    You can customise the spoken messages below. You can disable specific messages by setting them to nothing
+                    You can customise the spoken messages below. You can disable specific messages by setting them to
+                    nothing
                 </Forms.FormText>
                 <Forms.FormText>
-                    The special placeholders <code>{"{{USER}}"}</code>, <code>{"{{DISPLAY_NAME}}"}</code>, <code>{"{{NICKNAME}}"}</code> and <code>{"{{CHANNEL}}"}</code>{" "}
-                    will be replaced with the user's name (nothing if it's yourself), the user's display name, the user's nickname on current server and the channel's name respectively
+                    The special placeholders <code>{"{{USER}}"}</code>, <code>{"{{DISPLAY_NAME}}"}</code>,{" "}
+                    <code>{"{{NICKNAME}}"}</code> and <code>{"{{CHANNEL}}"}</code> will be replaced with the user's name
+                    (nothing if it's yourself), the user's display name, the user's nickname on current server and the
+                    channel's name respectively
                 </Forms.FormText>
                 {hasEnglishVoices && (
                     <>
-                        <Forms.FormTitle className={Margins.top20} tag="h3">Play Example Sounds</Forms.FormTitle>
+                        <Forms.FormTitle className={Margins.top20} tag="h3">
+                            Play Example Sounds
+                        </Forms.FormTitle>
                         <div
                             style={{
                                 display: "grid",
                                 gridTemplateColumns: "repeat(4, 1fr)",
-                                gap: "1rem",
+                                gap: "1rem"
                             }}
                             className={"vc-narrator-buttons"}
                         >

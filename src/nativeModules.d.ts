@@ -7,6 +7,9 @@
 /// <reference types="standalone-electron-types"/>
 
 declare module "~pluginNatives" {
-    const pluginNatives: Record<string, Record<string, (event: Electron.IpcMainInvokeEvent, ...args: unknown[]) => unknown>>;
+    const pluginNatives: Record<
+        string,
+        Record<string, (event: Electron.IpcMainInvokeEvent, ...args: unknown[]) => unknown>
+    >;
     export default pluginNatives;
 }

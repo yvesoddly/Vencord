@@ -5,7 +5,6 @@
  */
 
 import "./style.css";
-
 import { definePluginSettings } from "@api/Settings";
 import ErrorBoundary from "@components/ErrorBoundary";
 import { Devs } from "@utils/constants";
@@ -19,7 +18,7 @@ const settings = definePluginSettings({
     colorEffects: {
         type: OptionType.BOOLEAN,
         description: "Enable yellow/red colouring as you get closer to the character limit",
-        default: true,
+        default: true
     }
 });
 
@@ -56,39 +55,39 @@ export default definePlugin({
         }
     ],
 
-    renderCharCounter: ErrorBoundary.wrap(({ editorRef, text }: { text: string; editorRef: any; }) => {
-        const [selectedCount, setSelectedCount] = useState(0);
-        const showSelected = selectedCount > 0 && (editorRef?.current?.state?.focused ?? false);
+    renderCharCounter: ErrorBoundary.wrap(
+        ({ editorRef, text }: { text: string; editorRef: any }) => {
+            const [selectedCount, setSelectedCount] = useState(0);
+            const showSelected = selectedCount > 0 && (editorRef?.current?.state?.focused ?? false);
 
-        useEffect(() => {
-            const listener = () => {
-                setSelectedCount(document.getSelection()?.toString()?.length ?? 0);
-            };
+            useEffect(() => {
+                const listener = () => {
+                    setSelectedCount(document.getSelection()?.toString()?.length ?? 0);
+                };
 
-            document.addEventListener("selectionchange", listener);
-            return () => document.removeEventListener("selectionchange", listener);
-        }, []);
+                document.addEventListener("selectionchange", listener);
+                return () => document.removeEventListener("selectionchange", listener);
+            }, []);
 
-        if (!text.length) return null;
+            if (!text.length) return null;
 
-        const charMax = editorRef?.current?.props?.maxCharacterCount ?? (
-            UserStore.getCurrentUser().premiumType === 2 ? 4000 : 2000
-        );
+            const charMax =
+                editorRef?.current?.props?.maxCharacterCount ??
+                (UserStore.getCurrentUser().premiumType === 2 ? 4000 : 2000);
 
-        const color = getCounterColor((text.length / charMax) * 100);
+            const color = getCounterColor((text.length / charMax) * 100);
 
-        return (
-            <div className={cl("counter")} style={{ color }}>
-                {showSelected && (
-                    <>
-                        <span className={cl("selected")}>{selectedCount}</span>
-                        /
-                    </>
-                )}
-                <span className={cl("count")}>{text.length}</span>
-                /
-                <span className={cl("max")}>{charMax}</span>
-            </div>
-        );
-    }, { noop: true })
+            return (
+                <div className={cl("counter")} style={{ color }}>
+                    {showSelected && (
+                        <>
+                            <span className={cl("selected")}>{selectedCount}</span>/
+                        </>
+                    )}
+                    <span className={cl("count")}>{text.length}</span>/<span className={cl("max")}>{charMax}</span>
+                </div>
+            );
+        },
+        { noop: true }
+    )
 });

@@ -1,20 +1,8 @@
 /*
- * Vencord, a modification for Discord's desktop app
+ * Vencord, a Discord client mod
  * Copyright (c) 2023 Vendicated and contributors
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <https://www.gnu.org/licenses/>.
-*/
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
 
 import { definePluginSettings } from "@api/Settings";
 import { Devs } from "@utils/constants";
@@ -22,12 +10,13 @@ import { Logger } from "@utils/Logger";
 import definePlugin, { OptionType, PluginSettingDef } from "@utils/types";
 import { GuildMember, Role } from "@vencord/discord-types";
 
-const opt = (description: string) => ({
-    type: OptionType.BOOLEAN,
-    description,
-    default: true,
-    restartNeeded: true
-} satisfies PluginSettingDef);
+const opt = (description: string) =>
+    ({
+        type: OptionType.BOOLEAN,
+        description,
+        default: true,
+        restartNeeded: true
+    }) satisfies PluginSettingDef;
 
 const settings = definePluginSettings({
     showTimeouts: opt("Show member timeout icons in chat."),
@@ -49,23 +38,23 @@ export default definePlugin({
             predicate: () => settings.store.showTimeouts,
             replacement: {
                 match: /&&\i\.\i\.canManageUser\(\i\.\i\.MODERATE_MEMBERS,\i\.author,\i\)/,
-                replace: "",
-            },
+                replace: ""
+            }
         },
         {
             find: "INVITES_DISABLED)||",
             predicate: () => settings.store.showInvitesPaused,
             replacement: {
                 match: /\i\.\i\.can\(\i\.\i.MANAGE_GUILD,\i\)/,
-                replace: "true",
-            },
+                replace: "true"
+            }
         },
         {
             find: /,checkElevated:!1}\),\i\.\i\)}(?<=getCurrentUser\(\);return.+?)/,
             predicate: () => settings.store.showModView,
             replacement: {
                 match: /return \i\.\i\(\i\.\i\(\{user:\i,context:\i,checkElevated:!1\}\),\i\.\i\)/,
-                replace: "return true",
+                replace: "return true"
             }
         },
         // fixes a bug where Members page must be loaded to see highest role, why is Discord depending on MemberSafetyStore.getEnhancedMember for something that can be obtained here?
@@ -74,7 +63,7 @@ export default definePlugin({
             predicate: () => settings.store.showModView,
             replacement: {
                 match: /(#{intl::GUILD_MEMBER_MOD_VIEW_HIGHEST_ROLE}.{0,80})role:\i(?<=\[\i\.roles,\i\.highestRoleId,(\i)\].+?)/,
-                replace: (_, rest, roles) => `${rest}role:$self.getHighestRole(arguments[0],${roles})`,
+                replace: (_, rest, roles) => `${rest}role:$self.getHighestRole(arguments[0],${roles})`
             }
         },
         // allows you to open mod view on yourself
@@ -88,7 +77,7 @@ export default definePlugin({
         }
     ],
 
-    getHighestRole({ member }: { member: GuildMember; }, roles: Role[]): Role | undefined {
+    getHighestRole({ member }: { member: GuildMember }, roles: Role[]): Role | undefined {
         try {
             return roles.find(role => role.id === member.highestRoleId);
         } catch (e) {

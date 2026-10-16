@@ -39,6 +39,7 @@ channels. This saves you a lot of time in case your feature is considered too ni
 Writing a plugin is the primary way to contribute.
 
 Before starting your plugin:
+
 - Consider if this plugin would be useful to a large portion of the userbase. We do not accept niche plugins
 - Check existing pull requests to see if someone is already working on a similar plugin
 - Familarise yourself with our plugin rules below to ensure your plugin is not banned

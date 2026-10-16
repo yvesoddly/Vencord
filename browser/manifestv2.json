@@ -10,12 +10,7 @@
         "128": "icon.png"
     },
 
-    "permissions": [
-        "webRequest",
-        "webRequestBlocking",
-        "*://*.discord.com/*",
-        "https://raw.githubusercontent.com/*"
-    ],
+    "permissions": ["webRequest", "webRequestBlocking", "*://*.discord.com/*", "https://raw.githubusercontent.com/*"],
 
     "content_scripts": [
         {

@@ -1,20 +1,8 @@
 /*
- * Vencord, a modification for Discord's desktop app
+ * Vencord, a Discord client mod
  * Copyright (c) 2023 Vendicated and contributors
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <https://www.gnu.org/licenses/>.
-*/
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
 
 import { NavContextMenuPatchCallback } from "@api/ContextMenu";
 import { definePluginSettings } from "@api/Settings";
@@ -26,33 +14,34 @@ import { createRoot, Menu } from "@webpack/common";
 import { JSX } from "react";
 import type { Root } from "react-dom/client";
 
-import { Magnifier, MagnifierProps } from "./components/Magnifier";
+import { ImageComponentInstance, Magnifier, MagnifierProps } from "./components/Magnifier";
 import { ELEMENT_ID } from "./constants";
+
 import managedStyle from "./styles.css?managed";
 
 export const settings = definePluginSettings({
     saveZoomValues: {
         type: OptionType.BOOLEAN,
         description: "Whether to save zoom and lens size values",
-        default: true,
+        default: true
     },
 
     invertScroll: {
         type: OptionType.BOOLEAN,
         description: "Invert scroll",
-        default: true,
+        default: true
     },
 
     nearestNeighbour: {
         type: OptionType.BOOLEAN,
         description: "Use Nearest Neighbour Interpolation when scaling images",
-        default: false,
+        default: false
     },
 
     square: {
         type: OptionType.BOOLEAN,
         description: "Make the lens square",
-        default: false,
+        default: false
     },
 
     zoom: {
@@ -60,14 +49,14 @@ export const settings = definePluginSettings({
         type: OptionType.SLIDER,
         markers: [1, 5, 10, 20, 30, 40, 50],
         default: 2,
-        stickToMarkers: false,
+        stickToMarkers: false
     },
     size: {
         description: "Radius / Size of the lens",
         type: OptionType.SLIDER,
         markers: [50, 100, 250, 500, 750, 1000],
         default: 100,
-        stickToMarkers: false,
+        stickToMarkers: false
     },
 
     zoomSpeed: {
@@ -75,10 +64,9 @@ export const settings = definePluginSettings({
         type: OptionType.SLIDER,
         markers: [0.1, 0.5, 1, 2, 3, 4, 5],
         default: 0.5,
-        stickToMarkers: false,
-    },
+        stickToMarkers: false
+    }
 });
-
 
 const imageContextMenuPatch: NavContextMenuPatchCallback = (children, props) => {
     // Discord re-uses the image context menu for links to for the copy and open buttons
@@ -116,7 +104,7 @@ const imageContextMenuPatch: NavContextMenuPatchCallback = (children, props) => 
                         minValue={1}
                         maxValue={50}
                         value={settings.store.zoom}
-                        onChange={debounce((value: number) => settings.store.zoom = value, 100)}
+                        onChange={debounce((value: number) => (settings.store.zoom = value), 100)}
                     />
                 )}
             />
@@ -130,7 +118,7 @@ const imageContextMenuPatch: NavContextMenuPatchCallback = (children, props) => 
                         minValue={50}
                         maxValue={1000}
                         value={settings.store.size}
-                        onChange={debounce((value: number) => settings.store.size = value, 100)}
+                        onChange={debounce((value: number) => (settings.store.size = value), 100)}
                     />
                 )}
             />
@@ -144,7 +132,7 @@ const imageContextMenuPatch: NavContextMenuPatchCallback = (children, props) => 
                         minValue={0.1}
                         maxValue={5}
                         value={settings.store.zoomSpeed}
-                        onChange={debounce((value: number) => settings.store.zoomSpeed = value, 100)}
+                        onChange={debounce((value: number) => (settings.store.zoomSpeed = value), 100)}
                         renderValue={(value: number) => `${value.toFixed(3)}x`}
                     />
                 )}
@@ -155,7 +143,8 @@ const imageContextMenuPatch: NavContextMenuPatchCallback = (children, props) => 
 
 export default definePlugin({
     name: "ImageZoom",
-    description: "Lets you zoom in to images and gifs. Use scroll wheel to zoom in and shift + scroll wheel to increase lens radius / size",
+    description:
+        "Lets you zoom in to images and gifs. Use scroll wheel to zoom in and shift + scroll wheel to increase lens radius / size",
     tags: ["Media", "Utility"],
     authors: [Devs.Aria],
     searchTerms: ["ImageUtilities"],
@@ -195,7 +184,7 @@ export default definePlugin({
 
                 {
                     match: /componentDidMount\(\){/,
-                    replace: "$&$self.renderMagnifier(this);",
+                    replace: "$&$self.renderMagnifier(this);"
                 },
 
                 {
@@ -222,21 +211,23 @@ export default definePlugin({
 
     Magnifier,
     root: null as Root | null,
-    makeProps(instance) {
+    makeProps(instance: ImageComponentInstance) {
         return {
             onMouseOver: () => this.onMouseOver(instance),
             onMouseOut: () => this.onMouseOut(instance),
             onMouseDown: (e: React.MouseEvent) => this.onMouseDown(e, instance),
             onMouseUp: () => this.onMouseUp(instance),
-            id: instance.props.id,
+            id: instance.props.id
         };
     },
 
-    renderMagnifier(instance) {
+    renderMagnifier(instance: ImageComponentInstance) {
         try {
             if (instance.props.id === ELEMENT_ID) {
                 if (!this.currentMagnifierElement) {
-                    this.currentMagnifierElement = <Magnifier size={settings.store.size} zoom={settings.store.zoom} instance={instance} />;
+                    this.currentMagnifierElement = (
+                        <Magnifier size={settings.store.size} zoom={settings.store.zoom} instance={instance} />
+                    );
                     this.root = createRoot(this.element!);
                     this.root.render(this.currentMagnifierElement);
                 }
@@ -246,7 +237,7 @@ export default definePlugin({
         }
     },
 
-    updateMagnifier(instance) {
+    updateMagnifier(instance: ImageComponentInstance) {
         this.unMountMagnifier();
         this.renderMagnifier(instance);
     },
@@ -257,18 +248,17 @@ export default definePlugin({
         this.root = null;
     },
 
-    onMouseOver(instance) {
-        instance.setState((state: any) => ({ ...state, mouseOver: true }));
+    onMouseOver(instance: ImageComponentInstance) {
+        instance.setState(state => ({ ...state, mouseOver: true }));
     },
-    onMouseOut(instance) {
-        instance.setState((state: any) => ({ ...state, mouseOver: false }));
+    onMouseOut(instance: ImageComponentInstance) {
+        instance.setState(state => ({ ...state, mouseOver: false }));
     },
-    onMouseDown(e: React.MouseEvent, instance) {
-        if (e.button === 0 /* left */)
-            instance.setState((state: any) => ({ ...state, mouseDown: true }));
+    onMouseDown(e: React.MouseEvent, instance: ImageComponentInstance) {
+        if (e.button === 0 /* left */) instance.setState(state => ({ ...state, mouseDown: true }));
     },
-    onMouseUp(instance) {
-        instance.setState((state: any) => ({ ...state, mouseDown: false }));
+    onMouseUp(instance: ImageComponentInstance) {
+        instance.setState(state => ({ ...state, mouseDown: false }));
     },
 
     start() {

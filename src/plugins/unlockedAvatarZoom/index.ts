@@ -13,8 +13,8 @@ const settings = definePluginSettings({
         type: OptionType.SLIDER,
         description: "Zoom multiplier",
         markers: makeRange(2, 16),
-        default: 4,
-    },
+        default: 4
+    }
 });
 
 export default definePlugin({
@@ -28,7 +28,7 @@ export default definePlugin({
             find: "#{intl::AVATAR_UPLOAD_EDIT_MEDIA}",
             replacement: {
                 match: /maxValue:\d/,
-                replace: "maxValue:$self.settings.store.zoomMultiplier",
+                replace: "maxValue:$self.settings.store.zoomMultiplier"
             }
         }
     ]

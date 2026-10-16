@@ -1,20 +1,8 @@
 /*
- * Vencord, a modification for Discord's desktop app
+ * Vencord, a Discord client mod
  * Copyright (c) 2022 Vendicated and contributors
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <https://www.gnu.org/licenses/>.
-*/
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
 
 import { runtimeHashMessageKey } from "./intlHash";
 import { Patch, PatchReplacement, ReplaceFn } from "./types";
@@ -28,9 +16,7 @@ export function canonicalizeMatch<T extends RegExp | string>(match: T): T {
         const hasSpecialChars = !Number.isNaN(Number(hashed[0])) || hashed.includes("+") || hashed.includes("/");
 
         if (hasSpecialChars) {
-            return isString
-                ? `["${hashed}"]`
-                : String.raw`(?:\["${hashed}"\])`.replaceAll("+", "\\+");
+            return isString ? `["${hashed}"]` : String.raw`(?:\["${hashed}"\])`.replaceAll("+", "\\+");
         }
 
         return isString ? `.${hashed}` : String.raw`(?:\.${hashed})`;
@@ -41,9 +27,7 @@ export function canonicalizeMatch<T extends RegExp | string>(match: T): T {
     }
 
     const canonSource = partialCanon.replaceAll(/(\\*)\\i/g, (match, leadingEscapes) =>
-        leadingEscapes.length % 2 === 0
-            ? `${leadingEscapes}${String.raw`(?:[A-Za-z_$][\w$]*)`}`
-            : match.slice(1)
+        leadingEscapes.length % 2 === 0 ? `${leadingEscapes}${String.raw`(?:[A-Za-z_$][\w$]*)`}` : match.slice(1)
     );
     const canonRegex = new RegExp(canonSource, match.flags);
     canonRegex.toString = match.toString.bind(match);
@@ -52,8 +36,7 @@ export function canonicalizeMatch<T extends RegExp | string>(match: T): T {
 }
 
 export function canonicalizeReplace<T extends string | ReplaceFn>(replace: T, pluginPath: string): T {
-    if (typeof replace !== "function")
-        return replace.replaceAll("$self", pluginPath) as T;
+    if (typeof replace !== "function") return replace.replaceAll("$self", pluginPath) as T;
 
     return ((...args) => replace(...args).replaceAll("$self", pluginPath)) as T;
 }
@@ -73,9 +56,8 @@ export function canonicalizeDescriptor<T>(descriptor: TypedPropertyDescriptor<T>
 export function canonicalizeReplacement(replacement: Pick<PatchReplacement, "match" | "replace">, pluginPath: string) {
     const descriptors = Object.getOwnPropertyDescriptors(replacement);
     descriptors.match = canonicalizeDescriptor(descriptors.match, canonicalizeMatch);
-    descriptors.replace = canonicalizeDescriptor(
-        descriptors.replace,
-        replace => canonicalizeReplace(replace, pluginPath),
+    descriptors.replace = canonicalizeDescriptor(descriptors.replace, replace =>
+        canonicalizeReplace(replace, pluginPath)
     );
     Object.defineProperties(replacement, descriptors);
 }

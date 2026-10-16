@@ -57,7 +57,10 @@ export const getUserDecorations = async (id: string = "@me"): Promise<Decoration
 export const getUserDecoration = async (id: string = "@me"): Promise<Decoration | null> =>
     fetchApi(API_URL + `/users/${id}/decoration`).then(c => c.json());
 
-export const setUserDecoration = async (decoration: Decoration | NewDecoration | null, id: string = "@me"): Promise<string | Decoration> => {
+export const setUserDecoration = async (
+    decoration: Decoration | NewDecoration | null,
+    id: string = "@me"
+): Promise<string | Decoration> => {
     const formData = new FormData();
 
     if (!decoration) {
@@ -74,7 +77,8 @@ export const setUserDecoration = async (decoration: Decoration | NewDecoration |
     );
 };
 
-export const getDecoration = async (hash: string): Promise<Decoration> => fetch(API_URL + `/decorations/${hash}`).then(c => c.json());
+export const getDecoration = async (hash: string): Promise<Decoration> =>
+    fetch(API_URL + `/decorations/${hash}`).then(c => c.json());
 
 export const deleteDecoration = async (hash: string): Promise<void> => {
     await fetchApi(API_URL + `/decorations/${hash}`, { method: "DELETE" });

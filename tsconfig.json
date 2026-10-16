@@ -5,20 +5,13 @@
         "esModuleInterop": true,
         "skipLibCheck": false,
         "allowJs": true,
-        "lib": [
-            "DOM",
-            "DOM.Iterable",
-            "esnext",
-            "esnext.array",
-            "esnext.asynciterable",
-            "esnext.symbol"
-        ],
+        "lib": ["DOM", "DOM.Iterable", "esnext", "esnext.array", "esnext.asynciterable", "esnext.symbol"],
         "module": "esnext",
         "moduleResolution": "bundler",
         "strict": true,
-        "noImplicitAny": false,
         "target": "ESNEXT",
         "jsx": "preserve",
+        "noEmit": true,
 
         "paths": {
             "@main/*": ["./src/main/*"],
@@ -33,17 +26,8 @@
             "@webpack": ["./src/webpack/webpack"],
             "@webpack/patcher": ["./src/webpack/patchWebpack"],
             "@webpack/wreq.d": ["./src/webpack/wreq.d"],
-            "@webpack/types": ["./src/webpack/types"],
-        },
-
-        "plugins": [
-            // Transform paths in output .d.ts files (Include this line if you output declarations files)
-            {
-                "transform": "typescript-transform-paths",
-                "afterDeclarations": true
-            }
-        ],
-        "outDir": "who-fucking-cares-dude"
+            "@webpack/types": ["./src/webpack/types"]
+        }
     },
-    "include": ["src/**/*", "browser/**/*", "scripts/**/*", "eslint.config.mjs"],
+    "include": ["src/**/*", "browser/**/*"]
 }

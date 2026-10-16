@@ -18,24 +18,25 @@ const settings = definePluginSettings({
         options: [
             { label: "Both", value: "both_dms", default: true },
             { label: "User DMs", value: "user_dm" },
-            { label: "Group DMs", value: "group_dm" },
+            { label: "Group DMs", value: "group_dm" }
         ]
     },
     allowMentions: {
         type: OptionType.BOOLEAN,
         description: "Receive audio pings for @mentions",
-        default: false,
+        default: false
     },
     allowEveryone: {
         type: OptionType.BOOLEAN,
         description: "Receive audio pings for @everyone and @here in group DMs",
-        default: false,
-    },
+        default: false
+    }
 });
 
 export default definePlugin({
     name: "OnePingPerDM",
-    description: "If unread messages are sent by a user in DMs multiple times, you'll only receive one audio ping. Read the messages to reset the limit",
+    description:
+        "If unread messages are sent by a user in DMs multiple times, you'll only receive one audio ping. Read the messages to reset the limit",
     tags: ["Notifications", "Customisation"],
     authors: [Devs.ProffDea],
     settings,
@@ -66,5 +67,5 @@ export default definePlugin({
             return true;
         }
         return ReadStateStore.getOldestUnreadMessageId(message.channel_id) === message.id;
-    },
+    }
 });

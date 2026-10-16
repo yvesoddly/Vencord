@@ -74,12 +74,14 @@ export function NewCategoryModal({ categoryId, modalProps, initialChannelId }: P
         <Modal
             {...modalProps}
             title={`${categoryId ? "Edit" : "New"} Category`}
-            actions={[{
-                text: categoryId ? "Save" : "Create",
-                variant: "primary",
-                onClick: onSave,
-                disabled: !name
-            }]}
+            actions={[
+                {
+                    text: categoryId ? "Save" : "Create",
+                    variant: "primary",
+                    onClick: onSave,
+                    disabled: !name
+                }
+            ]}
         >
             <form
                 className={cl("content")}
@@ -90,10 +92,7 @@ export function NewCategoryModal({ categoryId, modalProps, initialChannelId }: P
             >
                 <section>
                     <Forms.FormTitle>Name</Forms.FormTitle>
-                    <TextInput
-                        value={name}
-                        onChange={e => setName(e)}
-                    />
+                    <TextInput value={name} onChange={e => setName(e)} />
                 </section>
                 <section>
                     <Forms.FormTitle>Color</Forms.FormTitle>
@@ -123,5 +122,7 @@ export function NewCategoryModal({ categoryId, modalProps, initialChannelId }: P
 export const openCategoryModal = (categoryId: string | null, channelId: string | null) =>
     openModalLazy(async () => {
         await requireSettingsModal();
-        return modalProps => <NewCategoryModal categoryId={categoryId} modalProps={modalProps} initialChannelId={channelId} />;
+        return modalProps => (
+            <NewCategoryModal categoryId={categoryId} modalProps={modalProps} initialChannelId={channelId} />
+        );
     });

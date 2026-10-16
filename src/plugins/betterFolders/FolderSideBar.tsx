@@ -1,20 +1,8 @@
 /*
- * Vencord, a modification for Discord's desktop app
+ * Vencord, a Discord client mod
  * Copyright (c) 2023 Vendicated and contributors
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <https://www.gnu.org/licenses/>.
-*/
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
 
 import ErrorBoundary from "@components/ErrorBoundary";
 import { findComponentByCodeLazy } from "@webpack";
@@ -40,48 +28,59 @@ function getExpandedFolderIds() {
     return expandedFolderIds;
 }
 
-export default ErrorBoundary.wrap(guildsBarProps => {
-    const expandedFolderIds = useStateFromStores([ExpandedGuildFolderStore, SortedGuildStore], () => getExpandedFolderIds());
-    const isFullscreen = useStateFromStores([ChannelRTCStore], () => ChannelRTCStore.isFullscreenInContext());
+export default ErrorBoundary.wrap(
+    (guildsBarProps: { className: string }) => {
+        const expandedFolderIds = useStateFromStores([ExpandedGuildFolderStore, SortedGuildStore], () =>
+            getExpandedFolderIds()
+        );
+        const isFullscreen = useStateFromStores([ChannelRTCStore], () => ChannelRTCStore.isFullscreenInContext());
 
-    const Sidebar = (
-        <GuildsBar
-            {...guildsBarProps}
-            isBetterFolders={true}
-            betterFoldersExpandedIds={expandedFolderIds}
-        />
-    );
+        const Sidebar = (
+            <GuildsBar {...guildsBarProps} isBetterFolders={true} betterFoldersExpandedIds={expandedFolderIds} />
+        );
 
-    const visible = !!expandedFolderIds.size;
-    const guilds = document.querySelector(guildsBarProps.className.split(" ").map(c => `.${c}`).join(""));
+        const visible = !!expandedFolderIds.size;
+        const guilds = document.querySelector(
+            guildsBarProps.className
+                .split(" ")
+                .map(c => `.${c}`)
+                .join("")
+        );
 
-    // We need to display none if we are in fullscreen. Yes this seems horrible doing with css, but it's literally how Discord does it.
-    // Also display flex otherwise to fix scrolling.
-    const sidebarStyle = {
-        display: isFullscreen ? "none" : "flex"
-    } satisfies CSSProperties;
+        // We need to display none if we are in fullscreen. Yes this seems horrible doing with css, but it's literally how Discord does it.
+        // Also display flex otherwise to fix scrolling.
+        const sidebarStyle = {
+            display: isFullscreen ? "none" : "flex"
+        } satisfies CSSProperties;
 
-    if (!guilds || !settings.store.sidebarAnim) {
-        return visible
-            ? <div className="vc-betterFolders-sidebar" style={sidebarStyle}>{Sidebar}</div>
-            : null;
-    }
+        if (!guilds || !settings.store.sidebarAnim) {
+            return visible ? (
+                <div className="vc-betterFolders-sidebar" style={sidebarStyle}>
+                    {Sidebar}
+                </div>
+            ) : null;
+        }
 
-    return (
-        <Animations.Transition
-            items={visible}
-            from={{ width: 0 }}
-            enter={{ width: guilds.getBoundingClientRect().width }}
-            leave={{ width: 0 }}
-            config={{ duration: 200 }}
-        >
-            {(animationStyle: any, show: any) =>
-                show && (
-                    <Animations.animated.div className="vc-betterFolders-sidebar" style={{ ...animationStyle, ...sidebarStyle }}>
-                        {Sidebar}
-                    </Animations.animated.div>
-                )
-            }
-        </Animations.Transition>
-    );
-}, { noop: true });
+        return (
+            <Animations.Transition
+                items={visible}
+                from={{ width: 0 }}
+                enter={{ width: guilds.getBoundingClientRect().width }}
+                leave={{ width: 0 }}
+                config={{ duration: 200 }}
+            >
+                {(animationStyle: any, show: any) =>
+                    show && (
+                        <Animations.animated.div
+                            className="vc-betterFolders-sidebar"
+                            style={{ ...animationStyle, ...sidebarStyle }}
+                        >
+                            {Sidebar}
+                        </Animations.animated.div>
+                    )
+                }
+            </Animations.Transition>
+        );
+    },
+    { noop: true }
+);

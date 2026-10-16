@@ -15,14 +15,12 @@ export interface GridProps<ItemT> {
     items: Array<ItemT>;
 }
 
-export default function Grid<ItemT,>({ renderItem, getItemKey, itemKeyPrefix: ikp, items }: GridProps<ItemT>) {
-    return <div className={cl("sectioned-grid-list-grid")}>
-        {items.map(item =>
-            <React.Fragment
-                key={`${ikp ? `${ikp}-` : ""}${getItemKey(item)}`}
-            >
-                {renderItem(item)}
-            </React.Fragment>
-        )}
-    </div>;
+export default function Grid<ItemT>({ renderItem, getItemKey, itemKeyPrefix: ikp, items }: GridProps<ItemT>) {
+    return (
+        <div className={cl("sectioned-grid-list-grid")}>
+            {items.map(item => (
+                <React.Fragment key={`${ikp ? `${ikp}-` : ""}${getItemKey(item)}`}>{renderItem(item)}</React.Fragment>
+            ))}
+        </div>
+    );
 }

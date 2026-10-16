@@ -1,20 +1,8 @@
 /*
- * Vencord, a modification for Discord's desktop app
+ * Vencord, a Discord client mod
  * Copyright (c) 2022 Vendicated and contributors
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <https://www.gnu.org/licenses/>.
-*/
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
 
 import { React, useEffect, useMemo, useReducer, useState } from "@webpack/common";
 import type { ActionDispatch, ReactNode } from "react";
@@ -38,10 +26,9 @@ export function isPrimitiveReactNode(node: ReactNode): boolean {
  * @param intersectOnly If `true`, will only update the state when the element comes into view
  * @returns [refCallback, isIntersecting]
  */
-export const useIntersection = (intersectOnly = false): [
-    refCallback: React.RefCallback<Element>,
-    isIntersecting: boolean,
-] => {
+export const useIntersection = (
+    intersectOnly = false
+): [refCallback: React.RefCallback<Element>, isIntersecting: boolean] => {
     const observerRef = React.useRef<IntersectionObserver | null>(null);
     const [isIntersecting, setIntersecting] = useState(false);
 
@@ -90,11 +77,14 @@ interface AwaiterOpts<T> {
 export function useAwaiter<T>(factory: () => Promise<T>): AwaiterRes<T | null>;
 export function useAwaiter<T>(factory: () => Promise<T>, providedOpts: AwaiterOpts<T>): AwaiterRes<T>;
 export function useAwaiter<T>(factory: () => Promise<T>, providedOpts?: AwaiterOpts<T | null>): AwaiterRes<T | null> {
-    const opts: Required<AwaiterOpts<T | null>> = Object.assign({
-        fallbackValue: null,
-        deps: [],
-        onError: null,
-    }, providedOpts);
+    const opts: Required<AwaiterOpts<T | null>> = Object.assign(
+        {
+            fallbackValue: null,
+            deps: [],
+            onError: null
+        },
+        providedOpts
+    );
     const [state, setState] = useState({
         value: opts.fallbackValue,
         error: null,
@@ -156,9 +146,6 @@ export function useTimer({ interval = 1000, deps = [] }: TimerOpts) {
     return time;
 }
 
-export function useCleanupEffect(
-    effect: () => void,
-    deps?: React.DependencyList
-): void {
+export function useCleanupEffect(effect: () => void, deps?: React.DependencyList): void {
     useEffect(() => effect, deps);
 }

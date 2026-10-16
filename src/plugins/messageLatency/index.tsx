@@ -12,14 +12,14 @@ import definePlugin, { OptionType } from "@utils/types";
 import { Message } from "@vencord/discord-types";
 import { AuthenticationStore, SnowflakeUtils, Tooltip } from "@webpack/common";
 
-type FillValue = ("status-danger" | "status-warning" | "status-positive" | "text-muted");
+type FillValue = "status-danger" | "status-warning" | "status-positive" | "text-muted";
 type Fill = [FillValue, FillValue, FillValue];
 type DiffKey = keyof Diff;
 
 interface Diff {
-    days: number,
-    hours: number,
-    minutes: number,
+    days: number;
+    hours: number;
+    minutes: number;
     seconds: number;
     milliseconds: number;
 }
@@ -70,24 +70,22 @@ export default definePlugin({
             days: Math.floor(delta / (60 * 60 * 24 * 1000)),
             hours: Math.floor((delta / (60 * 60 * 1000)) % 24),
             minutes: Math.floor((delta / (60 * 1000)) % 60),
-            seconds: Math.floor(delta / 1000 % 60),
+            seconds: Math.floor((delta / 1000) % 60),
             milliseconds: Math.floor(delta % 1000)
         };
 
-        const str = (k: DiffKey) => diff[k] > 0 ? `${diff[k]} ${diff[k] > 1 ? k : k.substring(0, k.length - 1)}` : null;
+        const str = (k: DiffKey) =>
+            diff[k] > 0 ? `${diff[k]} ${diff[k] > 1 ? k : k.substring(0, k.length - 1)}` : null;
         const keys = Object.keys(diff) as DiffKey[];
 
         const ts = keys.reduce((prev, k) => {
             const s = str(k);
 
-            return prev + (
-                isNonNullish(s)
-                    ? (prev !== ""
-                        ? (showMillis ? k === "milliseconds" : k === "seconds")
-                            ? " and "
-                            : " "
-                        : "") + s
-                    : ""
+            return (
+                prev +
+                (isNonNullish(s)
+                    ? (prev !== "" ? ((showMillis ? k === "milliseconds" : k === "seconds") ? " and " : " ") : "") + s
+                    : "")
             );
         }, "");
 
@@ -114,7 +112,8 @@ export default definePlugin({
 
         // Old Discord Android clients have a delay of around 17 days
         // This is a workaround for that
-        if (-delta >= DISCORD_KT_DELAY - 86400000) { // One day of padding for good measure
+        if (-delta >= DISCORD_KT_DELAY - 86400000) {
+            // One day of padding for good measure
             isDiscordKotlin = detectDiscordKotlin;
             delta += DISCORD_KT_DELAY;
         }
@@ -135,39 +134,49 @@ export default definePlugin({
         const fill: Fill = isDiscordKotlin
             ? ["status-positive", "status-positive", "text-muted"]
             : delta >= TROLL_LIMIT || ahead
-                ? ["text-muted", "text-muted", "text-muted"]
-                : delta >= (latencyMillis * 2)
-                    ? ["status-danger", "text-muted", "text-muted"]
-                    : ["status-warning", "status-warning", "text-muted"];
+              ? ["text-muted", "text-muted", "text-muted"]
+              : delta >= latencyMillis * 2
+                ? ["status-danger", "text-muted", "text-muted"]
+                : ["status-warning", "status-warning", "text-muted"];
 
-        return (abs >= latencyMillis || isDiscordKotlin) ? { delta: stringDelta, ahead, fill, isDiscordKotlin } : null;
+        return abs >= latencyMillis || isDiscordKotlin ? { delta: stringDelta, ahead, fill, isDiscordKotlin } : null;
     },
 
     Tooltip() {
-        return ErrorBoundary.wrap(({ message }: { message: Message; }) => {
-            const d = this.latencyTooltipData(message);
+        return ErrorBoundary.wrap(
+            ({ message }: { message: Message }) => {
+                const d = this.latencyTooltipData(message);
 
-            if (!isNonNullish(d)) return null;
+                if (!isNonNullish(d)) return null;
 
-            let text: string;
-            if (!d.delta) {
-                text = "User is suspected to be on an old Discord Android client";
-            } else {
-                text = (d.ahead ? `This user's clock is ${d.delta} ahead.` : `This message was sent with a delay of ${d.delta}.`) + (d.isDiscordKotlin ? " User is suspected to be on an old Discord Android client." : "");
-            }
+                let text: string;
+                if (!d.delta) {
+                    text = "User is suspected to be on an old Discord Android client";
+                } else {
+                    text =
+                        (d.ahead
+                            ? `This user's clock is ${d.delta} ahead.`
+                            : `This message was sent with a delay of ${d.delta}.`) +
+                        (d.isDiscordKotlin ? " User is suspected to be on an old Discord Android client." : "");
+                }
 
-            return <Tooltip
-                text={text}
-                position="top"
-            >
-                {props => <this.Icon delta={d.delta} fill={d.fill} props={props} />}
-            </Tooltip>;
-        }, { noop: true });
+                return (
+                    <Tooltip text={text} position="top">
+                        {props => <this.Icon delta={d.delta} fill={d.fill} props={props} />}
+                    </Tooltip>
+                );
+            },
+            { noop: true }
+        );
     },
 
-    Icon({ delta, fill, props }: {
+    Icon({
+        delta,
+        fill,
+        props
+    }: {
         delta: string | null;
-        fill: Fill,
+        fill: Fill;
         props: {
             onClick(): void;
             onMouseEnter(): void;
@@ -178,30 +187,32 @@ export default definePlugin({
             "aria-label"?: string;
         };
     }) {
-        return <svg
-            xmlns="http://www.w3.org/2000/svg"
-            viewBox="0 0 16 16"
-            width="12"
-            height="12"
-            role="img"
-            fill="none"
-            style={{ marginRight: "8px", verticalAlign: -1 }}
-            aria-label={delta ?? "Old Discord Android client"}
-            aria-hidden="false"
-            {...props}
-        >
-            <path
-                fill={`var(--${fill[0]})`}
-                d="M4.8001 12C4.8001 11.5576 4.51344 11.2 4.16023 11.2H2.23997C1.88676 11.2 1.6001 11.5576 1.6001 12V13.6C1.6001 14.0424 1.88676 14.4 2.23997 14.4H4.15959C4.5128 14.4 4.79946 14.0424 4.79946 13.6L4.8001 12Z"
-            />
-            <path
-                fill={`var(--${fill[1]})`}
-                d="M9.6001 7.12724C9.6001 6.72504 9.31337 6.39998 8.9601 6.39998H7.0401C6.68684 6.39998 6.40011 6.72504 6.40011 7.12724V13.6727C6.40011 14.0749 6.68684 14.4 7.0401 14.4H8.9601C9.31337 14.4 9.6001 14.0749 9.6001 13.6727V7.12724Z"
-            />
-            <path
-                fill={`var(--${fill[2]})`}
-                d="M14.4001 2.31109C14.4001 1.91784 14.1134 1.59998 13.7601 1.59998H11.8401C11.4868 1.59998 11.2001 1.91784 11.2001 2.31109V13.6888C11.2001 14.0821 11.4868 14.4 11.8401 14.4H13.7601C14.1134 14.4 14.4001 14.0821 14.4001 13.6888V2.31109Z"
-            />
-        </svg>;
+        return (
+            <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 16 16"
+                width="12"
+                height="12"
+                role="img"
+                fill="none"
+                style={{ marginRight: "8px", verticalAlign: -1 }}
+                aria-label={delta ?? "Old Discord Android client"}
+                aria-hidden="false"
+                {...props}
+            >
+                <path
+                    fill={`var(--${fill[0]})`}
+                    d="M4.8001 12C4.8001 11.5576 4.51344 11.2 4.16023 11.2H2.23997C1.88676 11.2 1.6001 11.5576 1.6001 12V13.6C1.6001 14.0424 1.88676 14.4 2.23997 14.4H4.15959C4.5128 14.4 4.79946 14.0424 4.79946 13.6L4.8001 12Z"
+                />
+                <path
+                    fill={`var(--${fill[1]})`}
+                    d="M9.6001 7.12724C9.6001 6.72504 9.31337 6.39998 8.9601 6.39998H7.0401C6.68684 6.39998 6.40011 6.72504 6.40011 7.12724V13.6727C6.40011 14.0749 6.68684 14.4 7.0401 14.4H8.9601C9.31337 14.4 9.6001 14.0749 9.6001 13.6727V7.12724Z"
+                />
+                <path
+                    fill={`var(--${fill[2]})`}
+                    d="M14.4001 2.31109C14.4001 1.91784 14.1134 1.59998 13.7601 1.59998H11.8401C11.4868 1.59998 11.2001 1.91784 11.2001 2.31109V13.6888C11.2001 14.0821 11.4868 14.4 11.8401 14.4H13.7601C14.1134 14.4 14.4001 14.0821 14.4001 13.6888V2.31109Z"
+                />
+            </svg>
+        );
     }
 });

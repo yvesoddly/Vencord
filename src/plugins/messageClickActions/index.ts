@@ -1,20 +1,8 @@
 /*
- * Vencord, a modification for Discord's desktop app
+ * Vencord, a Discord client mod
  * Copyright (c) 2023 Vendicated and contributors
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <https://www.gnu.org/licenses/>.
-*/
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
 
 import { isPluginEnabled } from "@api/PluginManager";
 import { definePluginSettings } from "@api/Settings";
@@ -23,7 +11,14 @@ import { Devs } from "@utils/constants";
 import definePlugin, { OptionType } from "@utils/types";
 import { ApplicationIntegrationType, MessageFlags } from "@vencord/discord-types/enums";
 import { findByPropsLazy } from "@webpack";
-import { AuthenticationStore, FluxDispatcher, MessageTypeSets, PermissionsBits, PermissionStore, WindowStore } from "@webpack/common";
+import {
+    AuthenticationStore,
+    FluxDispatcher,
+    MessageTypeSets,
+    PermissionsBits,
+    PermissionStore,
+    WindowStore
+} from "@webpack/common";
 
 const MessageActions = findByPropsLazy("deleteMessage", "startEditMessage");
 const EditStore = findByPropsLazy("isEditing", "isEditingAny");
@@ -79,7 +74,8 @@ export default definePlugin({
     onMessageClick(msg, channel, event) {
         const myId = AuthenticationStore.getId();
         const isMe = msg.author.id === myId;
-        const isSelfInvokedUserApp = msg.interactionMetadata?.authorizing_integration_owners[ApplicationIntegrationType.USER_INSTALL] === myId;
+        const isSelfInvokedUserApp =
+            msg.interactionMetadata?.authorizing_integration_owners[ApplicationIntegrationType.USER_INSTALL] === myId;
         if (!isDeletePressed) {
             if (event.detail < 2) return;
             if (settings.store.requireModifier && !event.ctrlKey && !event.shiftKey) return;
@@ -87,7 +83,12 @@ export default definePlugin({
             if (msg.deleted === true) return;
 
             if (isMe) {
-                if (!settings.store.enableDoubleClickToEdit || EditStore.isEditing(channel.id, msg.id) || msg.state !== "SENT") return;
+                if (
+                    !settings.store.enableDoubleClickToEdit ||
+                    EditStore.isEditing(channel.id, msg.id) ||
+                    msg.state !== "SENT"
+                )
+                    return;
 
                 MessageActions.startEditMessage(channel.id, msg.id, msg.content);
                 event.preventDefault();
@@ -109,7 +110,10 @@ export default definePlugin({
                     showMentionToggle: channel.guild_id !== null
                 });
             }
-        } else if (settings.store.enableDeleteOnClick && (isMe || PermissionStore.can(PermissionsBits.MANAGE_MESSAGES, channel) || isSelfInvokedUserApp)) {
+        } else if (
+            settings.store.enableDeleteOnClick &&
+            (isMe || PermissionStore.can(PermissionsBits.MANAGE_MESSAGES, channel) || isSelfInvokedUserApp)
+        ) {
             if (msg.deleted) {
                 FluxDispatcher.dispatch({
                     type: "MESSAGE_DELETE",
@@ -122,5 +126,5 @@ export default definePlugin({
             }
             event.preventDefault();
         }
-    },
+    }
 });

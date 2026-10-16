@@ -30,7 +30,7 @@ export default definePlugin({
             replacement: {
                 match: /(?=Math\.min\(\i\.\i\.getOutputVolume\(\)\/100)/g,
                 replace: "$self.settings.store.notificationVolume/100*"
-            },
-        },
-    ],
+            }
+        }
+    ]
 });

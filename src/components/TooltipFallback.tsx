@@ -6,7 +6,7 @@
 
 import { Tooltip } from "@vencord/discord-types";
 
-const NOOP = () => { };
+const NOOP = () => {};
 
 /** Don't use this */
 export const TooltipFallback: Tooltip = ({ children }) => {

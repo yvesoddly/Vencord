@@ -24,5 +24,5 @@ export default definePlugin({
     description: "Fixes spotify embeds being incredibly loud by letting you customise the volume",
     authors: [Devs.Ven],
     tags: ["Media", "Customisation"],
-    settings,
+    settings
 });

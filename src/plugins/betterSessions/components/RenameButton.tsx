@@ -11,21 +11,19 @@ import { openModal } from "@webpack/common";
 
 import { RenameModal } from "./RenameModal";
 
-export function RenameButton({ session, state }: { session: SessionInfo["session"], state: [string, React.Dispatch<React.SetStateAction<string>>]; }) {
+export function RenameButton({
+    session,
+    state
+}: {
+    session: SessionInfo["session"];
+    state: [string, React.Dispatch<React.SetStateAction<string>>];
+}) {
     return (
         <Button
             variant="secondary"
             size="xs"
             className={cl("rename-btn")}
-            onClick={() =>
-                openModal(props => (
-                    <RenameModal
-                        props={props}
-                        session={session}
-                        state={state}
-                    />
-                ))
-            }
+            onClick={() => openModal(props => <RenameModal props={props} session={session} state={state} />)}
         >
             Rename
         </Button>
@@ -34,11 +32,7 @@ export function RenameButton({ session, state }: { session: SessionInfo["session
 
 export function NewButton() {
     return (
-        <Button
-            variant="dangerPrimary"
-            size="min"
-            className={cl("new-btn")}
-        >
+        <Button variant="dangerPrimary" size="min" className={cl("new-btn")}>
             NEW
         </Button>
     );

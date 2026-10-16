@@ -1,0 +1,52 @@
+name: Patches
+
+# Loads Discord in headless Chrome with every plugin enabled and fails if any patch, webpack find or
+# plugin start broke. Discord ships daily, so this also runs on a schedule.
+on:
+    pull_request:
+        paths:
+            - src/**
+            - browser/**
+            - scripts/**
+            - package.json
+            - pnpm-lock.yaml
+    push:
+        branches:
+            - main
+    schedule:
+        - cron: "17 6 * * *"
+    workflow_dispatch:
+        inputs:
+            branch:
+                type: choice
+                description: Discord branch to test against
+                options: [both, stable, canary]
+                default: both
+
+permissions:
+    contents: read
+
+jobs:
+    report:
+        name: Report (${{ inputs.branch || 'both' }})
+        runs-on: ubuntu-latest
+        timeout-minutes: 15
+        steps:
+            - uses: actions/checkout@v7
+
+            - uses: voidzero-dev/setup-vp@v1
+              with:
+                  node-version: 24
+                  cache: true
+                  run-install: true
+
+            - run: vp run buildReporter
+
+            - name: Run reporter
+              env:
+                  CHROMIUM_BIN: /usr/bin/google-chrome
+                  # Optional: post scheduled reports to a Discord channel.
+                  WEBHOOK_URL: ${{ github.event_name == 'schedule' && secrets.REPORTER_WEBHOOK_URL || '' }}
+              run: |
+                  set -o pipefail
+                  node scripts/generateReport.ts --branch "${{ inputs.branch || 'both' }}" | tee -a "$GITHUB_STEP_SUMMARY"

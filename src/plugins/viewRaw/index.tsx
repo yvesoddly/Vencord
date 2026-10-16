@@ -1,23 +1,10 @@
 /*
- * Vencord, a modification for Discord's desktop app
+ * Vencord, a Discord client mod
  * Copyright (c) 2022 Vendicated and contributors
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <https://www.gnu.org/licenses/>.
-*/
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
 
 import "./style.css";
-
 import { findGroupChildrenByChildId, NavContextMenuPatchCallback } from "@api/ContextMenu";
 import { definePluginSettings } from "@api/Settings";
 import { CodeBlock } from "@components/CodeBlock";
@@ -71,16 +58,11 @@ function sortObject<T>(obj: T): T {
     return obj;
 }
 
-const deleteProperties = (obj: object, keys: string[]) => keys.forEach(key => delete obj[key]);
+const deleteProperties = (obj: object, keys: string[]) => keys.forEach(key => Reflect.deleteProperty(obj, key));
 
 function redactUser(data: object) {
     if (settings.store.stripSensitiveData) {
-        deleteProperties(data, [
-            "email",
-            "phone",
-            "storeCountry",
-            "personalConnectionId"
-        ]);
+        deleteProperties(data, ["email", "phone", "storeCountry", "personalConnectionId"]);
     }
 
     return data;
@@ -128,7 +110,7 @@ function openViewRawModal(data: object, type: string, msgContent?: string) {
                 )}
                 <CodeBlock className="vc-viewRaw-codeBlock" content={json} lang="json" />
             </Modal>
-        </ErrorBoundary >
+        </ErrorBoundary>
     ));
 }
 
@@ -160,7 +142,10 @@ const settings = definePluginSettings({
     }
 });
 
-function MakeContextCallback(name: "Guild" | "Role" | "User" | "Channel" | "Message" | "Profile", getData?: (props: any) => any): NavContextMenuPatchCallback {
+function MakeContextCallback(
+    name: "Guild" | "Role" | "User" | "Channel" | "Message" | "Profile",
+    getData?: (props: any) => any
+): NavContextMenuPatchCallback {
     return (children, props) => {
         const value = getData ? getData(props) : props[name.toLowerCase()];
         if (!value) return;
@@ -173,12 +158,14 @@ function MakeContextCallback(name: "Guild" | "Role" | "User" | "Channel" | "Mess
         const action = isMessage
             ? () => openViewRawModalMessage(value)
             : name === "User"
-                ? () => openViewRawModal(redactUser(cloneObject(value)), name)
-                : () => openViewRawModal(value, name);
+              ? () => openViewRawModal(redactUser(cloneObject(value)), name)
+              : () => openViewRawModal(value, name);
 
         const devContainer = findGroupChildrenByChildId(`devmode-copy-id-${value.id}`, children);
 
-        (devContainer ?? children).splice(-1, 0,
+        (devContainer ?? children).splice(
+            -1,
+            0,
             <Menu.MenuItem
                 id={id}
                 label="View Raw"
@@ -190,7 +177,7 @@ function MakeContextCallback(name: "Guild" | "Role" | "User" | "Channel" | "Mess
     };
 }
 
-const devContextCallback: NavContextMenuPatchCallback = (children, { id }: { id: string; }) => {
+const devContextCallback: NavContextMenuPatchCallback = (children, { id }: { id: string }) => {
     const guild = getCurrentGuild();
     if (!guild) return;
 
@@ -223,8 +210,13 @@ export default definePlugin({
         "gdm-context": MakeContextCallback("Channel"),
         "user-context": MakeContextCallback("User"),
         "dev-context": devContextCallback,
-        "message": MakeContextCallback("Message"),
-        "user-profile-overflow-menu": MakeContextCallback("Profile", props => UserProfileStore.getGuildMemberProfile(props.user?.id, props.guildId) ?? UserProfileStore.getUserProfile(props.user?.id))
+        message: MakeContextCallback("Message"),
+        "user-profile-overflow-menu": MakeContextCallback(
+            "Profile",
+            props =>
+                UserProfileStore.getGuildMemberProfile(props.user?.id, props.guildId) ??
+                UserProfileStore.getUserProfile(props.user?.id)
+        )
     },
 
     messagePopoverButton: {
@@ -250,9 +242,10 @@ export default definePlugin({
                 }
             };
 
-            const label = settings.store.clickMethod === "Right"
-                ? "Copy Raw (Left Click) / View Raw (Right Click)"
-                : "View Raw (Left Click) / Copy Raw (Right Click)";
+            const label =
+                settings.store.clickMethod === "Right"
+                    ? "Copy Raw (Left Click) / View Raw (Right Click)"
+                    : "View Raw (Left Click) / Copy Raw (Right Click)";
 
             return {
                 label,

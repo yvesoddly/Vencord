@@ -1,4 +1,4 @@
-/* eslint-disable simple-header/header */
+/* oxlint-disable vencord/license-header -- third-party code under its own license, below */
 
 /*!
  * idb-keyval v6.2.0
@@ -18,9 +18,7 @@
  * limitations under the License.
  */
 
-export function promisifyRequest<T = undefined>(
-    request: IDBRequest<T> | IDBTransaction,
-): Promise<T> {
+export function promisifyRequest<T = undefined>(request: IDBRequest<T> | IDBTransaction): Promise<T> {
     return new Promise<T>((resolve, reject) => {
         // @ts-expect-error - file size hacks
         request.oncomplete = request.onsuccess = () => resolve(request.result);
@@ -34,15 +32,12 @@ export function createStore(dbName: string, storeName: string): UseStore {
     request.onupgradeneeded = () => request.result.createObjectStore(storeName);
     const dbp = promisifyRequest(request);
 
-    return (txMode, callback) =>
-        dbp.then(db =>
-            callback(db.transaction(storeName, txMode).objectStore(storeName)),
-        );
+    return (txMode, callback) => dbp.then(db => callback(db.transaction(storeName, txMode).objectStore(storeName)));
 }
 
 export type UseStore = <T>(
     txMode: IDBTransactionMode,
-    callback: (store: IDBObjectStore) => T | PromiseLike<T>,
+    callback: (store: IDBObjectStore) => T | PromiseLike<T>
 ) => Promise<T>;
 
 let defaultGetStoreFunc: UseStore | undefined;
@@ -60,10 +55,7 @@ function defaultGetStore() {
  * @param key
  * @param customStore Method to get a custom store. Use with caution (see the docs).
  */
-export function get<T = any>(
-    key: IDBValidKey,
-    customStore = defaultGetStore(),
-): Promise<T | undefined> {
+export function get<T = any>(key: IDBValidKey, customStore = defaultGetStore()): Promise<T | undefined> {
     return customStore("readonly", store => promisifyRequest(store.get(key)));
 }
 
@@ -74,11 +66,7 @@ export function get<T = any>(
  * @param value
  * @param customStore Method to get a custom store. Use with caution (see the docs).
  */
-export function set(
-    key: IDBValidKey,
-    value: any,
-    customStore = defaultGetStore(),
-): Promise<void> {
+export function set(key: IDBValidKey, value: any, customStore = defaultGetStore()): Promise<void> {
     return customStore("readwrite", store => {
         store.put(value, key);
         return promisifyRequest(store.transaction);
@@ -92,10 +80,7 @@ export function set(
  * @param entries Array of entries, where each entry is an array of `[key, value]`.
  * @param customStore Method to get a custom store. Use with caution (see the docs).
  */
-export function setMany(
-    entries: [IDBValidKey, any][],
-    customStore = defaultGetStore(),
-): Promise<void> {
+export function setMany(entries: [IDBValidKey, any][], customStore = defaultGetStore()): Promise<void> {
     return customStore("readwrite", store => {
         entries.forEach(entry => store.put(entry[1], entry[0]));
         return promisifyRequest(store.transaction);
@@ -108,13 +93,8 @@ export function setMany(
  * @param keys
  * @param customStore Method to get a custom store. Use with caution (see the docs).
  */
-export function getMany<T = any>(
-    keys: IDBValidKey[],
-    customStore = defaultGetStore(),
-): Promise<T[]> {
-    return customStore("readonly", store =>
-        Promise.all(keys.map(key => promisifyRequest(store.get(key)))),
-    );
+export function getMany<T = any>(keys: IDBValidKey[], customStore = defaultGetStore()): Promise<T[]> {
+    return customStore("readonly", store => Promise.all(keys.map(key => promisifyRequest(store.get(key)))));
 }
 
 /**
@@ -127,7 +107,7 @@ export function getMany<T = any>(
 export function update<T = any>(
     key: IDBValidKey,
     updater: (oldValue: T | undefined) => T,
-    customStore = defaultGetStore(),
+    customStore = defaultGetStore()
 ): Promise<void> {
     return customStore(
         "readwrite",
@@ -144,7 +124,7 @@ export function update<T = any>(
                         reject(err);
                     }
                 };
-            }),
+            })
     );
 }
 
@@ -154,10 +134,7 @@ export function update<T = any>(
  * @param key
  * @param customStore Method to get a custom store. Use with caution (see the docs).
  */
-export function del(
-    key: IDBValidKey,
-    customStore = defaultGetStore(),
-): Promise<void> {
+export function del(key: IDBValidKey, customStore = defaultGetStore()): Promise<void> {
     return customStore("readwrite", store => {
         store.delete(key);
         return promisifyRequest(store.transaction);
@@ -170,10 +147,7 @@ export function del(
  * @param keys List of keys to delete.
  * @param customStore Method to get a custom store. Use with caution (see the docs).
  */
-export function delMany(
-    keys: IDBValidKey[],
-    customStore = defaultGetStore(),
-): Promise<void> {
+export function delMany(keys: IDBValidKey[], customStore = defaultGetStore()): Promise<void> {
     return customStore("readwrite", (store: IDBObjectStore) => {
         keys.forEach((key: IDBValidKey) => store.delete(key));
         return promisifyRequest(store.transaction);
@@ -192,10 +166,7 @@ export function clear(customStore = defaultGetStore()): Promise<void> {
     });
 }
 
-function eachCursor(
-    store: IDBObjectStore,
-    callback: (cursor: IDBCursorWithValue) => void,
-): Promise<void> {
+function eachCursor(store: IDBObjectStore, callback: (cursor: IDBCursorWithValue) => void): Promise<void> {
     store.openCursor().onsuccess = function () {
         if (!this.result) return;
         callback(this.result);
@@ -209,22 +180,16 @@ function eachCursor(
  *
  * @param customStore Method to get a custom store. Use with caution (see the docs).
  */
-export function keys<KeyType extends IDBValidKey>(
-    customStore = defaultGetStore(),
-): Promise<KeyType[]> {
+export function keys<KeyType extends IDBValidKey>(customStore = defaultGetStore()): Promise<KeyType[]> {
     return customStore("readonly", store => {
         // Fast path for modern browsers
         if (store.getAllKeys) {
-            return promisifyRequest(
-                store.getAllKeys() as unknown as IDBRequest<KeyType[]>,
-            );
+            return promisifyRequest(store.getAllKeys() as unknown as IDBRequest<KeyType[]>);
         }
 
         const items: KeyType[] = [];
 
-        return eachCursor(store, cursor =>
-            items.push(cursor.key as KeyType),
-        ).then(() => items);
+        return eachCursor(store, cursor => items.push(cursor.key as KeyType)).then(() => items);
     });
 }
 
@@ -242,9 +207,7 @@ export function values<T = any>(customStore = defaultGetStore()): Promise<T[]> {
 
         const items: T[] = [];
 
-        return eachCursor(store, cursor => items.push(cursor.value as T)).then(
-            () => items,
-        );
+        return eachCursor(store, cursor => items.push(cursor.value as T)).then(() => items);
     });
 }
 
@@ -254,26 +217,22 @@ export function values<T = any>(customStore = defaultGetStore()): Promise<T[]> {
  * @param customStore Method to get a custom store. Use with caution (see the docs).
  */
 export function entries<KeyType extends IDBValidKey, ValueType = any>(
-    customStore = defaultGetStore(),
+    customStore = defaultGetStore()
 ): Promise<[KeyType, ValueType][]> {
     return customStore("readonly", store => {
         // Fast path for modern browsers
         // (although, hopefully we'll get a simpler path some day)
         if (store.getAll && store.getAllKeys) {
             return Promise.all([
-                promisifyRequest(
-                    store.getAllKeys() as unknown as IDBRequest<KeyType[]>,
-                ),
-                promisifyRequest(store.getAll() as IDBRequest<ValueType[]>),
+                promisifyRequest(store.getAllKeys() as unknown as IDBRequest<KeyType[]>),
+                promisifyRequest(store.getAll() as IDBRequest<ValueType[]>)
             ]).then(([keys, values]) => keys.map((key, i) => [key, values[i]]));
         }
 
         const items: [KeyType, ValueType][] = [];
 
         return customStore("readonly", store =>
-            eachCursor(store, cursor =>
-                items.push([cursor.key as KeyType, cursor.value]),
-            ).then(() => items),
+            eachCursor(store, cursor => items.push([cursor.key as KeyType, cursor.value])).then(() => items)
         );
     });
 }

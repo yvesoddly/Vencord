@@ -1,20 +1,8 @@
 /*
- * Vencord, a modification for Discord's desktop app
+ * Vencord, a Discord client mod
  * Copyright (c) 2023 Vendicated and contributors
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <https://www.gnu.org/licenses/>.
-*/
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
 
 import { Devs } from "@utils/constants";
 import definePlugin from "@utils/types";
@@ -28,7 +16,7 @@ interface EmojiAutocompleteState {
             sentinel: string;
         };
         results: {
-            emojis: Emoji[] & { sliceTo?: number; };
+            emojis: Emoji[] & { sliceTo?: number };
         };
     };
 }
@@ -46,8 +34,8 @@ export default definePlugin({
                     // https://regex101.com/r/N7kpLM/1
                     match: /let \i=.{1,100}renderResults\({results:(\i)\.query\.results,/,
                     replace: "$self.sortEmojis($1);$&"
-                },
-            ],
+                }
+            ]
         },
 
         {
@@ -67,23 +55,22 @@ export default definePlugin({
     ],
 
     sortEmojis({ query }: EmojiAutocompleteState) {
-        if (
-            query?.type !== "EMOJIS_AND_STICKERS"
-            || query.typeInfo?.sentinel !== ":"
-            || !query.results?.emojis?.length
-        ) return;
+        if (query?.type !== "EMOJIS_AND_STICKERS" || query.typeInfo?.sentinel !== ":" || !query.results?.emojis?.length)
+            return;
 
         const emojiContext = EmojiStore.getDisambiguatedEmojiContext();
 
-        query.results.emojis = query.results.emojis.sort((a, b) => {
-            const aIsFavorite = emojiContext.isFavoriteEmojiWithoutFetchingLatest(a);
-            const bIsFavorite = emojiContext.isFavoriteEmojiWithoutFetchingLatest(b);
+        query.results.emojis = query.results.emojis
+            .sort((a, b) => {
+                const aIsFavorite = emojiContext.isFavoriteEmojiWithoutFetchingLatest(a);
+                const bIsFavorite = emojiContext.isFavoriteEmojiWithoutFetchingLatest(b);
 
-            if (aIsFavorite && !bIsFavorite) return -1;
+                if (aIsFavorite && !bIsFavorite) return -1;
 
-            if (!aIsFavorite && bIsFavorite) return 1;
+                if (!aIsFavorite && bIsFavorite) return 1;
 
-            return 0;
-        }).slice(0, query.results.emojis.sliceTo ?? Infinity);
+                return 0;
+            })
+            .slice(0, query.results.emojis.sliceTo ?? Infinity);
     }
 });

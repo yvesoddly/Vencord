@@ -1,26 +1,15 @@
 /*
- * Vencord, a modification for Discord's desktop app
+ * Vencord, a Discord client mod
  * Copyright (c) 2022 Vendicated and contributors
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <https://www.gnu.org/licenses/>.
-*/
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
 
-import { session } from "electron";
-import { unzip } from "fflate";
 import { constants as fsConstants } from "fs";
 import { access, mkdir, rm, writeFile } from "fs/promises";
 import { join } from "path";
+
+import { session } from "electron";
+import { unzip } from "fflate";
 
 import { DATA_DIR } from "./constants";
 import { crxToZip } from "./crxToZip";
@@ -35,35 +24,37 @@ async function extract(data: Buffer, outDir: string) {
         unzip(data, (err, files) => {
             if (err) return void reject(err);
 
-            Promise.all(Object.keys(files).map(async f => {
-                // Signature stuff
-                // 'Cannot load extension with file or directory name
-                // _metadata. Filenames starting with "_" are reserved for use by the system.';
-                if (f.startsWith("_metadata/")) return;
+            Promise.all(
+                Object.keys(files).map(async f => {
+                    // Signature stuff
+                    // 'Cannot load extension with file or directory name
+                    // _metadata. Filenames starting with "_" are reserved for use by the system.';
+                    if (f.startsWith("_metadata/")) return;
 
-                if (f.includes("\0")) throw new Error(`Invalid filename: "${f}"`);
+                    if (f.includes("\0")) throw new Error(`Invalid filename: "${f}"`);
 
-                if (f.endsWith("/")) {
-                    const dir = ensureSafePath(outDir, f);
+                    if (f.endsWith("/")) {
+                        const dir = ensureSafePath(outDir, f);
+                        if (!dir) throw new Error(`Path traversal detected: "${f}"`);
+                        return void (await mkdir(dir, { recursive: true }));
+                    }
+
+                    const pathElements = f.split("/");
+                    const directories = pathElements.slice(0, -1).join("/");
+
+                    const dir = ensureSafePath(outDir, directories);
                     if (!dir) throw new Error(`Path traversal detected: "${f}"`);
-                    return void await mkdir(dir, { recursive: true });
-                }
 
-                const pathElements = f.split("/");
-                const directories = pathElements.slice(0, -1).join("/");
+                    const filePath = ensureSafePath(outDir, f);
+                    if (!filePath) throw new Error(`Path traversal detected: "${f}"`);
 
-                const dir = ensureSafePath(outDir, directories);
-                if (!dir) throw new Error(`Path traversal detected: "${f}"`);
+                    if (directories) {
+                        await mkdir(dir, { recursive: true });
+                    }
 
-                const filePath = ensureSafePath(outDir, f);
-                if (!filePath) throw new Error(`Path traversal detected: "${f}"`);
-
-                if (directories) {
-                    await mkdir(dir, { recursive: true });
-                }
-
-                await writeFile(filePath, files[f]);
-            }))
+                    await writeFile(filePath, files[f]);
+                })
+            )
                 .then(() => resolve())
                 .catch(err => {
                     rm(outDir, { recursive: true, force: true });
@@ -87,8 +78,7 @@ export async function installExt(id: string) {
             }
         });
 
-        await extract(crxToZip(buf), extDir)
-            .catch(err => console.error(`Failed to extract extension ${id}`, err));
+        await extract(crxToZip(buf), extDir).catch(err => console.error(`Failed to extract extension ${id}`, err));
     }
 
     if (session.defaultSession.extensions) {

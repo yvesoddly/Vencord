@@ -14,19 +14,18 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
-*/
+ */
 
 function parseHeaders(headers) {
     const result = new Headers();
-    if (!headers)
-        return result;
+    if (!headers) return result;
 
     const headersArr = headers.trim().split("\n");
     for (var i = 0; i < headersArr.length; i++) {
         var row = headersArr[i];
-        var index = row.indexOf(":")
-            , key = row.slice(0, index).trim().toLowerCase()
-            , value = row.slice(index + 1).trim();
+        var index = row.indexOf(":"),
+            key = row.slice(0, index).trim().toLowerCase(),
+            value = row.slice(index + 1).trim();
 
         result.append(key, value);
     }

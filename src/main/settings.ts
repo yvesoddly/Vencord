@@ -4,12 +4,13 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
+import { mkdirSync, readFileSync, writeFileSync } from "fs";
+
 import type { Settings } from "@api/Settings";
 import { IpcEvents } from "@shared/IpcEvents";
 import { SettingsStore } from "@shared/SettingsStore";
 import { mergeDefaults } from "@utils/mergeDefaults";
 import { ipcMain } from "electron";
-import { mkdirSync, readFileSync, writeFileSync } from "fs";
 
 import { NATIVE_SETTINGS_FILE, SETTINGS_DIR, SETTINGS_FILE } from "./utils/constants";
 
@@ -19,8 +20,7 @@ function readSettings<T = object>(name: string, file: string): Partial<T> {
     try {
         return JSON.parse(readFileSync(file, "utf-8"));
     } catch (err: any) {
-        if (err?.code !== "ENOENT")
-            console.error(`Failed to read ${name} settings`, err);
+        if (err?.code !== "ENOENT") console.error(`Failed to read ${name} settings`, err);
 
         return {};
     }
@@ -36,7 +36,7 @@ RendererSettings.addGlobalChangeListener(() => {
     }
 });
 
-ipcMain.on(IpcEvents.GET_SETTINGS, e => e.returnValue = RendererSettings.plain);
+ipcMain.on(IpcEvents.GET_SETTINGS, e => (e.returnValue = RendererSettings.plain));
 
 ipcMain.handle(IpcEvents.SET_SETTINGS, (_, data: Settings, pathToNotify?: string) => {
     RendererSettings.setData(data, pathToNotify);

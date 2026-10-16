@@ -5,7 +5,6 @@
  */
 
 import "./styles.css";
-
 import { definePluginSettings } from "@api/Settings";
 import ErrorBoundary from "@components/ErrorBoundary";
 import { TooltipContainer } from "@components/TooltipContainer";
@@ -32,8 +31,8 @@ const settings = definePluginSettings({
         type: OptionType.SELECT,
         options: [
             { label: "In the Tooltip", value: DisplayStyle.Tooltip },
-            { label: "Next to the timeout icon", value: DisplayStyle.Inline, default: true },
-        ],
+            { label: "Next to the timeout icon", value: DisplayStyle.Inline, default: true }
+        ]
     }
 });
 
@@ -45,11 +44,7 @@ function renderTimeout(message: Message, inline: boolean) {
     if (!member?.communicationDisabledUntil) return null;
 
     const countdown = () => (
-        <CountDown
-            deadline={new Date(member.communicationDisabledUntil!)}
-            showUnits
-            stopAtOneSec
-        />
+        <CountDown deadline={new Date(member.communicationDisabledUntil!)} showUnits stopAtOneSec />
     );
 
     getIntlMessage("GUILD_ENABLE_COMMUNICATION_TIME_REMAINING", {
@@ -60,9 +55,9 @@ function renderTimeout(message: Message, inline: boolean) {
     return inline
         ? countdown()
         : getIntlMessage("GUILD_ENABLE_COMMUNICATION_TIME_REMAINING", {
-            username: message.author.username,
-            countdown
-        });
+              username: message.author.username,
+              countdown
+          });
 }
 
 export default definePlugin({
@@ -85,17 +80,20 @@ export default definePlugin({
         }
     ],
 
-    TooltipWrapper: ErrorBoundary.wrap(({ message, children, text }: { message: Message; children: ReactNode; text: ReactNode; }) => {
-        if (settings.store.displayStyle === DisplayStyle.Tooltip)
-            return <TooltipContainer text={renderTimeout(message, false)}>{children}</TooltipContainer>;
+    TooltipWrapper: ErrorBoundary.wrap(
+        ({ message, children, text }: { message: Message; children: ReactNode; text: ReactNode }) => {
+            if (settings.store.displayStyle === DisplayStyle.Tooltip)
+                return <TooltipContainer text={renderTimeout(message, false)}>{children}</TooltipContainer>;
 
-        return (
-            <div className="vc-std-wrapper">
-                <TooltipContainer text={text}>{children}</TooltipContainer>
-                <Text variant="text-md/normal" color="status-danger">
-                    {renderTimeout(message, true)} timeout remaining
-                </Text>
-            </div>
-        );
-    }, { noop: true })
+            return (
+                <div className="vc-std-wrapper">
+                    <TooltipContainer text={text}>{children}</TooltipContainer>
+                    <Text variant="text-md/normal" color="status-danger">
+                        {renderTimeout(message, true)} timeout remaining
+                    </Text>
+                </div>
+            );
+        },
+        { noop: true }
+    )
 });

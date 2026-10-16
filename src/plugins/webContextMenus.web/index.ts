@@ -1,20 +1,8 @@
 /*
- * Vencord, a modification for Discord's desktop app
+ * Vencord, a Discord client mod
  * Copyright (c) 2022 Vendicated and contributors
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <https://www.gnu.org/licenses/>.
-*/
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
 
 import { definePluginSettings } from "@api/Settings";
 import { copyToClipboard } from "@utils/clipboard";
@@ -36,7 +24,6 @@ async function fetchImage(url: string) {
     return await res.blob();
 }
 
-
 const settings = definePluginSettings({
     // This needs to be all in one setting because to enable any of these, we need to make Discord use their desktop context
     // menu handler instead of the web one, which breaks the other menus that aren't enabled
@@ -47,7 +34,7 @@ const settings = definePluginSettings({
         restartNeeded: true,
         // Web slate menu has proper spellcheck suggestions and image context menu is also pretty good,
         // so disable this by default. Vesktop just doesn't, so we force enable it there
-        hidden: IS_VESKTOP,
+        hidden: IS_VESKTOP
     }
 });
 
@@ -77,7 +64,8 @@ function fixImageUrl(urlString: string) {
 
 export default definePlugin({
     name: "WebContextMenus",
-    description: "Re-adds context menus missing in the web version of Discord: Links & Images (Copy/Open Link/Image), Text Area (Copy, Cut, Paste, SpellCheck)",
+    description:
+        "Re-adds context menus missing in the web version of Discord: Links & Images (Copy/Open Link/Image), Text Area (Copy, Cut, Paste, SpellCheck)",
     tags: ["Utility"],
     authors: [Devs.Ven],
     enabledByDefault: true,
@@ -150,7 +138,7 @@ export default definePlugin({
                 {
                     match: /(#{intl::SAVE_IMAGE_MENU_ITEM}\),.{0,75}?)action:/,
                     replace: "$1action:()=>$self.saveImage(arguments[0]),oldAction:"
-                },
+                }
             ]
         },
 
@@ -243,11 +231,10 @@ export default definePlugin({
         // Automod add filter words
         {
             find: '("interactionUsernameProfile',
-            replacement:
-            {
+            replacement: {
                 match: /\i\.isPlatformEmbedded(?=.{0,50}\.tagName)/,
                 replace: "true"
-            },
+            }
         }
     ],
 

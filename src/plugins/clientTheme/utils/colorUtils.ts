@@ -53,9 +53,7 @@ export function hexToHSL(hexCode: string) {
 
 // https://www.w3.org/TR/WCAG21/#dfn-relative-luminance
 export function relativeLuminance(hexCode: string) {
-    const normalize = (x: number) => (
-        x <= 0.03928 ? x / 12.92 : ((x + 0.055) / 1.055) ** 2.4
-    );
+    const normalize = (x: number) => (x <= 0.03928 ? x / 12.92 : ((x + 0.055) / 1.055) ** 2.4);
 
     const r = normalize(parseInt(hexCode.substring(0, 2), 16) / 255);
     const g = normalize(parseInt(hexCode.substring(2, 4), 16) / 255);

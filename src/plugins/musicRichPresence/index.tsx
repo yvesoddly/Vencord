@@ -1,20 +1,8 @@
 /*
- * Vencord, a modification for Discord's desktop app
+ * Vencord, a Discord client mod
  * Copyright (c) 2022 Sofia Lima
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <https://www.gnu.org/licenses/>.
-*/
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
 
 import { definePluginSettings, migratePluginSetting, migratePluginSettings } from "@api/Settings";
 import { LinkButton } from "@components/Button";
@@ -43,8 +31,8 @@ export interface TrackData {
 }
 
 export interface ScrobblerBackend {
-    name: string,
-    id: string,
+    name: string;
+    id: string;
 
     fetchTrackData(): Promise<TrackData | null>;
     getUserURL(username: string): string;
@@ -71,166 +59,183 @@ function setActivity(activity: Activity | null) {
     FluxDispatcher.dispatch({
         type: "LOCAL_ACTIVITY_UPDATE",
         activity,
-        socketId: "LastFM",
+        socketId: "LastFM"
     });
 }
 
-export const settings = definePluginSettings({
-    scrobblerBackend: {
-        description: "The scrobbler backend to use.",
-        type: OptionType.SELECT,
-        options: [
-            {
-                "label": "Last.FM",
-                "value": "lastfm",
-                "default": true
-            },
-            {
-                "label": "ListenBrainz",
-                "value": "listenbrainz"
-            },
-            {
-                "label": "ListenBrainz Compatible (self-hosted)",
-                "value": "listenbrainz-compatible"
+export const settings = definePluginSettings(
+    {
+        scrobblerBackend: {
+            description: "The scrobbler backend to use.",
+            type: OptionType.SELECT,
+            options: [
+                {
+                    label: "Last.FM",
+                    value: "lastfm",
+                    default: true
+                },
+                {
+                    label: "ListenBrainz",
+                    value: "listenbrainz"
+                },
+                {
+                    label: "ListenBrainz Compatible (self-hosted)",
+                    value: "listenbrainz-compatible"
+                }
+            ] as const
+        },
+        instanceBaseURL: {
+            description: "The base url of your ListenBrainz instance.",
+            type: OptionType.STRING,
+            placeholder: "https://example.org",
+            onChange: invalidateListenBrainzCache
+        },
+        instanceAPIBaseUrl: {
+            description: "The base url of your ListenBrainz API.",
+            type: OptionType.STRING,
+            placeholder: "https://api.example.org",
+            onChange: invalidateListenBrainzCache
+        },
+        apiKey: {
+            displayName: "API Key",
+            description:
+                "Last.fm API key. Not required but highly recommended to avoid rate limiting with our shared key",
+            type: OptionType.STRING
+        },
+        username: {
+            description: "Username",
+            type: OptionType.STRING
+        },
+        shareUsername: {
+            description: "Show link to scrobbler profile",
+            type: OptionType.BOOLEAN,
+            default: false
+        },
+        clickableLinks: {
+            description: "Make track, artist and album names clickable links",
+            type: OptionType.BOOLEAN,
+            default: true
+        },
+        hideWithSpotify: {
+            description: "Hide presence if Spotify is running",
+            type: OptionType.BOOLEAN,
+            default: true
+        },
+        hideWithActivity: {
+            description: "Hide presence if you have any other presence",
+            type: OptionType.BOOLEAN,
+            default: false
+        },
+        statusName: {
+            description: "Custom status text. You can use the following variables: {artist} | {album} | {title}",
+            type: OptionType.STRING,
+            default: "some music"
+        },
+        statusDisplayType: {
+            description: "Show the track / artist name in the member list",
+            type: OptionType.SELECT,
+            options: [
+                {
+                    label: "Don't show (shows generic listening message)",
+                    value: "off"
+                },
+                {
+                    label: "Show artist name",
+                    value: "artist",
+                    default: true
+                },
+                {
+                    label: "Show track name",
+                    value: "track"
+                }
+            ]
+        },
+        nameFormat: {
+            description: "Show name of song and artist in status name",
+            type: OptionType.SELECT,
+            options: [
+                {
+                    label: "Use custom status name",
+                    value: NameFormat.StatusName,
+                    default: true
+                },
+                {
+                    label: "Use music service name (falls back to custom status text)",
+                    value: NameFormat.ServiceName
+                },
+                {
+                    label: "Use format 'artist - song'",
+                    value: NameFormat.ArtistFirst
+                },
+                {
+                    label: "Use format 'song - artist'",
+                    value: NameFormat.SongFirst
+                },
+                {
+                    label: "Use artist name only",
+                    value: NameFormat.ArtistOnly
+                },
+                {
+                    label: "Use song name only",
+                    value: NameFormat.SongOnly
+                },
+                {
+                    label: "Use album name (falls back to custom status text if song has no album)",
+                    value: NameFormat.AlbumName
+                }
+            ]
+        },
+        useListeningStatus: {
+            description: 'Show "Listening to" status instead of "Playing"',
+            type: OptionType.BOOLEAN,
+            default: false
+        },
+        missingArt: {
+            description: "When album or album art is missing",
+            type: OptionType.SELECT,
+            options: [
+                {
+                    label: "Use large scrobbler logo",
+                    value: "logo",
+                    default: true
+                },
+                {
+                    label: "Use generic placeholder",
+                    value: "placeholder"
+                }
+            ]
+        },
+        showLogo: {
+            displayName: "Show Scrobbler Logo",
+            description: "Show the scrobbler service logo by the album cover",
+            type: OptionType.BOOLEAN,
+            default: true
+        },
+        showAlbumCover: {
+            description:
+                "Show album cover. Disabling this will display a placeholder. Useful if your music has inappropriate art",
+            type: OptionType.BOOLEAN,
+            default: true
+        }
+    },
+    {
+        apiKey: {
+            hidden() {
+                return this.store.scrobblerBackend !== "lastfm";
             }
-        ] as const
-    },
-    instanceBaseURL: {
-        description: "The base url of your ListenBrainz instance.",
-        type: OptionType.STRING,
-        placeholder: "https://example.org",
-        onChange: invalidateListenBrainzCache
-    },
-    instanceAPIBaseUrl: {
-        description: "The base url of your ListenBrainz API.",
-        type: OptionType.STRING,
-        placeholder: "https://api.example.org",
-        onChange: invalidateListenBrainzCache
-    },
-    apiKey: {
-        displayName: "API Key",
-        description: "Last.fm API key. Not required but highly recommended to avoid rate limiting with our shared key",
-        type: OptionType.STRING,
-    },
-    username: {
-        description: "Username",
-        type: OptionType.STRING,
-    },
-    shareUsername: {
-        description: "Show link to scrobbler profile",
-        type: OptionType.BOOLEAN,
-        default: false,
-    },
-    clickableLinks: {
-        description: "Make track, artist and album names clickable links",
-        type: OptionType.BOOLEAN,
-        default: true,
-    },
-    hideWithSpotify: {
-        description: "Hide presence if Spotify is running",
-        type: OptionType.BOOLEAN,
-        default: true,
-    },
-    hideWithActivity: {
-        description: "Hide presence if you have any other presence",
-        type: OptionType.BOOLEAN,
-        default: false,
-    },
-    statusName: {
-        description: "Custom status text. You can use the following variables: {artist} | {album} | {title}",
-        type: OptionType.STRING,
-        default: "some music",
-    },
-    statusDisplayType: {
-        description: "Show the track / artist name in the member list",
-        type: OptionType.SELECT,
-        options: [
-            {
-                label: "Don't show (shows generic listening message)",
-                value: "off"
-            },
-            {
-                label: "Show artist name",
-                value: "artist",
-                default: true
-            },
-            {
-                label: "Show track name",
-                value: "track"
+        },
+        instanceBaseURL: {
+            hidden() {
+                return this.store.scrobblerBackend !== "listenbrainz-compatible";
             }
-        ]
-    },
-    nameFormat: {
-        description: "Show name of song and artist in status name",
-        type: OptionType.SELECT,
-        options: [
-            {
-                label: "Use custom status name",
-                value: NameFormat.StatusName,
-                default: true
-            },
-            {
-                label: "Use music service name (falls back to custom status text)",
-                value: NameFormat.ServiceName
-            },
-            {
-                label: "Use format 'artist - song'",
-                value: NameFormat.ArtistFirst
-            },
-            {
-                label: "Use format 'song - artist'",
-                value: NameFormat.SongFirst
-            },
-            {
-                label: "Use artist name only",
-                value: NameFormat.ArtistOnly
-            },
-            {
-                label: "Use song name only",
-                value: NameFormat.SongOnly
-            },
-            {
-                label: "Use album name (falls back to custom status text if song has no album)",
-                value: NameFormat.AlbumName
+        },
+        instanceAPIBaseUrl: {
+            hidden() {
+                return this.store.scrobblerBackend !== "listenbrainz-compatible";
             }
-        ],
-    },
-    useListeningStatus: {
-        description: 'Show "Listening to" status instead of "Playing"',
-        type: OptionType.BOOLEAN,
-        default: false,
-    },
-    missingArt: {
-        description: "When album or album art is missing",
-        type: OptionType.SELECT,
-        options: [
-            {
-                label: "Use large scrobbler logo",
-                value: "logo",
-                default: true
-            },
-            {
-                label: "Use generic placeholder",
-                value: "placeholder"
-            }
-        ],
-    },
-    showLogo: {
-        displayName: "Show Scrobbler Logo",
-        description: "Show the scrobbler service logo by the album cover",
-        type: OptionType.BOOLEAN,
-        default: true,
-    },
-    showAlbumCover: {
-        description: "Show album cover. Disabling this will display a placeholder. Useful if your music has inappropriate art",
-        type: OptionType.BOOLEAN,
-        default: true,
+        }
     }
-}, {
-    apiKey: { hidden() { return this.store.scrobblerBackend !== "lastfm"; } },
-    instanceBaseURL: { hidden() { return this.store.scrobblerBackend !== "listenbrainz-compatible"; } },
-    instanceAPIBaseUrl: { hidden() { return this.store.scrobblerBackend !== "listenbrainz-compatible"; } },
-});
+);
 
 migratePluginSettings("MusicRichPresence", "LastFMRichPresence");
 migratePluginSetting("MusicRichPresence", "showLastFmLogo", "showLogo");
@@ -244,22 +249,28 @@ export default definePlugin({
     settings,
 
     settingsAboutComponent() {
-        if (settings.store.scrobblerBackend !== "lastfm")
-            return null;
+        if (settings.store.scrobblerBackend !== "lastfm") return null;
 
         return (
             <Card>
                 <Heading tag="h2">Last.FM</Heading>
                 <Heading tag="h5">How to create an API key</Heading>
-                <Paragraph>Set <strong>Application name</strong> and <strong>Application description</strong> to anything and leave the rest blank.</Paragraph>
-                <LinkButton size="small" href="https://www.last.fm/api/account/create" className={Margins.top8}>Create API Key</LinkButton>
+                <Paragraph>
+                    Set <strong>Application name</strong> and <strong>Application description</strong> to anything and
+                    leave the rest blank.
+                </Paragraph>
+                <LinkButton size="small" href="https://www.last.fm/api/account/create" className={Margins.top8}>
+                    Create API Key
+                </LinkButton>
             </Card>
         );
     },
 
     start() {
         this.updatePresence();
-        this.updateInterval = setInterval(() => { this.updatePresence(); }, 16000);
+        this.updateInterval = setInterval(() => {
+            this.updatePresence();
+        }, 16000);
     },
 
     stop() {
@@ -279,20 +290,26 @@ export default definePlugin({
         if (settings.store.showAlbumCover && track.imageURL && !track.imageURL.includes(LASTFM_PLACEHOLDER_IMAGE_HASH))
             return track.imageURL;
 
-        if (settings.store.missingArt === "placeholder")
-            return "placeholder";
+        if (settings.store.missingArt === "placeholder") return "placeholder";
     },
 
     async getActivity(): Promise<Activity | null> {
-
         if (settings.store.hideWithActivity) {
-            if (PresenceStore.getActivities(AuthenticationStore.getId()).some(a => a.application_id !== DISCORD_APP_ID && a.type !== ActivityType.CUSTOM_STATUS)) {
+            if (
+                PresenceStore.getActivities(AuthenticationStore.getId()).some(
+                    a => a.application_id !== DISCORD_APP_ID && a.type !== ActivityType.CUSTOM_STATUS
+                )
+            ) {
                 return null;
             }
         }
 
         if (settings.store.hideWithSpotify) {
-            if (PresenceStore.getActivities(AuthenticationStore.getId()).some(a => a.type === ActivityType.LISTENING && a.application_id !== DISCORD_APP_ID)) {
+            if (
+                PresenceStore.getActivities(AuthenticationStore.getId()).some(
+                    a => a.type === ActivityType.LISTENING && a.application_id !== DISCORD_APP_ID
+                )
+            ) {
                 // there is already music status because of Spotify or richerCider (probably more)
                 return null;
             }
@@ -304,18 +321,19 @@ export default definePlugin({
         if (!trackData) return null;
 
         const largeImage = this.getLargeImage(trackData);
-        const assets: ActivityAssets = largeImage ?
-            {
-                large_image: await getApplicationAsset(largeImage),
-                large_text: trackData.album || undefined,
-                ...(settings.store.showLogo && {
-                    small_image: await getApplicationAsset(`${scrobbler.id}-small`),
-                    small_text: scrobbler.id
-                }),
-            } : {
-                large_image: await getApplicationAsset(`${scrobbler.id}-large`),
-                large_text: trackData.album || undefined,
-            };
+        const assets: ActivityAssets = largeImage
+            ? {
+                  large_image: await getApplicationAsset(largeImage),
+                  large_text: trackData.album || undefined,
+                  ...(settings.store.showLogo && {
+                      small_image: await getApplicationAsset(`${scrobbler.id}-small`),
+                      small_text: scrobbler.id
+                  })
+              }
+            : {
+                  large_image: await getApplicationAsset(`${scrobbler.id}-large`),
+                  large_text: trackData.album || undefined
+              };
 
         const buttons: ActivityButton[] = [];
 
@@ -337,15 +355,21 @@ export default definePlugin({
                 case NameFormat.SongOnly:
                     return trackData.name;
                 case NameFormat.AlbumName:
-                    return trackData.album || settings.store.statusName
-                        .replaceAll("{artist}", trackData.artist || "")
-                        .replaceAll("{album}", trackData.album || "")
-                        .replaceAll("{title}", trackData.name || "");
+                    return (
+                        trackData.album ||
+                        settings.store.statusName
+                            .replaceAll("{artist}", trackData.artist || "")
+                            .replaceAll("{album}", trackData.album || "")
+                            .replaceAll("{title}", trackData.name || "")
+                    );
                 case NameFormat.ServiceName:
-                    return trackData.serviceName || settings.store.statusName
-                        .replaceAll("{artist}", trackData.artist || "")
-                        .replaceAll("{album}", trackData.album || "")
-                        .replaceAll("{title}", trackData.name || "");
+                    return (
+                        trackData.serviceName ||
+                        settings.store.statusName
+                            .replaceAll("{artist}", trackData.artist || "")
+                            .replaceAll("{album}", trackData.album || "")
+                            .replaceAll("{title}", trackData.name || "")
+                    );
                 default:
                     return settings.store.statusName
                         .replaceAll("{artist}", trackData.artist || "")
@@ -361,20 +385,20 @@ export default definePlugin({
             details: trackData.name,
             state: trackData.artist,
             status_display_type: {
-                "off": ActivityStatusDisplayType.NAME,
-                "artist": ActivityStatusDisplayType.STATE,
-                "track": ActivityStatusDisplayType.DETAILS
+                off: ActivityStatusDisplayType.NAME,
+                artist: ActivityStatusDisplayType.STATE,
+                track: ActivityStatusDisplayType.DETAILS
             }[settings.store.statusDisplayType],
 
             assets,
 
             buttons: buttons.length ? buttons.map(v => v.label) : undefined,
             metadata: {
-                button_urls: buttons.map(v => v.url),
+                button_urls: buttons.map(v => v.url)
             },
 
             type: settings.store.useListeningStatus ? ActivityType.LISTENING : ActivityType.PLAYING,
-            flags: ActivityFlags.INSTANCE,
+            flags: ActivityFlags.INSTANCE
         };
 
         if (settings.store.clickableLinks) {

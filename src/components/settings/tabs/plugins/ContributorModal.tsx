@@ -5,7 +5,6 @@
  */
 
 import "./ContributorModal.css";
-
 import { useSettings } from "@api/Settings";
 import { Link } from "@components/Link";
 import { DevsById } from "@utils/constants";
@@ -13,8 +12,16 @@ import { classNameFactory } from "@utils/css";
 import { fetchUserProfile } from "@utils/discord";
 import { classes, pluralise } from "@utils/misc";
 import { RenderModalProps, User } from "@vencord/discord-types";
-import { Forms, Modal, openModal, showToast, useEffect, useMemo, UserProfileStore, useStateFromStores } from "@webpack/common";
-
+import {
+    Forms,
+    Modal,
+    openModal,
+    showToast,
+    useEffect,
+    useMemo,
+    UserProfileStore,
+    useStateFromStores
+} from "@webpack/common";
 import Plugins from "~plugins";
 
 import { PluginCard } from "./PluginCard";
@@ -26,14 +33,13 @@ export function openContributorModal(user: User) {
     openModal(modalProps => <ContributorModal user={user} modalProps={modalProps} />);
 }
 
-function ContributorModal({ user, modalProps }: { user: User; modalProps: RenderModalProps; }) {
+function ContributorModal({ user, modalProps }: { user: User; modalProps: RenderModalProps }) {
     useSettings();
 
     const profile = useStateFromStores([UserProfileStore], () => UserProfileStore.getUserProfile(user.id));
 
     useEffect(() => {
-        if (!profile && !user.bot && user.id)
-            fetchUserProfile(user.id);
+        if (!profile && !user.bot && user.id) fetchUserProfile(user.id);
     }, [user.id, user.bot, profile]);
 
     const githubName = profile?.connectedAccounts?.find(a => a.type === "github")?.name;
@@ -57,53 +63,40 @@ function ContributorModal({ user, modalProps }: { user: User; modalProps: Render
             {...modalProps}
             title={
                 <div className="vc-plugin-modal-header">
-                    <img
-                        className={cl("avatar")}
-                        src={user.getAvatarURL(void 0, 512, true)}
-                        alt=""
-                    />
-                    <Forms.FormTitle tag="h2" className={cl("name")}>{user.username}</Forms.FormTitle>
+                    <img className={cl("avatar")} src={user.getAvatarURL(void 0, 512, true)} alt="" />
+                    <Forms.FormTitle tag="h2" className={cl("name")}>
+                        {user.username}
+                    </Forms.FormTitle>
 
                     <div className={classes("vc-settings-modal-links", cl("links"))}>
-                        {website && (
-                            <WebsiteButton
-                                text={website}
-                                href={`https://${website}`}
-                            />
-                        )}
-                        {githubName && (
-                            <GithubButton
-                                text={githubName}
-                                href={`https://github.com/${githubName}`}
-                            />
-                        )}
+                        {website && <WebsiteButton text={website} href={`https://${website}`} />}
+                        {githubName && <GithubButton text={githubName} href={`https://github.com/${githubName}`} />}
                     </div>
                 </div>
             }
             subtitle={
-                plugins.length
-                    ? (
-                        <Forms.FormText>
-                            This person has {ContributedHyperLink} to {pluralise(plugins.length, "plugin")}!
-                        </Forms.FormText>
-                    )
-                    : (
-                        <Forms.FormText>
-                            This person has not made any plugins. They likely {ContributedHyperLink} to Vencord in other ways!
-                        </Forms.FormText>
-                    )
+                plugins.length ? (
+                    <Forms.FormText>
+                        This person has {ContributedHyperLink} to {pluralise(plugins.length, "plugin")}!
+                    </Forms.FormText>
+                ) : (
+                    <Forms.FormText>
+                        This person has not made any plugins. They likely {ContributedHyperLink} to Vencord in other
+                        ways!
+                    </Forms.FormText>
+                )
             }
         >
             {!!plugins.length && (
                 <div className={cl("plugins")}>
-                    {plugins.map(p =>
+                    {plugins.map(p => (
                         <PluginCard
                             key={p.name}
                             plugin={p}
                             disabled={p.required ?? false}
                             onRestartNeeded={() => showToast({ text: "Restart to apply changes!" })}
                         />
-                    )}
+                    ))}
                 </div>
             )}
         </Modal>

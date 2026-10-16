@@ -65,7 +65,8 @@ export default definePlugin({
         if (
             currentNotice?.[1] === backOnlineMessage ||
             noticesQueue.some(([, noticeMessage]) => noticeMessage === backOnlineMessage)
-        ) return;
+        )
+            return;
 
         showNotice(backOnlineMessage, "Exit idle", () => {
             popNotice();
@@ -76,7 +77,8 @@ export default definePlugin({
         });
     },
 
-    getIdleTimeout() { // milliseconds, default is 6e5
+    getIdleTimeout() {
+        // milliseconds, default is 6e5
         const { idleTimeout } = settings.store;
         return idleTimeout === 0 ? Infinity : idleTimeout * 60000;
     }

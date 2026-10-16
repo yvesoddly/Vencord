@@ -1,20 +1,8 @@
 /*
- * Vencord, a modification for Discord's desktop app
+ * Vencord, a Discord client mod
  * Copyright (c) 2022 Vendicated and contributors
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <https://www.gnu.org/licenses/>.
-*/
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
 
 import ErrorBoundary from "@components/ErrorBoundary";
 import { Flex } from "@components/Flex";
@@ -60,7 +48,12 @@ function TimerItem({ emoji, prefix, log, delta, instance }: TimerItemProps) {
             <span>{instance.sinceStart.toFixed(3)}s</span>
             <span>{instance.sinceLast.toFixed(3)}s</span>
             <span>{delta?.toFixed(0) ?? ""}</span>
-            <span><pre>{emoji} {prefix ?? " "}{log}</pre></span>
+            <span>
+                <pre>
+                    {emoji} {prefix ?? " "}
+                    {log}
+                </pre>
+            </span>
         </React.Fragment>
     );
 }
@@ -93,10 +86,18 @@ function TimingSection({ title, logs, traceEnd }: TimingSectionProps) {
             <code>
                 {traceEnd && (
                     <div style={{ color: "var(--text-strong)", marginBottom: 5, userSelect: "text" }}>
-                        Trace ended at: {(new Date(traceEnd)).toTimeString()}
+                        Trace ended at: {new Date(traceEnd).toTimeString()}
                     </div>
                 )}
-                <div style={{ color: "var(--text-strong)", display: "grid", gridTemplateColumns: "repeat(3, auto) 1fr", gap: "2px 10px", userSelect: "text" }}>
+                <div
+                    style={{
+                        color: "var(--text-strong)",
+                        display: "grid",
+                        gridTemplateColumns: "repeat(3, auto) 1fr",
+                        gap: "2px 10px",
+                        userSelect: "text"
+                    }}
+                >
                     <span>Start</span>
                     <span>Interval</span>
                     <span>Delta</span>

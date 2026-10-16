@@ -15,7 +15,7 @@ const DATA_STORE_KEY = "rdb-auth";
 export let Auth: ReviewDBAuth = {};
 
 export async function initAuth() {
-    Auth = await getAuth() ?? {};
+    Auth = (await getAuth()) ?? {};
 }
 
 export async function getAuth(): Promise<ReviewDBAuth | undefined> {
@@ -41,7 +41,7 @@ export async function updateAuth(newAuth: ReviewDBAuth) {
 }
 
 export function authorize(callback?: () => void) {
-    openModal(props =>
+    openModal(props => (
         <OAuth2AuthorizeModal
             {...props}
             scopes={["identify"]}
@@ -50,7 +50,7 @@ export function authorize(callback?: () => void) {
             permissions={0n}
             clientId="915703782174752809"
             cancelCompletesFlow={false}
-            callback={async (response: { location: string; }) => {
+            callback={async (response: { location: string }) => {
                 try {
                     const url = new URL(response.location);
                     url.searchParams.append("clientMod", "vencord");
@@ -73,5 +73,5 @@ export function authorize(callback?: () => void) {
                 }
             }}
         />
-    );
+    ));
 }

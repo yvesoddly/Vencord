@@ -1,20 +1,8 @@
 /*
- * Vencord, a modification for Discord's desktop app
+ * Vencord, a Discord client mod
  * Copyright (c) 2022 Vendicated and contributors
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <https://www.gnu.org/licenses/>.
-*/
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
 
 import { Devs } from "@utils/constants";
 import { canonicalizeMatch } from "@utils/patches";
@@ -22,7 +10,7 @@ import definePlugin from "@utils/types";
 import { Menu } from "@webpack/common";
 
 // duplicate values have multiple branches with different types. Just include all to be safe
-const nameMap = {
+const nameMap: Record<string, keyof typeof Menu> = {
     radio: "MenuRadioItem",
     separator: "MenuSeparator",
     checkbox: "MenuCheckboxItem",
@@ -32,7 +20,7 @@ const nameMap = {
     compositecontrol: "MenuControlItem",
 
     item: "MenuItem",
-    customitem: "MenuItem",
+    customitem: "MenuItem"
 };
 
 export default definePlugin({
@@ -95,17 +83,20 @@ export default definePlugin({
                         }
 
                         if (registerCalls.length < 6) {
-                            console.warn("[MenuItemDemanglerAPI] Expected to remap 6 items, only remapped", registerCalls.length);
+                            console.warn(
+                                "[MenuItemDemanglerAPI] Expected to remap 6 items, only remapped",
+                                registerCalls.length
+                            );
                         }
 
                         return `${registerCalls.join(";")};}`;
-                    },
+                    }
                 }
-            ],
-        },
+            ]
+        }
     ],
 
-    registerMenuItem(name: string, component: any) {
+    registerMenuItem(name: keyof typeof Menu, component: any) {
         Object.defineProperty(component, "name", { value: name });
         Menu[name] = component;
     }

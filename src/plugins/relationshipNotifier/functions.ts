@@ -1,20 +1,8 @@
 /*
- * Vencord, a modification for Discord's desktop app
+ * Vencord, a Discord client mod
  * Copyright (c) 2023 Vendicated and contributors
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <https://www.gnu.org/licenses/>.
-*/
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
 
 import { getUniqueUsername, openUserProfile } from "@utils/discord";
 import { ChannelType, RelationshipType } from "@vencord/discord-types/enums";
@@ -28,9 +16,9 @@ let manuallyRemovedFriend: string | undefined;
 let manuallyRemovedGuild: string | undefined;
 let manuallyRemovedGroup: string | undefined;
 
-export const removeFriend = (id: string) => manuallyRemovedFriend = id;
-export const removeGuild = (id: string) => manuallyRemovedGuild = id;
-export const removeGroup = (id: string) => manuallyRemovedGroup = id;
+export const removeFriend = (id: string) => (manuallyRemovedFriend = id);
+export const removeGuild = (id: string) => (manuallyRemovedGuild = id);
+export const removeGroup = (id: string) => (manuallyRemovedGroup = id);
 
 export async function onRelationshipRemove({ relationship: { type, id } }: RelationshipRemove) {
     if (manuallyRemovedFriend === id) {
@@ -38,8 +26,7 @@ export async function onRelationshipRemove({ relationship: { type, id } }: Relat
         return;
     }
 
-    const user = await UserUtils.getUser(id)
-        .catch(() => null);
+    const user = await UserUtils.getUser(id).catch(() => null);
     if (!user) return;
 
     switch (type) {

@@ -1,20 +1,8 @@
 /*
- * Vencord, a modification for Discord's desktop app
+ * Vencord, a Discord client mod
  * Copyright (c) 2022 Vendicated and contributors
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <https://www.gnu.org/licenses/>.
-*/
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
 
 export function makeLazy<T>(factory: () => T, attempts = 5): () => T {
     let tries = 0;
@@ -22,8 +10,7 @@ export function makeLazy<T>(factory: () => T, attempts = 5): () => T {
     return () => {
         if (cache === undefined && attempts > tries++) {
             cache = factory();
-            if (cache === undefined && attempts === tries)
-                console.error("Lazy factory failed:", factory);
+            if (cache === undefined && attempts === tries) console.error("Lazy factory failed:", factory);
         }
         return cache;
     };
@@ -51,9 +38,9 @@ for (const method of [
     "preventExtensions",
     "set",
     "setPrototypeOf"
-]) {
-    handler[method] =
-        (target: any, ...args: any[]) => Reflect[method](target[SYM_LAZY_GET](), ...args);
+] as const) {
+    const reflectMethod: (...args: any[]) => any = Reflect[method];
+    handler[method] = (target: any, ...args: any[]) => reflectMethod(target[SYM_LAZY_GET](), ...args);
 }
 
 handler.ownKeys = target => {
@@ -66,8 +53,7 @@ handler.ownKeys = target => {
 };
 
 handler.getOwnPropertyDescriptor = (target, p) => {
-    if (typeof p === "string" && unconfigurable.includes(p))
-        return Reflect.getOwnPropertyDescriptor(target, p);
+    if (typeof p === "string" && unconfigurable.includes(p)) return Reflect.getOwnPropertyDescriptor(target, p);
 
     const descriptor = Reflect.getOwnPropertyDescriptor(target[SYM_LAZY_GET](), p);
 
@@ -87,17 +73,15 @@ handler.getOwnPropertyDescriptor = (target, p) => {
  */
 export function proxyLazy<T>(factory: () => T, attempts = 5, isChild = false): T {
     let isSameTick = true;
-    if (!isChild)
-        setTimeout(() => isSameTick = false, 0);
+    if (!isChild) setTimeout(() => (isSameTick = false), 0);
 
     let tries = 0;
-    const proxyDummy = Object.assign(function () { }, {
+    const proxyDummy = Object.assign(function () {}, {
         [SYM_LAZY_CACHED]: void 0 as T | undefined,
         [SYM_LAZY_GET]() {
             if (!proxyDummy[SYM_LAZY_CACHED] && attempts > tries++) {
                 proxyDummy[SYM_LAZY_CACHED] = factory();
-                if (!proxyDummy[SYM_LAZY_CACHED] && attempts === tries)
-                    console.error("Lazy factory failed:", factory);
+                if (!proxyDummy[SYM_LAZY_CACHED] && attempts === tries) console.error("Lazy factory failed:", factory);
             }
             return proxyDummy[SYM_LAZY_CACHED];
         }
@@ -106,19 +90,14 @@ export function proxyLazy<T>(factory: () => T, attempts = 5, isChild = false): T
     return new Proxy(proxyDummy, {
         ...handler,
         get(target, p, receiver) {
-            if (p === SYM_LAZY_CACHED || p === SYM_LAZY_GET)
-                return Reflect.get(target, p, receiver);
+            if (p === SYM_LAZY_CACHED || p === SYM_LAZY_GET) return Reflect.get(target, p, receiver);
 
             // if we're still in the same tick, it means the lazy was immediately used.
             // thus, we lazy proxy the get access to make things like destructuring work as expected
             // meow here will also be a lazy
             // `const { meow } = findByPropsLazy("meow");`
             if (!isChild && isSameTick)
-                return proxyLazy(
-                    () => Reflect.get(target[SYM_LAZY_GET](), p, receiver),
-                    attempts,
-                    true
-                );
+                return proxyLazy(() => Reflect.get(target[SYM_LAZY_GET](), p, receiver), attempts, true);
             const lazyTarget = target[SYM_LAZY_GET]();
             if (typeof lazyTarget === "object" || typeof lazyTarget === "function") {
                 return Reflect.get(lazyTarget, p, receiver);

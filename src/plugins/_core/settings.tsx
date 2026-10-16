@@ -1,31 +1,36 @@
 /*
- * Vencord, a modification for Discord's desktop app
+ * Vencord, a Discord client mod
  * Copyright (c) 2022 Vendicated and Megumin
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <https://www.gnu.org/licenses/>.
-*/
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
 
 import { definePluginSettings } from "@api/Settings";
-import { BackupRestoreIcon, CloudIcon, MainSettingsIcon, PaintbrushIcon, PatchHelperIcon, PlaceholderIcon, PluginsIcon, UpdaterIcon, VesktopSettingsIcon } from "@components/Icons";
-import { BackupAndRestoreTab, CloudTab, PatchHelperTab, PluginsTab, ThemesTab, UpdaterTab, VencordTab } from "@components/settings/tabs";
+import {
+    BackupRestoreIcon,
+    CloudIcon,
+    MainSettingsIcon,
+    PaintbrushIcon,
+    PatchHelperIcon,
+    PlaceholderIcon,
+    PluginsIcon,
+    UpdaterIcon,
+    VesktopSettingsIcon
+} from "@components/Icons";
+import {
+    BackupAndRestoreTab,
+    CloudTab,
+    PatchHelperTab,
+    PluginsTab,
+    ThemesTab,
+    UpdaterTab,
+    VencordTab
+} from "@components/settings/tabs";
 import { Devs } from "@utils/constants";
 import { isTruthy } from "@utils/guards";
 import definePlugin, { IconProps, OptionType } from "@utils/types";
 import { waitFor } from "@webpack";
 import { React } from "@webpack/common";
 import type { ComponentType, PropsWithChildren, ReactNode } from "react";
-
 import gitHash from "~git-hash";
 
 let LayoutTypes = {
@@ -33,9 +38,9 @@ let LayoutTypes = {
     SIDEBAR_ITEM: 2,
     PANEL: 3,
     CATEGORY: 5,
-    CUSTOM: 19,
+    CUSTOM: 19
 };
-waitFor(["SECTION", "SIDEBAR_ITEM", "PANEL", "CUSTOM"], v => LayoutTypes = v);
+waitFor(["SECTION", "SIDEBAR_ITEM", "PANEL", "CUSTOM"], v => (LayoutTypes = v));
 
 const FallbackSectionTypes = {
     HEADER: "HEADER",
@@ -44,13 +49,7 @@ const FallbackSectionTypes = {
 };
 type SectionTypes = typeof FallbackSectionTypes;
 
-type SettingsLocation =
-    | "top"
-    | "aboveNitro"
-    | "belowNitro"
-    | "aboveActivity"
-    | "belowActivity"
-    | "bottom";
+type SettingsLocation = "top" | "aboveNitro" | "belowNitro" | "aboveActivity" | "belowActivity" | "bottom";
 
 interface SettingsLayoutNode {
     type: number;
@@ -66,10 +65,10 @@ interface SettingsLayoutNode {
 }
 
 interface EntryOptions {
-    key: string,
-    title: string,
-    panelTitle?: string,
-    Component: ComponentType<{}>,
+    key: string;
+    title: string;
+    panelTitle?: string;
+    Component: ComponentType<{}>;
     Icon: ComponentType<IconProps>;
 }
 interface SettingsLayoutBuilder {
@@ -87,12 +86,13 @@ const settings = definePluginSettings({
             { label: "Below the Nitro section", value: "belowNitro" },
             { label: "Above Activity Settings", value: "aboveActivity" },
             { label: "Below Activity Settings", value: "belowActivity" },
-            { label: "At the very bottom", value: "bottom" },
-        ] as { label: string; value: SettingsLocation; default?: boolean; }[]
+            { label: "At the very bottom", value: "bottom" }
+        ] as { label: string; value: SettingsLocation; default?: boolean }[]
     },
     includeVencordInfoWhenCopying: {
         type: OptionType.BOOLEAN,
-        description: "Also copy Vencord info (Vencord, Electron, Chromium) when clicking the version info in the bottom left area of the Settings page",
+        description:
+            "Also copy Vencord info (Vencord, Electron, Chromium) when clicking the version info in the bottom left area of the Settings page",
         default: true
     }
 });
@@ -137,25 +137,29 @@ export default definePlugin({
             key: key + "_panel",
             type: LayoutTypes.PANEL,
             useTitle: () => panelTitle,
-            buildLayout: () => [{
-                type: LayoutTypes.CATEGORY,
-                key: key + "_category",
-                buildLayout: () => [{
-                    type: LayoutTypes.CUSTOM,
-                    key: key + "_custom",
-                    Component: Component,
-                    useSearchTerms: () => [title]
-                }]
-            }]
+            buildLayout: () => [
+                {
+                    type: LayoutTypes.CATEGORY,
+                    key: key + "_category",
+                    buildLayout: () => [
+                        {
+                            type: LayoutTypes.CUSTOM,
+                            key: key + "_custom",
+                            Component: Component,
+                            useSearchTerms: () => [title]
+                        }
+                    ]
+                }
+            ]
         };
 
-        return ({
+        return {
             key,
             type: LayoutTypes.SIDEBAR_ITEM,
             useTitle: () => title,
             icon: () => <Icon width={20} height={20} />,
             buildLayout: () => [panel]
-        });
+        };
     },
 
     buildLayout(originalLayoutBuilder: SettingsLayoutBuilder) {
@@ -187,13 +191,15 @@ export default definePlugin({
                 Component: ThemesTab,
                 Icon: PaintbrushIcon
             }),
-            !IS_UPDATER_DISABLED && UpdaterTab && buildEntry({
-                key: "vencord_updater",
-                title: "Updater",
-                panelTitle: "Vencord Updater",
-                Component: UpdaterTab,
-                Icon: UpdaterIcon
-            }),
+            !IS_UPDATER_DISABLED &&
+                UpdaterTab &&
+                buildEntry({
+                    key: "vencord_updater",
+                    title: "Updater",
+                    panelTitle: "Vencord Updater",
+                    Component: UpdaterTab,
+                    Icon: UpdaterIcon
+                }),
             buildEntry({
                 key: "vencord_cloud",
                 title: "Cloud",
@@ -207,12 +213,14 @@ export default definePlugin({
                 Component: BackupAndRestoreTab,
                 Icon: BackupRestoreIcon
             }),
-            !IS_STANDALONE && PatchHelperTab && buildEntry({
-                key: "vencord_patch_helper",
-                title: "Patch Helper",
-                Component: PatchHelperTab,
-                Icon: PatchHelperIcon
-            }),
+            !IS_STANDALONE &&
+                PatchHelperTab &&
+                buildEntry({
+                    key: "vencord_patch_helper",
+                    title: "Patch Helper",
+                    Component: PatchHelperTab,
+                    Icon: PatchHelperIcon
+                }),
             ...this.customEntries.map(buildEntry),
             // TODO: Remove deprecated customSections in a future update
             ...this.customSections.map((func, i) => {
@@ -270,11 +278,15 @@ export default definePlugin({
 
     get chromiumVersion() {
         try {
-            return VencordNative.native.getVersions().chrome
+            return (
+                VencordNative.native.getVersions().chrome ||
                 // @ts-expect-error Typescript will add userAgentData IMMEDIATELY
-                || navigator.userAgentData?.brands?.find(b => b.brand === "Chromium" || b.brand === "Google Chrome")?.version
-                || null;
-        } catch { // inb4 some stupid browser throws unsupported error for navigator.userAgentData, it's only in chromium
+                navigator.userAgentData?.brands?.find(b => b.brand === "Chromium" || b.brand === "Google Chrome")
+                    ?.version ||
+                null
+            );
+        } catch {
+            // inb4 some stupid browser throws unsupported error for navigator.userAgentData, it's only in chromium
             return null;
         }
     },
@@ -303,9 +315,11 @@ export default definePlugin({
         return "\n" + this.getInfoRows().join("\n");
     },
 
-    makeInfoElements(Component: ComponentType<PropsWithChildren<{ className?: string; }>>, className: string) {
-        return this.getInfoRows().map((text, i) =>
-            <Component key={i} className={className}>{text}</Component>
-        );
+    makeInfoElements(Component: ComponentType<PropsWithChildren<{ className?: string }>>, className: string) {
+        return this.getInfoRows().map((text, i) => (
+            <Component key={i} className={className}>
+                {text}
+            </Component>
+        ));
     }
 });

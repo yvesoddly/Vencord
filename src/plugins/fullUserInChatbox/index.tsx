@@ -37,19 +37,24 @@ export default definePlugin({
         }
     ],
 
-    UserMentionComponent: ErrorBoundary.wrap((props: UserMentionComponentProps) => {
-        const user = useStateFromStores([UserStore], () => UserStore.getUser(props.id));
-        if (user == null) {
-            return props.originalComponent();
-        }
+    UserMentionComponent: ErrorBoundary.wrap(
+        (props: UserMentionComponentProps) => {
+            const user = useStateFromStores([UserStore], () => UserStore.getUser(props.id));
+            if (user == null) {
+                return props.originalComponent();
+            }
 
-        return <UserMentionComponent
-            // This seems to be constant
-            className="mention"
-            userId={props.id}
-            channelId={props.channelId}
-        />;
-    }, {
-        fallback: ({ wrappedProps: { originalComponent } }) => originalComponent()
-    })
+            return (
+                <UserMentionComponent
+                    // This seems to be constant
+                    className="mention"
+                    userId={props.id}
+                    channelId={props.channelId}
+                />
+            );
+        },
+        {
+            fallback: ({ wrappedProps: { originalComponent } }) => originalComponent()
+        }
+    )
 });

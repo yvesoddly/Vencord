@@ -71,13 +71,10 @@ export function FullPatchInput({ setFind, setParsedFind, setMatch, setReplacemen
             <Forms.FormText className={Margins.bottom8}>
                 Paste your full JSON patch here to fill out the fields
             </Forms.FormText>
-            <TextArea
-                inputRef={textAreaRef}
-                value={patch}
-                onChange={setPatch}
-                onBlur={update}
-            />
-            {error !== "" && <Forms.FormText style={{ color: "var(--text-feedback-critical)" }}>{error}</Forms.FormText>}
+            <TextArea inputRef={textAreaRef} value={patch} onChange={setPatch} onBlur={update} />
+            {error !== "" && (
+                <Forms.FormText style={{ color: "var(--text-feedback-critical)" }}>{error}</Forms.FormText>
+            )}
         </>
     );
 }

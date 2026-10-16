@@ -36,10 +36,10 @@ export default definePlugin({
                 match: /function (\i)(?=.+?renderPopout:.{0,20}\1,\{guildId:\i,channelId:\i)/,
                 replace: "$self.setRoleMemberPopout($1);$&"
             }
-        },
+        }
     ],
 
     setCreateScroller,
     setColorPicker,
-    setRoleMemberPopout,
+    setRoleMemberPopout
 });

@@ -1,5 +1,5 @@
 .vc-betterFolders-sidebar {
-    grid-area: betterFoldersSidebar
+    grid-area: betterFoldersSidebar;
 }
 
 /* These area names need to be hardcoded. Only betterFoldersSidebar is added by the plugin. */

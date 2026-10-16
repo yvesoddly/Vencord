@@ -5,7 +5,6 @@
  */
 
 import "./Card.css";
-
 import { classNameFactory } from "@utils/css";
 import { classes } from "@utils/misc";
 import { ComponentPropsWithRef } from "react";
@@ -19,9 +18,7 @@ export interface CardProps extends ComponentPropsWithRef<"div"> {
 }
 
 export function Card({ variant = "normal", defaultPadding, children, className, ...restProps }: CardProps) {
-    const addDefaultPadding = defaultPadding != null
-        ? defaultPadding
-        : !className;
+    const addDefaultPadding = defaultPadding != null ? defaultPadding : !className;
 
     return (
         <div className={classes(cl("base", variant, addDefaultPadding && "defaultPadding"), className)} {...restProps}>

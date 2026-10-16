@@ -35,22 +35,22 @@ const MAX_PAGE_SIZE = 50;
 function getLang() {
     const locale = LocaleStore.locale.toLowerCase();
     // Giphy accepts two-letter codes, plus zh-CN / zh-TW
-    if (locale.startsWith("zh"))
-        return locale.includes("tw") || locale.includes("hant") ? "zh-TW" : "zh-CN";
+    if (locale.startsWith("zh")) return locale.includes("tw") || locale.includes("hant") ? "zh-TW" : "zh-CN";
 
     return locale.split("-")[0];
 }
 
 async function fetchApi<TResult>(path: string, params: Record<string, string> = {}) {
-    const url = `https://api.giphy.com/v1${path}?` + new URLSearchParams({
-        api_key: GIPHY_KEY,
-        lang: getLang(),
-        ...params
-    });
+    const url =
+        `https://api.giphy.com/v1${path}?` +
+        new URLSearchParams({
+            api_key: GIPHY_KEY,
+            lang: getLang(),
+            ...params
+        });
 
     const res = await fetch(url);
-    if (!res.ok)
-        throw new Error(`GET ${path}: Giphy API request failed with status ${res.status}`);
+    if (!res.ok) throw new Error(`GET ${path}: Giphy API request failed with status ${res.status}`);
 
     return res.json() as Promise<TResult>;
 }
@@ -58,14 +58,16 @@ async function fetchApi<TResult>(path: string, params: Record<string, string> = 
 async function fetchGiphyResults(path: string, limit: number, extra: Record<string, string> = {}) {
     const pageCount = Math.ceil(limit / MAX_PAGE_SIZE);
 
-    const pages = await Promise.all(Array.from({ length: pageCount }, (_, i) => {
-        const offset = i * MAX_PAGE_SIZE;
-        return fetchApi<{ data?: GiphyResult[]; }>(path, {
-            ...extra,
-            limit: String(Math.min(MAX_PAGE_SIZE, limit - offset)),
-            offset: String(offset)
-        });
-    }));
+    const pages = await Promise.all(
+        Array.from({ length: pageCount }, (_, i) => {
+            const offset = i * MAX_PAGE_SIZE;
+            return fetchApi<{ data?: GiphyResult[] }>(path, {
+                ...extra,
+                limit: String(Math.min(MAX_PAGE_SIZE, limit - offset)),
+                offset: String(offset)
+            });
+        })
+    );
 
     // Dedupe by id (offset pagination can overlap if results shift between requests)
     const unique = new Map(pages.flatMap(p => p.data ?? []).map(item => [item.id, item]));
@@ -74,9 +76,7 @@ async function fetchGiphyResults(path: string, limit: number, extra: Record<stri
 
 function toDiscordGif(item: GiphyResult): DiscordGif | null {
     // Discord uses tinywebp on Linux, webm on rest (including web Linux). Giphy has webp and mp4, but no webm
-    const format = GIFPickerViewStore.getSelectedFormat() === "tinywebp"
-        ? "webp"
-        : "mp4";
+    const format = GIFPickerViewStore.getSelectedFormat() === "tinywebp" ? "webp" : "mp4";
 
     const { id, title, url, images } = item;
     const { original, fixed_height, fixed_height_still } = images;
@@ -100,19 +100,23 @@ function mapToDiscordGifs(items: GiphyResult[]) {
     return items.map(toDiscordGif).filter(isNonNullish);
 }
 
-export const search = (q: string, limit: number) => fetchGiphyResults("/gifs/search", limit, { q }).then(mapToDiscordGifs);
-export const searchSuggestions = (q: string) => fetchApi<{ data?: Array<{ name: string; }>; }>("/gifs/search/tags", { q, limit: "5" }).then(res => res.data?.map(t => t.name) ?? []);
+export const search = (q: string, limit: number) =>
+    fetchGiphyResults("/gifs/search", limit, { q }).then(mapToDiscordGifs);
+export const searchSuggestions = (q: string) =>
+    fetchApi<{ data?: Array<{ name: string }> }>("/gifs/search/tags", { q, limit: "5" }).then(
+        res => res.data?.map(t => t.name) ?? []
+    );
 export const getTrending = (limit: number) => fetchGiphyResults("/gifs/trending", limit).then(mapToDiscordGifs);
 
 // Giphy has no registershare endpoint, and its analytics pingbacks are optional, so this is a no-op
-export async function registerShare(_id: string, _q: string) { }
+export async function registerShare(_id: string, _q: string) {}
 
 export async function getCategories(): Promise<TrendingCategoriesData | null> {
-    const res = await fetchApi<{ data?: GiphyCategory[]; }>("/gifs/categories").catch(() => null);
+    const res = await fetchApi<{ data?: GiphyCategory[] }>("/gifs/categories").catch(() => null);
 
     const categories = res?.data
         ?.map(c => ({ name: c.name, src: c.gif?.images?.fixed_height?.url }))
-        .filter((c): c is { name: string; src: string; } => !!c.src);
+        .filter((c): c is { name: string; src: string } => !!c.src);
 
     if (!categories?.length) return null;
 

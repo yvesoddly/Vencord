@@ -12,7 +12,7 @@ import { GuildReadStateStore, NotificationSettingsStore, RelationshipStore, Them
 
 import managedStyle from "./styles.css?managed";
 
-let _keybinds: Record<string, { onTrigger: () => any; }>;
+let _keybinds: Record<string, { onTrigger: () => any }>;
 
 function colorToHex(color: string) {
     const ctx = document.createElement("canvas").getContext("2d");
@@ -63,13 +63,55 @@ async function setManifest() {
         launch_handler: { client_mode: "navigate-existing" },
         // Strange CDN but these links are straight from discord.com
         screenshots: [
-            { src: "https://cdn.prod.website-files.com/6257adef93867e50d84d30e2/664723dbe91e5ee8db15cfe7_Discord_Website_Refresh_Activities.webp", sizes: "691x720", type: "image/webp", label: "Activities", form_factor: "wide" },
-            { src: "https://cdn.prod.website-files.com/6257adef93867e50d84d30e2/664723da372be4a12a3dc9df_Discord_Website_Refresh_Hop-In.webp", sizes: "939x639", type: "image/webp", label: "Hop In", form_factor: "wide" },
-            { src: "https://cdn.prod.website-files.com/6257adef93867e50d84d30e2/664723da94dd30e64e74357a_Discord_Website_Refresh_StatusHover.webp", sizes: "904x708", type: "image/webp", label: "Status", form_factor: "wide" },
-            { src: "https://cdn.prod.website-files.com/6257adef93867e50d84d30e2/664723da0a2e6be98fa5216b_Discord_Website_Refresh_Emojis%2BSoundboard-p-1080.webp", sizes: "1080x918", type: "image/webp", label: "Emojis", form_factor: "wide" },
-            { src: "https://cdn.prod.website-files.com/6257adef93867e50d84d30e2/6638bdbd1150b7c8509fb2be_Discord_Website_Refresh_SameRoom.webp", sizes: "796x593", type: "image/webp", label: "Rooms", form_factor: "wide" },
-            { src: "https://cdn.prod.website-files.com/6257adef93867e50d84d30e2/68407334ccf9aeca71903bab_home-new.webp", sizes: "1716×1606", type: "image/webp", label: "Discord", form_factor: "wide" },
-            { src: "https://cdn.prod.website-files.com/6257adef93867e50d84d30e2/6638bcb99c2b8dc14e6f67fd_Discord_Website_Refresh_Platforms.webp", sizes: "760x580", type: "image/webp", label: "Platforms", form_factor: "wide" }
+            {
+                src: "https://cdn.prod.website-files.com/6257adef93867e50d84d30e2/664723dbe91e5ee8db15cfe7_Discord_Website_Refresh_Activities.webp",
+                sizes: "691x720",
+                type: "image/webp",
+                label: "Activities",
+                form_factor: "wide"
+            },
+            {
+                src: "https://cdn.prod.website-files.com/6257adef93867e50d84d30e2/664723da372be4a12a3dc9df_Discord_Website_Refresh_Hop-In.webp",
+                sizes: "939x639",
+                type: "image/webp",
+                label: "Hop In",
+                form_factor: "wide"
+            },
+            {
+                src: "https://cdn.prod.website-files.com/6257adef93867e50d84d30e2/664723da94dd30e64e74357a_Discord_Website_Refresh_StatusHover.webp",
+                sizes: "904x708",
+                type: "image/webp",
+                label: "Status",
+                form_factor: "wide"
+            },
+            {
+                src: "https://cdn.prod.website-files.com/6257adef93867e50d84d30e2/664723da0a2e6be98fa5216b_Discord_Website_Refresh_Emojis%2BSoundboard-p-1080.webp",
+                sizes: "1080x918",
+                type: "image/webp",
+                label: "Emojis",
+                form_factor: "wide"
+            },
+            {
+                src: "https://cdn.prod.website-files.com/6257adef93867e50d84d30e2/6638bdbd1150b7c8509fb2be_Discord_Website_Refresh_SameRoom.webp",
+                sizes: "796x593",
+                type: "image/webp",
+                label: "Rooms",
+                form_factor: "wide"
+            },
+            {
+                src: "https://cdn.prod.website-files.com/6257adef93867e50d84d30e2/68407334ccf9aeca71903bab_home-new.webp",
+                sizes: "1716×1606",
+                type: "image/webp",
+                label: "Discord",
+                form_factor: "wide"
+            },
+            {
+                src: "https://cdn.prod.website-files.com/6257adef93867e50d84d30e2/6638bcb99c2b8dc14e6f67fd_Discord_Website_Refresh_Platforms.webp",
+                sizes: "760x580",
+                type: "image/webp",
+                label: "Platforms",
+                form_factor: "wide"
+            }
         ],
         icons: [
             {
@@ -94,21 +136,25 @@ async function setManifest() {
 
 export default definePlugin({
     name: "WebPWA",
-    description: "Makes Discord installable as an App (PWA). Enables notification badges, global key-binds and Discord's custom title bar.",
+    description:
+        "Makes Discord installable as an App (PWA). Enables notification badges, global key-binds and Discord's custom title bar.",
     authors: [Devs.ThaUnknown],
     tags: ["Utility"],
     managedStyle,
     enabledByDefault: true,
 
     flux: {
-        KEYBINDS_REGISTER_GLOBAL_KEYBIND_ACTIONS: ({ keybinds }: { keybinds: Record<string, { onTrigger: () => any; }>; }) => {
+        KEYBINDS_REGISTER_GLOBAL_KEYBIND_ACTIONS: ({
+            keybinds
+        }: {
+            keybinds: Record<string, { onTrigger: () => any }>;
+        }) => {
             _keybinds = keybinds;
         }
     },
 
     ctrl: new AbortController(),
     start() {
-
         // installability
         setManifest();
         // user might change theme before installing the PWA
@@ -125,12 +171,16 @@ export default definePlugin({
             // keybinds
             this.ctrl.abort();
             this.ctrl = new AbortController();
-            window.addEventListener("message", ({ data }) => {
-                if (data?.type === "vencord:keybinds" && _keybinds) {
-                    const { meta } = data;
-                    if (meta in _keybinds) _keybinds[meta].onTrigger();
-                }
-            }, this.ctrl);
+            window.addEventListener(
+                "message",
+                ({ data }) => {
+                    if (data?.type === "vencord:keybinds" && _keybinds) {
+                        const { meta } = data;
+                        if (meta in _keybinds) _keybinds[meta].onTrigger();
+                    }
+                },
+                this.ctrl
+            );
         }
     },
     stop() {
@@ -179,7 +229,15 @@ export default definePlugin({
 
     renderKeybindsButton: () => (
         <div>
-            Custom global Push To X keybinds are supported. Navigate to <a onClick={() => { window.postMessage({ type: "OPEN_SHORTCUTS" }, "*"); }}>about://extensions/shortcuts</a> to change them. Hold To X keybinds are not supported.
+            Custom global Push To X keybinds are supported. Navigate to{" "}
+            <a
+                onClick={() => {
+                    window.postMessage({ type: "OPEN_SHORTCUTS" }, "*");
+                }}
+            >
+                about://extensions/shortcuts
+            </a>{" "}
+            to change them. Hold To X keybinds are not supported.
         </div>
     ),
 

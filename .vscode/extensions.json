@@ -1,6 +1,6 @@
 {
     "recommendations": [
-        "dbaeumer.vscode-eslint",
+        "VoidZero.vite-plus-extension-pack",
         "EditorConfig.EditorConfig",
         "GregorBiswanger.json2ts",
         "stylelint.vscode-stylelint",

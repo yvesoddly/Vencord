@@ -30,15 +30,16 @@ interface TenorCategoryTag {
 }
 
 async function fetchApi<TResult>(path: string, params: Record<string, string>) {
-    const url = `https://api.tenor.com/v1${path}?` + new URLSearchParams({
-        key: TENOR_KEY,
-        locale: LocaleStore.locale.replace("-", "_").toLowerCase(),
-        ...params
-    });
+    const url =
+        `https://api.tenor.com/v1${path}?` +
+        new URLSearchParams({
+            key: TENOR_KEY,
+            locale: LocaleStore.locale.replace("-", "_").toLowerCase(),
+            ...params
+        });
 
     const res = await fetch(url);
-    if (!res.ok)
-        throw new Error(`GET ${path}: Tenor API request failed with status ${res.status}`);
+    if (!res.ok) throw new Error(`GET ${path}: Tenor API request failed with status ${res.status}`);
 
     return res.json() as Promise<TResult>;
 }
@@ -56,7 +57,7 @@ async function fetchTenorResults(path: string, limit: number, extra: Record<stri
         };
         if (pos) params.pos = pos;
 
-        const { next, results: page } = await fetchApi<{ next?: string; results: TenorResult[]; }>(path, params);
+        const { next, results: page } = await fetchApi<{ next?: string; results: TenorResult[] }>(path, params);
         if (!page.length) break;
 
         const previousLength = items.length;
@@ -78,9 +79,7 @@ async function fetchTenorResults(path: string, limit: number, extra: Record<stri
 
 function toDiscordGif(item: TenorResult): DiscordGif | null {
     // Discord uses tinywebp on Linux, webm on rest (including web Linux). Tenor only has "webp", not "tinywebp"
-    const format = GIFPickerViewStore.getSelectedFormat() === "tinywebp"
-        ? "webp"
-        : "tinywebm";
+    const format = GIFPickerViewStore.getSelectedFormat() === "tinywebp" ? "webp" : "tinywebm";
 
     const { title, h1_title, id, itemurl } = item;
     const { gif, [format]: mediaItem } = item.media[0];
@@ -102,12 +101,13 @@ function mapToDiscordGifs(items: TenorResult[]) {
 }
 
 export const search = (q: string, limit: number) => fetchTenorResults("/search", limit, { q }).then(mapToDiscordGifs);
-export const searchSuggestions = (q: string) => fetchApi<{ results?: string[]; }>("/search_suggestions", { q, limit: "5" }).then(res => res.results ?? []);
+export const searchSuggestions = (q: string) =>
+    fetchApi<{ results?: string[] }>("/search_suggestions", { q, limit: "5" }).then(res => res.results ?? []);
 export const getTrending = (limit: number) => fetchTenorResults("/trending", limit).then(mapToDiscordGifs);
 export const registerShare = (id: string, q: string) => fetchApi("/registershare", { id, q });
 
 export async function getCategories(): Promise<TrendingCategoriesData | null> {
-    const res = await fetchApi<{ tags?: TenorCategoryTag[]; }>("/categories", { type: "featured" }).catch(() => null);
+    const res = await fetchApi<{ tags?: TenorCategoryTag[] }>("/categories", { type: "featured" }).catch(() => null);
 
     if (!res?.tags?.length) return null;
 

@@ -13,18 +13,20 @@ import { Menu } from "@webpack/common";
 
 import { openGuildInfoModal } from "./GuildInfoModal";
 
-const makePatch: (showIcon: boolean) => NavContextMenuPatchCallback = showIcon => (children, { guild }: { guild: Guild; }) => {
-    const group = findGroupChildrenByChildId("privacy", children);
+const makePatch: (showIcon: boolean) => NavContextMenuPatchCallback =
+    showIcon =>
+    (children, { guild }: { guild: Guild }) => {
+        const group = findGroupChildrenByChildId("privacy", children);
 
-    group?.push(
-        <Menu.MenuItem
-            id="vc-server-info"
-            label="Server Info"
-            leadingAccessory={showIcon ? { type: "icon", icon: InfoIcon } : undefined}
-            action={() => openGuildInfoModal(guild)}
-        />
-    );
-};
+        group?.push(
+            <Menu.MenuItem
+                id="vc-server-info"
+                label="Server Info"
+                leadingAccessory={showIcon ? { type: "icon", icon: InfoIcon } : undefined}
+                action={() => openGuildInfoModal(guild)}
+            />
+        );
+    };
 
 export default definePlugin({
     name: "ServerInfo",

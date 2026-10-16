@@ -1,20 +1,8 @@
 /*
- * Vencord, a modification for Discord's desktop app
+ * Vencord, a Discord client mod
  * Copyright (c) 2022 Vendicated and contributors
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <https://www.gnu.org/licenses/>.
-*/
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
 
 import ErrorBoundary from "@components/ErrorBoundary";
 import BadgeAPIPlugin from "@plugins/_api/badges";
@@ -29,7 +17,7 @@ export interface ProfileBadge {
     /**
      * Badge id, unused by vencord, required by discord
      */
-    id: string,
+    id: string;
     /** The tooltip to show on hover. Required for image badges */
     description?: string;
     /** Custom component for the badge (tooltip not included) */
@@ -89,10 +77,10 @@ export function _getBadges(args: BadgeUserArgs) {
 
         const b = badge.getBadges
             ? badge.getBadges(args).map(badge => ({
-                ...args,
-                ...badge,
-                component: badge.component && ErrorBoundary.wrap(badge.component, { noop: true })
-            }))
+                  ...args,
+                  ...badge,
+                  component: badge.component && ErrorBoundary.wrap(badge.component, { noop: true })
+              }))
             : [{ ...args, ...badge }];
 
         if (badge.position === BadgePosition.START) {
@@ -107,7 +95,7 @@ export function _getBadges(args: BadgeUserArgs) {
         badges.unshift(
             ...donorBadges.map(badge => ({
                 ...args,
-                ...badge,
+                ...badge
             }))
         );
     }

@@ -1,33 +1,21 @@
 /*
- * Vencord, a modification for Discord's desktop app
+ * Vencord, a Discord client mod
  * Copyright (c) 2022 Vendicated and contributors
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <https://www.gnu.org/licenses/>.
-*/
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
 
 import "./updater";
 import "./ipcPlugins";
 import "./settings";
+import { FSWatcher, mkdirSync, readFileSync, watch, writeFileSync } from "fs";
+import { open, readdir, readFile } from "fs/promises";
+import { release } from "os";
+import { join } from "path";
 
 import { debounce } from "@shared/debounce";
 import { IpcEvents } from "@shared/IpcEvents";
 import { BrowserWindow, ipcMain, nativeTheme, shell, systemPreferences } from "electron";
 import monacoHtml from "file://monacoWin.html?minify&base64";
-import { FSWatcher, mkdirSync, readFileSync, watch, writeFileSync } from "fs";
-import { open, readdir, readFile } from "fs/promises";
-import { release } from "os";
-import { join } from "path";
 
 import { registerCspIpcHandlers } from "./csp/manager";
 import { getThemeInfo, stripBOM, UserThemeHeader } from "./themes";
@@ -53,7 +41,9 @@ async function listThemes(): Promise<UserThemeHeader[]> {
     for (const fileName of files) {
         if (!fileName.endsWith(".css")) continue;
 
-        const data = await getThemeData(fileName).then(stripBOM).catch(() => null);
+        const data = await getThemeData(fileName)
+            .then(stripBOM)
+            .catch(() => null);
         if (data == null) continue;
 
         themeInfo.push(getThemeInfo(data, fileName));
@@ -77,18 +67,13 @@ ipcMain.handle(IpcEvents.OPEN_EXTERNAL, (_, url) => {
     } catch {
         throw "Malformed URL";
     }
-    if (!ALLOWED_PROTOCOLS.includes(protocol))
-        throw "Disallowed protocol.";
+    if (!ALLOWED_PROTOCOLS.includes(protocol)) throw "Disallowed protocol.";
 
-    shell.openExternal(url)
-        .catch(err => console.error("[Vencord] Failed to open external link", url, err));
+    shell.openExternal(url).catch(err => console.error("[Vencord] Failed to open external link", url, err));
 });
 
-
 ipcMain.handle(IpcEvents.GET_QUICK_CSS, () => readCss());
-ipcMain.handle(IpcEvents.SET_QUICK_CSS, (_, css) =>
-    writeFileSync(QUICK_CSS_PATH, css)
-);
+ipcMain.handle(IpcEvents.SET_QUICK_CSS, (_, css) => writeFileSync(QUICK_CSS_PATH, css));
 
 ipcMain.handle(IpcEvents.GET_THEMES_LIST, () => listThemes());
 ipcMain.handle(IpcEvents.GET_THEME_DATA, (_, fileName) => getThemeData(fileName));
@@ -115,16 +100,26 @@ ipcMain.handle(IpcEvents.INIT_FILE_WATCHERS, ({ sender }) => {
     let quickCssWatcher: FSWatcher | undefined;
     let rendererCssWatcher: FSWatcher | undefined;
 
-    open(QUICK_CSS_PATH, "a+").then(fd => {
-        fd.close();
-        quickCssWatcher = watch(QUICK_CSS_PATH, { persistent: false }, debounce(async () => {
-            sender.postMessage(IpcEvents.QUICK_CSS_UPDATE, await readCss());
-        }, 50));
-    }).catch(() => { });
+    open(QUICK_CSS_PATH, "a+")
+        .then(fd => {
+            fd.close();
+            quickCssWatcher = watch(
+                QUICK_CSS_PATH,
+                { persistent: false },
+                debounce(async () => {
+                    sender.postMessage(IpcEvents.QUICK_CSS_UPDATE, await readCss());
+                }, 50)
+            );
+        })
+        .catch(() => {});
 
-    const themesWatcher = watch(THEMES_DIR, { persistent: false }, debounce(() => {
-        sender.postMessage(IpcEvents.THEME_UPDATE, void 0);
-    }));
+    const themesWatcher = watch(
+        THEMES_DIR,
+        { persistent: false },
+        debounce(() => {
+            sender.postMessage(IpcEvents.THEME_UPDATE, void 0);
+        })
+    );
 
     if (IS_DEV) {
         rendererCssWatcher = watch(RENDERER_CSS_PATH, { persistent: false }, async () => {

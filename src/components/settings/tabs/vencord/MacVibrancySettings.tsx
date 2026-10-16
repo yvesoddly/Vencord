@@ -25,7 +25,8 @@ export function MacOSVibrancySettings() {
                 options={[
                     // Sorted from most opaque to most transparent
                     {
-                        label: "No vibrancy", value: undefined
+                        label: "No vibrancy",
+                        value: undefined
                     },
                     {
                         label: "Under Page (window tinting)",
@@ -74,9 +75,9 @@ export function MacOSVibrancySettings() {
                     {
                         label: "HUD (Most transparent)",
                         value: "hud"
-                    },
+                    }
                 ]}
-                select={v => settings.macosVibrancyStyle = v}
+                select={v => (settings.macosVibrancyStyle = v)}
                 isSelected={v => settings.macosVibrancyStyle === v}
                 serialize={identity}
             />

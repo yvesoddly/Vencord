@@ -1,20 +1,8 @@
 /*
- * Vencord, a modification for Discord's desktop app
+ * Vencord, a Discord client mod
  * Copyright (c) 2023 Vendicated and contributors
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <https://www.gnu.org/licenses/>.
-*/
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
 
 import { definePluginSettings } from "@api/Settings";
 import { hash as h64 } from "@intrnl/xxhash64";
@@ -25,7 +13,7 @@ import { useMemo } from "@webpack/common";
 // Calculate a CSS color string based on the user ID
 function calculateNameColorForUser(id?: string) {
     const { lightness } = settings.use(["lightness"]);
-    const idHash = useMemo(() => id ? h64(id) : null, [id]);
+    const idHash = useMemo(() => (id ? h64(id) : null), [id]);
 
     return idHash && `hsl(${idHash % 360n}, 100%, ${lightness}%)`;
 }
@@ -34,7 +22,7 @@ const settings = definePluginSettings({
     lightness: {
         description: "Lightness, in %. Change if the colors are too light or too dark",
         type: OptionType.NUMBER,
-        default: 70,
+        default: 70
     },
     memberListColors: {
         description: "Replace role colors in the member list",
@@ -83,7 +71,13 @@ export default definePlugin({
         }
     ],
 
-    wrapMessageColorProps(colorProps: { colorString: string, colorStrings?: Record<"primaryColor" | "secondaryColor" | "tertiaryColor", string>; }, context: any) {
+    wrapMessageColorProps(
+        colorProps: {
+            colorString: string;
+            colorStrings?: Record<"primaryColor" | "secondaryColor" | "tertiaryColor", string>;
+        },
+        context: any
+    ) {
         try {
             const colorString = this.calculateNameColorForMessageContext(context);
             if (colorString === colorProps.colorString) {
@@ -111,16 +105,13 @@ export default definePlugin({
         const color = calculateNameColorForUser(userId);
 
         // Color preview in role settings
-        if (context?.message?.channel_id === "1337" && userId === "313337")
-            return colorString;
+        if (context?.message?.channel_id === "1337" && userId === "313337") return colorString;
 
         if (settings.store.applyColorOnlyInDms && !context?.channel?.isPrivate()) {
             return colorString;
         }
 
-        return (!settings.store.applyColorOnlyToUsersWithoutColor || !colorString)
-            ? color
-            : colorString;
+        return !settings.store.applyColorOnlyToUsersWithoutColor || !colorString ? color : colorString;
     },
 
     calculateNameColorForListContext(context: any) {
@@ -133,9 +124,7 @@ export default definePlugin({
                 return colorString;
             }
 
-            return (!settings.store.applyColorOnlyToUsersWithoutColor || !colorString)
-                ? color
-                : colorString;
+            return !settings.store.applyColorOnlyToUsersWithoutColor || !colorString ? color : colorString;
         } catch (e) {
             console.error("Failed to calculate name color for list context:", e);
         }

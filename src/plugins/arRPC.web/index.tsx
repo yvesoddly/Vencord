@@ -1,20 +1,8 @@
 /*
- * Vencord, a modification for Discord's desktop app
+ * Vencord, a Discord client mod
  * Copyright (c) 2022 OpenAsar
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <https://www.gnu.org/licenses/>.
-*/
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
 
 import { popNotice, showNotice } from "@api/Notices";
 import { Link } from "@components/Link";
@@ -49,7 +37,10 @@ export default definePlugin({
         <>
             <Forms.FormTitle tag="h3">How to use arRPC</Forms.FormTitle>
             <Forms.FormText>
-                <Link href="https://github.com/OpenAsar/arrpc/tree/main#server">Follow the instructions in the GitHub repo</Link> to get the server running, and then enable the plugin.
+                <Link href="https://github.com/OpenAsar/arrpc/tree/main#server">
+                    Follow the instructions in the GitHub repo
+                </Link>{" "}
+                to get the server running, and then enable the plugin.
             </Forms.FormText>
         </>
     ),
@@ -80,9 +71,12 @@ export default definePlugin({
 
         ws.onmessage = this.handleEvent;
 
-        const connectionSuccessful = await new Promise(res => setTimeout(() => res(ws.readyState === WebSocket.OPEN), 5000)); // check if open after 5s
+        const connectionSuccessful = await new Promise(res =>
+            setTimeout(() => res(ws.readyState === WebSocket.OPEN), 5000)
+        ); // check if open after 5s
         if (!connectionSuccessful) {
-            showNotice("Failed to connect to arRPC, is it running?", "Retry", () => { // show notice about failure to connect, with retry/ignore
+            showNotice("Failed to connect to arRPC, is it running?", "Retry", () => {
+                // show notice about failure to connect, with retry/ignore
                 popNotice();
                 this.start();
             });

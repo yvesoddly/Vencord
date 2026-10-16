@@ -5,7 +5,6 @@
  */
 
 import "./styles.css";
-
 import { definePluginSettings } from "@api/Settings";
 import ErrorBoundary from "@components/ErrorBoundary";
 import { Devs } from "@utils/constants";
@@ -63,7 +62,6 @@ async function embedDidMount(this: Component<Props>) {
 
         if (!hasTitle && !hasThumb) return;
 
-
         embed.dearrow = {
             enabled: dearrowByDefault
         };
@@ -87,7 +85,7 @@ async function embedDidMount(this: Component<Props>) {
     }
 }
 
-function DearrowButton({ component }: { component: Component<Props>; }) {
+function DearrowButton({ component }: { component: Component<Props> }) {
     const { embed } = component.props;
     if (!embed?.dearrow) return null;
 
@@ -135,7 +133,6 @@ function DearrowButton({ component }: { component: Component<Props>; }) {
                             d="m 23.95823,17.818306 c 0,3.153748 -2.644888,5.808102 -5.798635,5.808102 -3.153748,0 -5.599825,-2.654354 -5.599825,-5.808102 0,-3.153747 2.446077,-5.721714 5.599825,-5.721714 3.153747,0 5.798635,2.567967 5.798635,5.721714 z"
                         />
                     </svg>
-
                 </button>
             )}
         </Tooltip>
@@ -156,8 +153,8 @@ const settings = definePluginSettings({
         options: [
             { label: "Everything (Titles & Thumbnails)", value: ReplaceElements.ReplaceAllElements, default: true },
             { label: "Titles", value: ReplaceElements.ReplaceTitlesOnly },
-            { label: "Thumbnails", value: ReplaceElements.ReplaceThumbnailsOnly },
-        ],
+            { label: "Thumbnails", value: ReplaceElements.ReplaceThumbnailsOnly }
+        ]
     },
     dearrowByDefault: {
         description: "Dearrow videos automatically",
@@ -183,21 +180,23 @@ export default definePlugin({
         );
     },
 
-    patches: [{
-        find: "this.renderInlineMediaEmbed",
-        replacement: [
-            // patch componentDidMount to replace embed thumbnail and title
-            {
-                match: /render\(\)\{.{0,30}let\{embed:/,
-                replace: "componentDidMount=$self.embedDidMount;$&"
-            },
+    patches: [
+        {
+            find: "this.renderInlineMediaEmbed",
+            replacement: [
+                // patch componentDidMount to replace embed thumbnail and title
+                {
+                    match: /render\(\)\{.{0,30}let\{embed:/,
+                    replace: "componentDidMount=$self.embedDidMount;$&"
+                },
 
-            // add dearrow button
-            {
-                match: /children:\[(?=null!=\i\?(\i)\.renderSuppressButton)/,
-                replace: "children:[$self.renderButton($1),",
-                predicate: () => !settings.store.hideButton
-            }
-        ]
-    }],
+                // add dearrow button
+                {
+                    match: /children:\[(?=null!=\i\?(\i)\.renderSuppressButton)/,
+                    replace: "children:[$self.renderButton($1),",
+                    predicate: () => !settings.store.hideButton
+                }
+            ]
+        }
+    ]
 });

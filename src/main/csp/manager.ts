@@ -68,7 +68,12 @@ function getMessage(url: string, directives: string[], callerName: string) {
     return { message, detail };
 }
 
-async function addCspRule(_: IpcMainInvokeEvent, url: string, directives: string[], callerName: string): Promise<CspRequestResult> {
+async function addCspRule(
+    _: IpcMainInvokeEvent,
+    url: string,
+    directives: string[],
+    callerName: string
+): Promise<CspRequestResult> {
     if (!validate(url, directives)) {
         return "invalid";
     }
@@ -87,7 +92,7 @@ async function addCspRule(_: IpcMainInvokeEvent, url: string, directives: string
         defaultId: 0,
         cancelId: 0,
         checkboxLabel: `I fully trust ${domain} and understand the risks of allowing connections to it.`,
-        checkboxChecked: false,
+        checkboxChecked: false
     });
 
     if (response !== 1) {

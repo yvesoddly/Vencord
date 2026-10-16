@@ -7,22 +7,26 @@
 import { AvatarDecoration } from "@plugins/decor";
 import type { ComponentType, HTMLProps, PropsWithChildren } from "react";
 
-type DecorationGridItemComponent = ComponentType<PropsWithChildren<HTMLProps<HTMLDivElement>> & {
-    onSelect: () => void,
-    isSelected: boolean,
-}>;
+type DecorationGridItemComponent = ComponentType<
+    PropsWithChildren<HTMLProps<HTMLDivElement>> & {
+        onSelect: () => void;
+        isSelected: boolean;
+    }
+>;
 
 export let DecorationGridItem: DecorationGridItemComponent;
-export const setDecorationGridItem = v => DecorationGridItem = v;
+export const setDecorationGridItem = (v: DecorationGridItemComponent) => (DecorationGridItem = v);
 
 export let AvatarDecorationModalPreview: ComponentType<any> = () => null;
-export const setAvatarDecorationModalPreview = v => AvatarDecorationModalPreview = v;
+export const setAvatarDecorationModalPreview = (v: ComponentType<any>) => (AvatarDecorationModalPreview = v);
 
-type DecorationGridDecorationComponent = React.ComponentType<HTMLProps<HTMLDivElement> & {
-    avatarDecoration: AvatarDecoration;
-    onSelect: () => void,
-    isSelected: boolean,
-}>;
+type DecorationGridDecorationComponent = React.ComponentType<
+    HTMLProps<HTMLDivElement> & {
+        avatarDecoration: AvatarDecoration;
+        onSelect: () => void;
+        isSelected: boolean;
+    }
+>;
 
 export let DecorationGridDecoration: DecorationGridDecorationComponent;
-export const setDecorationGridDecoration = v => DecorationGridDecoration = v;
+export const setDecorationGridDecoration = (v: DecorationGridDecorationComponent) => (DecorationGridDecoration = v);

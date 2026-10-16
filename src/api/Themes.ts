@@ -1,20 +1,8 @@
 /*
- * Vencord, a modification for Discord's desktop app
+ * Vencord, a Discord client mod
  * Copyright (c) 2022 Vendicated and contributors
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <https://www.gnu.org/licenses/>.
-*/
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
 
 import { Settings, SettingsStore } from "@api/Settings";
 import { createAndAppendStyle } from "@utils/css";
@@ -41,8 +29,7 @@ async function toggle(isEnabled: boolean) {
             });
             style.textContent = await VencordNative.quickCss.get();
         }
-    } else
-        style.disabled = !isEnabled;
+    } else style.disabled = !isEnabled;
 }
 
 // for cleanup
@@ -57,9 +44,7 @@ async function initThemes() {
 
     // "darker" and "midnight" both count as dark
     // This function is first called on DOMContentLoaded, so ThemeStore may not have been loaded yet
-    const activeTheme = ThemeStore == null
-        ? undefined
-        : ThemeStore.theme === "light" ? "light" : "dark";
+    const activeTheme = ThemeStore == null ? undefined : ThemeStore.theme === "light" ? "light" : "dark";
 
     const links = themeLinks
         .map(rawLink => {
@@ -74,13 +59,15 @@ async function initThemes() {
     if (IS_WEB) {
         previousThemeBlobObjectURLs.forEach(url => URL.revokeObjectURL(url));
 
-        const objectUrls = await Promise.all(enabledThemes.map(async theme => {
-            const themeData = await VencordNative.themes.getThemeData(theme);
-            if (!themeData) return null;
+        const objectUrls = await Promise.all(
+            enabledThemes.map(async theme => {
+                const themeData = await VencordNative.themes.getThemeData(theme);
+                if (!themeData) return null;
 
-            const blob = new Blob([themeData], { type: "text/css" });
-            return URL.createObjectURL(blob);
-        }));
+                const blob = new Blob([themeData], { type: "text/css" });
+                return URL.createObjectURL(blob);
+            })
+        );
 
         previousThemeBlobObjectURLs = objectUrls.filter(isNonNullish);
         links.push(...previousThemeBlobObjectURLs);
@@ -114,28 +101,32 @@ function updatePopoutWindows() {
     }
 }
 
-document.addEventListener("DOMContentLoaded", () => {
-    if (IS_USERSCRIPT) return;
+document.addEventListener(
+    "DOMContentLoaded",
+    () => {
+        if (IS_USERSCRIPT) return;
 
-    initThemes();
+        initThemes();
 
-    toggle(Settings.useQuickCss);
-    SettingsStore.addChangeListener("useQuickCss", toggle);
+        toggle(Settings.useQuickCss);
+        SettingsStore.addChangeListener("useQuickCss", toggle);
 
-    SettingsStore.addChangeListener("themeLinks", initThemes);
-    SettingsStore.addChangeListener("enabledThemes", initThemes);
+        SettingsStore.addChangeListener("themeLinks", initThemes);
+        SettingsStore.addChangeListener("enabledThemes", initThemes);
 
-    window.addEventListener("message", event => {
-        const { discordPopoutEvent } = event.data || {};
-        if (discordPopoutEvent?.type !== "loaded") return;
+        window.addEventListener("message", event => {
+            const { discordPopoutEvent } = event.data || {};
+            if (discordPopoutEvent?.type !== "loaded") return;
 
-        applyToPopout(PopoutWindowStore.getWindow(discordPopoutEvent.key), discordPopoutEvent.key);
-    });
+            applyToPopout(PopoutWindowStore.getWindow(discordPopoutEvent.key), discordPopoutEvent.key);
+        });
 
-    if (!IS_WEB) {
-        VencordNative.quickCss.addThemeChangeListener(initThemes);
-    }
-}, { once: true });
+        if (!IS_WEB) {
+            VencordNative.quickCss.addThemeChangeListener(initThemes);
+        }
+    },
+    { once: true }
+);
 
 export function initQuickCssThemeStore(themeStore: ThemeStore) {
     if (IS_USERSCRIPT) return;

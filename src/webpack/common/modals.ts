@@ -11,7 +11,10 @@ export const Modal: t.Modal = findByCodeLazy("leadingLayout:", "actions:", ".mes
 export const ConfirmModal: t.ConfirmModal = findByCodeLazy("actionBarInput:", '"critical"', '"secondary');
 
 // Modal key: "Media Viewer Modal"
-export const openMediaModal: (props: t.MediaModalProps) => void = findByCodeLazy("hasMediaOptions", "shouldHideMediaOptions");
+export const openMediaModal: (props: t.MediaModalProps) => void = findByCodeLazy(
+    "hasMediaOptions",
+    "shouldHideMediaOptions"
+);
 
 const ModalAPI: t.ModalAPI = mapMangledModuleLazy(".modalKey?", {
     openModalLazy: filters.byCode(".modalKey?"),

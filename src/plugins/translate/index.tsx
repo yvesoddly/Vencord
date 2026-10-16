@@ -1,23 +1,10 @@
 /*
- * Vencord, a modification for Discord's desktop app
+ * Vencord, a Discord client mod
  * Copyright (c) 2023 Vendicated and contributors
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <https://www.gnu.org/licenses/>.
-*/
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
 
 import "./styles.css";
-
 import { findGroupChildrenByChildId, NavContextMenuPatchCallback } from "@api/ContextMenu";
 import { Devs } from "@utils/constants";
 import definePlugin from "@utils/types";
@@ -29,14 +16,16 @@ import { setShouldShowTranslateEnabledTooltip, TranslateChatBarIcon, TranslateIc
 import { handleTranslate, TranslationAccessory } from "./TranslationAccessory";
 import { translate } from "./utils";
 
-const messageCtxPatch: NavContextMenuPatchCallback = (children, { message }: { message: Message; }) => {
+const messageCtxPatch: NavContextMenuPatchCallback = (children, { message }: { message: Message }) => {
     const content = getMessageContent(message);
     if (!content) return;
 
     const group = findGroupChildrenByChildId("copy-text", children);
     if (!group) return;
 
-    group.splice(group.findIndex(c => c?.props?.id === "copy-text") + 1, 0, (
+    group.splice(
+        group.findIndex(c => c?.props?.id === "copy-text") + 1,
+        0,
         <Menu.MenuItem
             id="vc-trans"
             label="Translate"
@@ -47,17 +36,19 @@ const messageCtxPatch: NavContextMenuPatchCallback = (children, { message }: { m
                 handleTranslate(message.id, trans);
             }}
         />
-    ));
+    );
 };
-
 
 function getMessageContent(message: Message) {
     // Message snapshots is an array, which allows for nested snapshots, which Discord does not do yet.
     // no point collecting content or rewriting this to render in a certain way that makes sense
     // for something currently impossible.
-    return message.content
-        || message.messageSnapshots?.[0]?.message.content
-        || message.embeds?.find(embed => embed.type === "auto_moderation_message")?.rawDescription || "";
+    return (
+        message.content ||
+        message.messageSnapshots?.[0]?.message.content ||
+        message.embeds?.find(embed => embed.type === "auto_moderation_message")?.rawDescription ||
+        ""
+    );
 }
 
 let tooltipTimeout: any;
@@ -69,7 +60,7 @@ export default definePlugin({
     authors: [Devs.Ven, Devs.AshtonMemer, Devs.koish1],
     settings,
     contextMenus: {
-        "message": messageCtxPatch
+        message: messageCtxPatch
     },
     // not used, just here in case some other plugin wants it or w/e
     translate,

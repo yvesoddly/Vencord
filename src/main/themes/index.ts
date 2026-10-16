@@ -1,4 +1,4 @@
-/* eslint-disable simple-header/header */
+/* oxlint-disable vencord/license-header -- third-party code under its own license, below */
 
 /*!
  * BetterDiscord addon meta parser
@@ -48,7 +48,7 @@ function makeHeader(fileName: string, opts: Partial<UserThemeHeader> = {}): User
 }
 
 export function stripBOM(fileContent: string) {
-    if (fileContent.charCodeAt(0) === 0xFEFF) {
+    if (fileContent.charCodeAt(0) === 0xfeff) {
         fileContent = fileContent.slice(1);
     }
     return fileContent;
@@ -60,7 +60,7 @@ export function getThemeInfo(css: string, fileName: string): UserThemeHeader {
     const block = css.split("/**", 2)?.[1]?.split("*/", 1)?.[0];
     if (!block) return makeHeader(fileName);
 
-    const header: Partial<UserThemeHeader> = {};
+    const header: Record<string, string> = {};
     let field = "";
     let accum = "";
     for (const line of block.split(splitRegex)) {
@@ -70,8 +70,7 @@ export function getThemeInfo(css: string, fileName: string): UserThemeHeader {
             const l = line.indexOf(" ");
             field = line.substring(1, l);
             accum = line.substring(l + 1);
-        }
-        else {
+        } else {
             accum += " " + line.replace("\\n", "\n").replace(escapedAtRegex, "@");
         }
     }
